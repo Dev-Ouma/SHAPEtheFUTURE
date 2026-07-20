@@ -1,0 +1,22 @@
+node_modules
+dist
+coverage
+logs
+*.log
+.env
+.env.*
+!.env.example
+test
+*.md
+.git
+.gitignore
+
+# Never bake dumps / local DB into the image
+*.sql
+*.dump
+*.sqlite
+*.sqlite3
+database.sqlite
+scratch
+**/backups
+**/*dump*

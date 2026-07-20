@@ -1,0 +1,31 @@
+# Opt-in TLS overlay — does NOT change local/dev defaults.
+#
+# Local (unchanged):
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# Production HTTP (until certs exist):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Production HTTPS (after Let's Encrypt certs exist on the host):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.tls.yml up -d
+#
+# Required on the host:
+#   - Certs readable at SSL_CERTS_DIR (default /etc/letsencrypt)
+#     e.g. /etc/letsencrypt/live/ouk.ac.ke/{fullchain,privkey}.pem
+#   - ACME webroot at ACME_WEBROOT (default ./certbot/www) for renewals
+#   - .env with https:// NEXT_PUBLIC_* and CORS_ORIGINS
+#   - AUTH_COOKIE_SECURE unset (Secure cookies default on in production)
+#
+# Rollback to HTTP edge:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#   (omit docker-compose.tls.yml)
+
+services:
+  nginx:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.ssl.example.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${SSL_CERTS_DIR:-/etc/letsencrypt}:/etc/letsencrypt:ro
+      - ${ACME_WEBROOT:-./certbot/www}:/var/www/certbot:ro

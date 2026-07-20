@@ -1,0 +1,69 @@
+{
+  "programme": {
+    "title": "Bachelor of Science in Example Programme",
+    "slug": "bsc-example-programme",
+    "programme_code": "BSc. EXP",
+    "level": "Undergraduate",
+    "school_name": "School of Science & Technology",
+    "mode_of_delivery": "Online",
+    "duration": "4 Years",
+    "application_status": "Open",
+    "is_featured": true,
+
+    "overview": "Full overview / philosophy / rationale text here.",
+
+    "learning_outcomes": [
+      "Outcome one.",
+      "Outcome two.",
+      "Outcome three."
+    ],
+
+    "entry_requirements": [
+      "Must satisfy general University admission criteria.",
+      "Additional programme-specific requirements."
+    ],
+
+    "programme_structure": "Description of the year-by-year structure, total units, credit hours, etc.",
+
+    "careers": "- Career path 1\n- Career path 2\n- Career path 3",
+
+    "assessment": "Continuous assessment 50% | End of semester exam 50%",
+
+    "fees_scholarships": "Fees information or leave null.",
+
+    "brochure_url": null,
+    "programme_image": null
+  },
+
+  "course_units": [
+    {
+      "unit_code": "EXP111",
+      "title": "Introduction to the Programme",
+      "credits": 3,
+      "year_level": "Year 1 Semester 1",
+      "description": "Full course description including content, instructional strategies, and reading materials.",
+      "learning_outcomes": [
+        "Outcome one.",
+        "Outcome two."
+      ],
+      "prerequisites": "None",
+      "assessment_methods": "Continuous Assessment 50% | Examination 50%",
+      "status": "Active",
+      "language": "English"
+    },
+    {
+      "unit_code": "EXP112",
+      "title": "Second Course",
+      "credits": 3,
+      "year_level": "Year 1 Semester 1",
+      "description": "Course description.",
+      "learning_outcomes": [
+        "Outcome one.",
+        "Outcome two."
+      ],
+      "prerequisites": "None",
+      "status": "Active",
+      "language": "English"
+    }
+  ]
+}

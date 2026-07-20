@@ -1,0 +1,162 @@
+[
+  {
+    "question": "I need help",
+    "answer": "Of course — I'm here to help! 🙂 Tell me a bit about what you need: is it admissions, fees, registration, the portal, exams, or something else?",
+    "type": "smalltalk",
+    "category": "help_request",
+    "is_active": true,
+    "metadata": { "variants": ["i need help", "help me", "i need assistance", "can you help me", "assist me", "nisaidie", "naomba msaada", "i have a problem", "i have an issue", "i need support"] }
+  },
+  {
+    "question": "I have a question",
+    "answer": "Go right ahead — ask me anything about OUK and I'll do my best to help. 🙂",
+    "type": "smalltalk",
+    "category": "help_request",
+    "is_active": true,
+    "metadata": { "variants": ["i have a question", "can i ask something", "quick question", "i want to ask", "nina swali", "naweza uliza", "may i ask"] }
+  },
+  {
+    "question": "Are you busy?",
+    "answer": "Not at all — I'm available 24/7 and ready to help you right now. 🙂 What do you need?",
+    "type": "smalltalk",
+    "category": "presence",
+    "is_active": true,
+    "metadata": { "variants": ["are you busy", "do you have time", "can you talk", "are you free", "uko busy", "una time"] }
+  },
+  {
+    "question": "Are you a real person?",
+    "answer": "I'm a virtual AI assistant, not a human — but I'm built to help you just like a support officer would. If your issue needs a real person, I can guide you to the right OUK office or helpdesk. What can I help with?",
+    "type": "smalltalk",
+    "category": "identity",
+    "is_active": true,
+    "metadata": { "variants": ["are you a real person", "am i talking to a human", "is this a real person", "is this automated", "are you ai", "are you chatgpt", "are you a machine"] }
+  },
+  {
+    "question": "Can I talk to a human / agent?",
+    "answer": "Absolutely. If you'd like to speak with a member of staff, I can direct you to the right office or helpdesk. Could you tell me what your issue is about so I connect you to the correct team?",
+    "type": "smalltalk",
+    "category": "escalation",
+    "is_active": true,
+    "metadata": { "variants": ["talk to a human", "talk to an agent", "speak to someone", "i want a real person", "connect me to staff", "customer care", "human please", "live agent", "nataka kuongea na mtu"] }
+  },
+  {
+    "question": "I'm frustrated / angry",
+    "answer": "I'm really sorry you're feeling this way, and I understand it's frustrating. 🙏 Let's sort it out together — tell me exactly what's going wrong, and if I can't resolve it I'll point you to the right office or a human agent.",
+    "type": "smalltalk",
+    "category": "emotion",
+    "is_active": true,
+    "metadata": { "variants": ["im frustrated", "im angry", "this is annoying", "im upset", "this is frustrating", "im stressed", "im confused", "this is hard", "im so tired", "nimechoka", "nimekasirika"] }
+  },
+  {
+    "question": "This is not working / you're not helping",
+    "answer": "I'm sorry I haven't been helpful so far. 🙏 Let me try again — could you tell me in a few words exactly what you're trying to do? If I still can't help, I'll connect you to a human at the right OUK office.",
+    "type": "smalltalk",
+    "category": "emotion",
+    "is_active": true,
+    "metadata": { "variants": ["this is not working", "youre not helping", "you dont understand", "thats not what i asked", "you are useless", "this is wrong", "wrong answer", "you are not helpful", "haifanyi kazi"] }
+  },
+  {
+    "question": "Please wait, let me check",
+    "answer": "Sure, take all the time you need. 🙂 I'll be right here when you're ready.",
+    "type": "smalltalk",
+    "category": "acknowledgement",
+    "is_active": true,
+    "metadata": { "variants": ["let me check", "let me see", "give me a minute", "let me confirm", "ngoja niangalie", "subiri kidogo"] }
+  },
+  {
+    "question": "I don't understand",
+    "answer": "No problem — let me explain it differently. 🙂 Could you tell me which part wasn't clear? I'll break it down more simply.",
+    "type": "smalltalk",
+    "category": "clarification",
+    "is_active": true,
+    "metadata": { "variants": ["i dont understand", "i dont get it", "what do you mean", "im confused", "explain again", "say it again", "come again", "sijaelewa", "maanisha nini", "rudia tena"] }
+  },
+  {
+    "question": "Can you repeat that?",
+    "answer": "Of course! 🙂 Here it is again — let me know which part you'd like me to expand on. (The bot should re-send or rephrase its previous answer here.)",
+    "type": "smalltalk",
+    "category": "clarification",
+    "is_active": true,
+    "metadata": { "variants": ["repeat that", "say again", "can you repeat", "one more time", "rudia", "sema tena"] }
+  },
+  {
+    "question": "What languages do you speak?",
+    "answer": "I can chat in English and Kiswahili, including everyday expressions. 🙂 Feel free to ask your question in whichever you're comfortable with. How can I help?",
+    "type": "smalltalk",
+    "category": "capabilities",
+    "is_active": true,
+    "metadata": { "variants": ["what languages do you speak", "do you speak swahili", "unaongea kiswahili", "can you speak english", "do you understand swahili", "lugha gani"] }
+  },
+  {
+    "question": "Unaweza kuongea Kiswahili?",
+    "answer": "Ndiyo, naweza kuongea Kiswahili! 🙂 Tafadhali niambie unahitaji msaada gani — udahili, ada, usajili, au jambo lingine?",
+    "type": "smalltalk",
+    "category": "capabilities",
+    "is_active": true,
+    "metadata": { "variants": ["unaweza kuongea kiswahili", "ongea kiswahili", "naweza uliza kwa kiswahili", "swahili tafadhali"] }
+  },
+  {
+    "question": "Long time / nice to meet you",
+    "answer": "Lovely to meet you too! 😊 Welcome to OUK. How can I help you get started?",
+    "type": "smalltalk",
+    "category": "greeting",
+    "is_active": true,
+    "metadata": { "variants": ["nice to meet you", "pleased to meet you", "good to meet you", "long time", "nimefurahi kukutana nawe"] }
+  },
+  {
+    "question": "How was your day / weekend?",
+    "answer": "That's kind of you to ask! 😊 My day's going well — always good when I get to help people. How can I make yours easier?",
+    "type": "smalltalk",
+    "category": "chitchat",
+    "is_active": true,
+    "metadata": { "variants": ["how was your day", "how is your day", "how was your weekend", "hows your week", "umeshindaje", "habari za leo"] }
+  },
+  {
+    "question": "Congratulations to me / good news",
+    "answer": "That's wonderful — congratulations! 🎉 I'm happy for you. Is there anything I can help you with next, like registration or fees?",
+    "type": "smalltalk",
+    "category": "emotion",
+    "is_active": true,
+    "metadata": { "variants": ["i got admitted", "i passed", "i graduated", "good news", "im so happy", "i was accepted", "nimefaulu", "nimedahiliwa"] }
+  },
+  {
+    "question": "I'm sad / having a hard time",
+    "answer": "I'm sorry you're going through a tough time. 🙏 I'm here to help with whatever university matter is on your mind. If you ever need personal support, OUK also has student welfare and counselling services I can point you to. What can I do for you right now?",
+    "type": "smalltalk",
+    "category": "emotion",
+    "is_active": true,
+    "metadata": { "variants": ["im sad", "im having a hard time", "im not okay", "feeling down", "im struggling", "im worried", "im scared", "nina stress", "sijakuwa sawa"], "note": "If user expresses serious distress, surface OUK student welfare/counselling contacts and avoid dismissive replies." }
+  },
+  {
+    "question": "Just testing / random input",
+    "answer": "All good — I'm working and ready whenever you are! 🙂 Ask me anything about OUK and I'll help.",
+    "type": "smalltalk",
+    "category": "chitchat",
+    "is_active": true,
+    "metadata": { "variants": ["test", "testing", "just testing", "hello test", "are you working", "checking", "123", "asdf", "..."] }
+  },
+  {
+    "question": "Let's start / where do I begin?",
+    "answer": "Great, let's get started! 🙂 A good first step is telling me what you're here for — are you looking to apply, check fees, register for units, or sort out a portal issue?",
+    "type": "smalltalk",
+    "category": "help_request",
+    "is_active": true,
+    "metadata": { "variants": ["lets start", "where do i begin", "how do i start", "lets go", "im ready", "what next", "tuanze", "nianzie wapi"] }
+  },
+  {
+    "question": "That's all / I'm done",
+    "answer": "Perfect! 🙂 I'm glad I could help. Have a great day, and come back anytime you need anything. 👋",
+    "type": "smalltalk",
+    "category": "farewell",
+    "is_active": true,
+    "metadata": { "variants": ["thats all", "im done", "no more questions", "that will be all", "we are good", "all set", "nimemaliza", "sina swali lingine"] }
+  },
+  {
+    "question": "You're welcome (user replies to bot's thanks)",
+    "answer": "Thank you! 😊 It's my pleasure to help. See you next time. 👋",
+    "type": "smalltalk",
+    "category": "politeness",
+    "is_active": true,
+    "metadata": { "variants": ["youre welcome", "no problem", "anytime", "my pleasure", "karibu", "si neno"] }
+  }
+]

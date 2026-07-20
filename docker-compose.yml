@@ -1,0 +1,123 @@
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: shape-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shape_user}
+      # Required via .env — no weak default password in compose.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
+      POSTGRES_DB: ${POSTGRES_DB:-shape_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - ouk-network
+
+  redis:
+    image: redis:alpine
+    container_name: shape-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - ouk-network
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: shape-backend
+    restart: always
+    environment:
+      - PORT=3001
+      - NODE_ENV=${NODE_ENV:-production}
+      - TYPEORM_SYNCHRONIZE=${TYPEORM_SYNCHRONIZE:-false}
+      - FORBID_NON_WHITELISTED=${FORBID_NON_WHITELISTED:-true}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER:-shape_user}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
+      - DB_NAME=${POSTGRES_DB:-shape_db}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET in .env (see .env.example)}
+      - AI_SERVICE_URL=${AI_SERVICE_URL:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://shape.ouk.ac.ke,http://localhost:3000}
+      # Opt-in: set true only after DB is migration-managed (see .env.example).
+      - RUN_MIGRATIONS_ON_START=${RUN_MIGRATIONS_ON_START:-false}
+      # Secure admin cookies default on in production; set false only for HTTP staging.
+      - AUTH_COOKIE_SECURE=${AUTH_COOKIE_SECURE:-}
+      - MPESA_CALLBACK_IPS=${MPESA_CALLBACK_IPS:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    networks:
+      - ouk-network
+
+  # Optional AI sidecar — omitted for SHAPE PMIS. Set AI_SERVICE_URL if re-enabled.
+  # ai-service: ...
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      # Default: copy workstation `.next` (low memory). Use docker-compose.prod.yml for in-Docker bake.
+      target: prebuilt
+    container_name: shape-frontend
+    restart: always
+    environment:
+      # Runtime/SSR only — client bundles need these at `next build` (see docker-compose.prod.yml).
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://shape.ouk.ac.ke/api}
+      - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL:-https://shape.ouk.ac.ke}
+      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://shape.ouk.ac.ke}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - ouk-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: shape-nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_healthy
+    networks:
+      - ouk-network
+
+networks:
+  ouk-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

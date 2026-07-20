@@ -1,0 +1,58 @@
+# Secrets & local env (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+frontend/.env.local
+ai-service/.env
+ai-service/.env.*
+
+# Full database dumps & local DB files (never commit / never ship)
+ouk_db_dump*
+*.dump
+*.sqlite
+*.sqlite3
+database/dump.sql
+database/backups/**
+!database/backups/README.md
+
+# Ad-hoc scratch / one-off tooling output
+scratch/
+backend/scratch/
+
+# Dependencies & build output
+node_modules/
+dist/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Logs & OS
+logs/
+*.log
+backend_log.txt
+frontend/build_log.txt
+.DS_Store
+Thumbs.db
+
+# Local scratch / tooling
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.pem
+*.key
+certs/
+certbot/www/*
+!certbot/www/.gitkeep
+
+# Uploaded media (local / server storage — do not commit)
+backend/public/uploads/
+frontend/public/brand/
+
+# Spec / notes that may contain credentials
+SHAPE the Future PMIS.md
