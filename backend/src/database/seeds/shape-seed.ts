@@ -115,7 +115,7 @@ export const runShapeSeed = async (dataSource: DataSource) => {
     },
     { key: 'contact_email', value: 'shape@ouk.ac.ke' },
     { key: 'contact_phone', value: '+254 20 2311438' },
-    { key: 'address', value: 'Open University of Kenya, Konza Technopolis, Kenya' },
+    { key: 'address', value: 'Open University of Kenya, Technopolis Development Authority, Kenya' },
     {
       key: 'shape_hero_eyebrow',
       value: 'East Africa • Higher Education • Smart Cities',

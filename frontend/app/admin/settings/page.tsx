@@ -278,7 +278,7 @@ function SettingsPageInner() {
                   type="text" 
                   value={settings.alumni_support_office || ""} 
                   onChange={(e) => handleUpdate("alumni_support_office", e.target.value)}
-                  placeholder="Konza Technopolis, OUK Hub"
+                  placeholder="Technopolis Development Authority, OUK Hub"
                   className="w-full bg-slate-50 border-none p-4 font-bold text-primary-darker focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>

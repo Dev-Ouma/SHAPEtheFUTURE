@@ -65,7 +65,7 @@ export default function ShapeFooter({
             <ul className="space-y-4 text-sm text-slate-400">
               <li className="flex gap-3">
                 <MapPin size={16} className="text-primary shrink-0 mt-0.5" />
-                <span>Konza Technopolis, Kenya</span>
+                <span>Technopolis Development Authority, Kenya</span>
               </li>
               <li className="flex gap-3">
                 <Mail size={16} className="text-primary shrink-0 mt-0.5" />

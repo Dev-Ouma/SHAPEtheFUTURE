@@ -38,7 +38,7 @@ export default function ContactPage() {
             <ul className="space-y-5 text-slate-600">
               <li className="flex gap-3">
                 <MapPin className="text-primary shrink-0" size={18} />
-                <span>Konza Technopolis, Kenya</span>
+                <span>Technopolis Development Authority, Kenya</span>
               </li>
               <li className="flex gap-3">
                 <Mail className="text-primary shrink-0" size={18} />

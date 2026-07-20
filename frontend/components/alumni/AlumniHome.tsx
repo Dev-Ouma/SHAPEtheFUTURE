@@ -472,7 +472,7 @@ export default function AlumniHome() {
                         <div className="p-4 bg-white shadow-xl text-primary rounded-full"><Globe size={20}/></div>
                         <div>
                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{t("headquarters")}</p>
-                           <p className="text-lg font-black text-primary-dark">{settings.alumni_support_office || "Konza Technopolis, OUK Hub"}</p>
+                           <p className="text-lg font-black text-primary-dark">{settings.alumni_support_office || "Technopolis Development Authority, OUK Hub"}</p>
                         </div>
                      </div>
                   </div>

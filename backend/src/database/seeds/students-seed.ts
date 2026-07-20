@@ -145,7 +145,7 @@ export const runStudentsSeed = async (dataSource: DataSource) => {
       description: 'Empowering the next generation of digital leaders.',
       date: new Date('2026-07-15'),
       type: 'Activity',
-      location: 'Konza Technopolis',
+      location: 'Technopolis Development Authority',
     },
   ];
 

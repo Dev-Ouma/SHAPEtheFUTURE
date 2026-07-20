@@ -219,7 +219,7 @@ export class SeedCmsBodyLocaleSw1782600000000 implements MigrationInterface {
       [
         'Does OUK have a physical campus?',
         'Je, OUK ina kampasi ya kimwili?',
-        'Makao makuu yetu yako Konza Technopolis, lakini chuo ni hasa cha mtandaoni.',
+        'Makao makuu yetu yako Technopolis Development Authority, lakini chuo ni hasa cha mtandaoni.',
       ],
       [
         'When is the next intake?',
