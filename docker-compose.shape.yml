@@ -11,7 +11,7 @@ services:
       - "5433:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-shape_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shape_dev_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: ${POSTGRES_DB:-shape_db}
     volumes:
       - shape_postgres_data:/var/lib/postgresql/data

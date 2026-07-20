@@ -61,13 +61,19 @@ export const runSeed = async (dataSource: DataSource) => {
     );
   }
 
-  // 0. Seed Users
-  const adminEmail = 'admin@ouk.ac.ke';
+  // 0. Seed Users — password from env only (never hardcode)
+  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@ouk.ac.ke';
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!adminPassword || adminPassword.length < 10) {
+    throw new Error(
+      'Set SEED_ADMIN_PASSWORD (min 10 chars) before seeding. Do not commit passwords.',
+    );
+  }
   const existingAdmin = await userRepo.findOne({
     where: { email: adminEmail },
     withDeleted: true,
   });
-  const adminPasswordHash = await bcrypt.hash('Admin123!', 10);
+  const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
   if (!existingAdmin) {
     await userRepo.save(
       userRepo.create({
@@ -79,7 +85,6 @@ export const runSeed = async (dataSource: DataSource) => {
       }),
     );
   } else {
-    // Keep admin@ouk.ac.ke password aligned with current portal credentials.
     existingAdmin.password = adminPasswordHash;
     existingAdmin.deleted_at = null as any;
     existingAdmin.is_active = true;

@@ -30,10 +30,16 @@ export const runShapeSeed = async (dataSource: DataSource) => {
   const settingRepo = dataSource.getRepository(Setting);
   const newsRepo = dataSource.getRepository(News);
 
-  // Admin CMS login (as specified for SHAPE portal)
+  // Admin CMS login — password MUST come from env (never hardcode secrets)
   console.log('Seeding SHAPE admin user...');
-  const adminEmail = 'admin@ouk.ac.ke';
-  const adminPasswordHash = await bcrypt.hash('Admin123!', 10);
+  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@ouk.ac.ke';
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!adminPassword || adminPassword.length < 10) {
+    throw new Error(
+      'Set SEED_ADMIN_PASSWORD (min 10 chars) in the environment before running the seed. Do not commit passwords.',
+    );
+  }
+  const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
   let admin = await userRepo.findOne({
     where: { email: adminEmail },
     withDeleted: true,

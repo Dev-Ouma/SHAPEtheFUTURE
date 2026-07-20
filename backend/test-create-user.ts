@@ -12,11 +12,15 @@ async function run() {
 
   await AppDataSource.initialize();
   const repo = AppDataSource.getRepository(User);
+  const testPassword = process.env.SEED_TEST_PASSWORD;
+  if (!testPassword || testPassword.length < 10) {
+    throw new Error("Set SEED_TEST_PASSWORD (min 10 chars). Do not hardcode passwords.");
+  }
   try {
     const user = repo.create({
       email: "test_staff_creation3@ouk.ac.ke",
       username: "test_staff_creation3",
-      password: await bcrypt.hash("123456", 10),
+      password: await bcrypt.hash(testPassword, 10),
       full_name: "Test Staff",
       role_legacy: "viewer" as any,
       user_type: "staff" as any,

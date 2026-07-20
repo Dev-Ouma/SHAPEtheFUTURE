@@ -149,12 +149,15 @@ cd frontend && npm install && npm run dev
 
 ### Seed admin (local)
 
-| Field | Value |
-|-------|--------|
-| Email | `admin@ouk.ac.ke` |
-| Password | `Admin123!` |
+Set a password in your environment before seeding — never commit it:
 
-Change this password before any production deployment.
+```bash
+export SEED_ADMIN_EMAIL=admin@ouk.ac.ke
+export SEED_ADMIN_PASSWORD='your-strong-local-password'
+cd backend && npm run seed:shape
+```
+
+Use that same email/password to sign in at `/admin`. Change credentials for any shared or production environment.
 
 ---
 

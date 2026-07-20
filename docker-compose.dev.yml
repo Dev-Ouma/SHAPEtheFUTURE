@@ -2,11 +2,12 @@
 #   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 #
 # Prefer copying .env.example → .env with real secrets instead of relying on these.
+# No default passwords — set POSTGRES_PASSWORD and JWT_SECRET in .env.
 
 services:
   postgres:
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ouk_dev_only_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
 
   backend:
     environment:
@@ -15,12 +16,12 @@ services:
       - FORBID_NON_WHITELISTED=${FORBID_NON_WHITELISTED:-false}
       - RUN_MIGRATIONS_ON_START=${RUN_MIGRATIONS_ON_START:-false}
       - AUTH_COOKIE_SECURE=${AUTH_COOKIE_SECURE:-false}
-      - DB_PASSWORD=${POSTGRES_PASSWORD:-ouk_dev_only_password}
-      - JWT_SECRET=${JWT_SECRET:-ouk_dev_only_jwt_change_me}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET in .env}
 
   ai-service:
     environment:
-      - DB_PASSWORD=${POSTGRES_PASSWORD:-ouk_dev_only_password}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
 
   frontend:
     environment:
