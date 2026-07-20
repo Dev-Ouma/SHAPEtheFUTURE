@@ -9,6 +9,7 @@ import { ShapeKpi } from '../../shape/entities/shape-kpi.entity';
 import { ShapeRisk } from '../../shape/entities/shape-risk.entity';
 import { ShapeSdlcStage } from '../../shape/entities/shape-sdlc-stage.entity';
 import { User, UserRole, UserType, AccountStatus } from '../../auth/entities/user.entity';
+import { Role } from '../../auth/entities/role.entity';
 import { Setting } from '../../settings/entities/setting.entity';
 import { News } from '../../news/entities/news.entity';
 import { PublishStatus } from '../../common/enums/publish-status.enum';
@@ -18,6 +19,24 @@ import { PublishStatus } from '../../common/enums/publish-status.enum';
  * Safe to re-run: partners by slug, WPs by code, KPIs by key, SDLC by slug.
  */
 export const runShapeSeed = async (dataSource: DataSource) => {
+  // Ensure new UserRole enum values exist (Postgres) before inserting users
+  try {
+    await dataSource.query(`
+      DO $$ BEGIN
+        ALTER TYPE users_role_legacy_enum ADD VALUE IF NOT EXISTS 'partner_institution';
+      EXCEPTION WHEN undefined_object THEN NULL;
+      END $$;
+    `);
+    await dataSource.query(`
+      DO $$ BEGIN
+        ALTER TYPE users_role_legacy_enum ADD VALUE IF NOT EXISTS 'grant_funder';
+      EXCEPTION WHEN undefined_object THEN NULL;
+      END $$;
+    `);
+  } catch (e: any) {
+    console.warn('Enum alter skipped:', e?.message || e);
+  }
+
   const partnerRepo = dataSource.getRepository(PartnerInstitution);
   const wpRepo = dataSource.getRepository(WorkPackage);
   const eventRepo = dataSource.getRepository(ShapeEvent);
@@ -974,6 +993,70 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       });
     }
     await newsRepo.save(article);
+  }
+
+  // Optional partner-scoped demo user (env-gated; never hardcode password)
+  const partnerEmail = process.env.SEED_PARTNER_EMAIL;
+  const partnerPassword = process.env.SEED_PARTNER_PASSWORD;
+  if (partnerEmail && partnerPassword && partnerPassword.length >= 10) {
+    console.log('Seeding SHAPE partner institution user...');
+    const roleRepo = dataSource.getRepository(Role);
+    const partnerRole = await roleRepo.findOne({
+      where: { name: 'Partner Institution' },
+    });
+    const linkedPartner =
+      partnersBySlug['open-university-of-kenya'] ||
+      Object.values(partnersBySlug)[0];
+    if (partnerRole && linkedPartner) {
+      const hash = await bcrypt.hash(partnerPassword, 10);
+      const email = partnerEmail.toLowerCase();
+      let partnerUser = await userRepo.findOne({
+        where: { email },
+        withDeleted: true,
+        select: [
+          'id',
+          'email',
+          'password',
+          'full_name',
+          'is_active',
+          'deleted_at',
+          'partner_institution_id',
+        ],
+      });
+      if (!partnerUser) {
+        partnerUser = await userRepo.save(
+          userRepo.create({
+            email,
+            username: email.split('@')[0],
+            password: hash,
+            full_name: 'SHAPE Partner User',
+            role_legacy: UserRole.PARTNER_INSTITUTION,
+            user_type: UserType.EXTERNAL,
+            account_status: AccountStatus.ACTIVE,
+            is_active: true,
+            partner_institution_id: linkedPartner.id,
+            last_password_change_at: new Date(),
+            role: partnerRole,
+          }),
+        );
+      } else {
+        partnerUser.password = hash;
+        partnerUser.deleted_at = null as any;
+        partnerUser.is_active = true;
+        partnerUser.role_legacy = UserRole.PARTNER_INSTITUTION;
+        partnerUser.partner_institution_id = linkedPartner.id;
+        partnerUser.last_password_change_at = new Date();
+        partnerUser.role = partnerRole;
+        await userRepo.save(partnerUser);
+      }
+      console.log(
+        `Partner user linked to ${linkedPartner.short_name || linkedPartner.name}`,
+      );
+    }
+  } else {
+    console.log(
+      'Skipping partner user seed (set SEED_PARTNER_EMAIL + SEED_PARTNER_PASSWORD to create one).',
+    );
   }
 
   console.log('SHAPE seed completed successfully.');

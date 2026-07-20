@@ -9,6 +9,7 @@ export default function ShapePartnersAdmin() {
       subtitle="Manage SHAPE consortium institutions"
       resource="partners"
       columns={[
+        { key: "logo_url", label: "Logo" },
         { key: "name", label: "Name" },
         { key: "short_name", label: "Short" },
         { key: "country", label: "Country" },
@@ -27,7 +28,7 @@ export default function ShapePartnersAdmin() {
           type: "select",
           options: ["east_africa", "europe"],
         },
-        { key: "logo_url", label: "Logo URL" },
+        { key: "logo_url", label: "Logo", type: "image" },
         { key: "website_url", label: "Website URL" },
         { key: "contact_person", label: "Contact person" },
         { key: "contact_email", label: "Contact email" },

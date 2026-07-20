@@ -3,12 +3,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Search, Edit2, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { deleteApi, getApi, patchApi, postApi } from "@/lib/api";
+import { deleteApi, getApi, patchApi, postApi, resolveImageUrl } from "@/lib/api";
+import ImageUploader from "@/components/admin/ImageUploader";
 
 export type ShapeAdminField = {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "number" | "select";
+  type?: "text" | "textarea" | "number" | "select" | "image";
   options?: string[];
   required?: boolean;
 };
@@ -263,7 +264,15 @@ export default function ShapeAdminCrud({
                   <tr key={item.id || JSON.stringify(item)} className="border-t border-slate-50 hover:bg-slate-50/50">
                     {columns.map((c) => (
                       <td key={c.key} className="px-5 py-4 text-sm text-slate-700 max-w-xs truncate">
-                        {displayCell(item[c.key])}
+                        {c.key === "logo_url" && item[c.key] ? (
+                          <img
+                            src={resolveImageUrl(item[c.key])}
+                            alt=""
+                            className="h-8 w-auto max-w-[120px] object-contain"
+                          />
+                        ) : (
+                          displayCell(item[c.key])
+                        )}
                       </td>
                     ))}
                     <td className="px-5 py-4 text-right whitespace-nowrap">
@@ -308,41 +317,51 @@ export default function ShapeAdminCrud({
             <div className="p-6 space-y-4">
               {fields.map((f) => (
                 <label key={f.key} className="block space-y-1.5">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    {f.label}
-                    {f.required ? " *" : ""}
-                  </span>
-                  {f.type === "textarea" ? (
-                    <textarea
-                      className="w-full border border-slate-200 px-3 py-2 text-sm min-h-[100px] outline-none focus:border-primary"
+                  {f.type === "image" ? (
+                    <ImageUploader
+                      label={`${f.label}${f.required ? " *" : ""}`}
                       value={current[f.key] ?? ""}
-                      onChange={(e) => setCurrent((p) => ({ ...p, [f.key]: e.target.value }))}
+                      onChange={(val) => setCurrent((p) => ({ ...p, [f.key]: val }))}
                     />
-                  ) : f.type === "select" ? (
-                    <select
-                      className="w-full border border-slate-200 px-3 py-2 text-sm outline-none focus:border-primary"
-                      value={current[f.key] ?? ""}
-                      onChange={(e) => setCurrent((p) => ({ ...p, [f.key]: e.target.value }))}
-                    >
-                      <option value="">Select…</option>
-                      {(f.options || []).map((o) => (
-                        <option key={o} value={o}>
-                          {o}
-                        </option>
-                      ))}
-                    </select>
                   ) : (
-                    <input
-                      type={f.type === "number" ? "number" : "text"}
-                      className="w-full border border-slate-200 px-3 py-2 text-sm outline-none focus:border-primary"
-                      value={current[f.key] ?? ""}
-                      onChange={(e) =>
-                        setCurrent((p) => ({
-                          ...p,
-                          [f.key]: f.type === "number" ? Number(e.target.value) : e.target.value,
-                        }))
-                      }
-                    />
+                    <>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        {f.label}
+                        {f.required ? " *" : ""}
+                      </span>
+                      {f.type === "textarea" ? (
+                        <textarea
+                          className="w-full border border-slate-200 px-3 py-2 text-sm min-h-[100px] outline-none focus:border-primary"
+                          value={current[f.key] ?? ""}
+                          onChange={(e) => setCurrent((p) => ({ ...p, [f.key]: e.target.value }))}
+                        />
+                      ) : f.type === "select" ? (
+                        <select
+                          className="w-full border border-slate-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                          value={current[f.key] ?? ""}
+                          onChange={(e) => setCurrent((p) => ({ ...p, [f.key]: e.target.value }))}
+                        >
+                          <option value="">Select…</option>
+                          {(f.options || []).map((o) => (
+                            <option key={o} value={o}>
+                              {o}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type={f.type === "number" ? "number" : "text"}
+                          className="w-full border border-slate-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                          value={current[f.key] ?? ""}
+                          onChange={(e) =>
+                            setCurrent((p) => ({
+                              ...p,
+                              [f.key]: f.type === "number" ? Number(e.target.value) : e.target.value,
+                            }))
+                          }
+                        />
+                      )}
+                    </>
                   )}
                 </label>
               ))}

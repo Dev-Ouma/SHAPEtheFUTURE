@@ -35,7 +35,7 @@ const statusDot: Record<string, string> = {
   active: "bg-teal-500", pending: "bg-amber-500", suspended: "bg-rose-500",
 };
 
-const BLANK_FORM = { fullName: "", email: "", username: "", userType: "staff", department: "", school: "", phone_number: "", roleId: "", allowedPermissionIds: [] as string[], deniedPermissionIds: [] as string[] };
+const BLANK_FORM = { fullName: "", email: "", username: "", userType: "staff", department: "", school: "", phone_number: "", roleId: "", partnerInstitutionId: "", allowedPermissionIds: [] as string[], deniedPermissionIds: [] as string[] };
 
 export default function UsersPage() {
   return (
@@ -73,6 +73,7 @@ function UsersPageInner() {
   // Dynamic Options
   const [schoolOptions, setSchoolOptions] = useState<{label: string, value: string}[]>([]);
   const [deptOptions, setDeptOptions] = useState<{label: string, value: string}[]>([]);
+  const [partnerOptions, setPartnerOptions] = useState<{label: string, value: string}[]>([]);
 
   // ── Fetch ──────────────────────────────────────────────────────────────
   const fetchUsers = useCallback(async () => {
@@ -92,6 +93,17 @@ function UsersPageInner() {
   useEffect(() => {
     getApi("/admin/roles").then(r => r && setRoles(r));
     getApi("/admin/roles/permissions").then(r => r && setAllPerms(r));
+    getApi("/shape/partners/admin")
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.data || [];
+        setPartnerOptions(
+          list.map((p: any) => ({
+            label: p.short_name || p.name,
+            value: p.id,
+          })),
+        );
+      })
+      .catch(() => setPartnerOptions([]));
   }, []);
 
   const fetchMetadata = async () => {
@@ -124,6 +136,7 @@ function UsersPageInner() {
       school: user.school || "",
       phone_number: user.phone_number || "",
       roleId: user.role?.id || "",
+      partnerInstitutionId: user.partner_institution_id || "",
       allowedPermissionIds: (user.allowedPermissions || []).map((p: any) => p.id),
       deniedPermissionIds:  (user.deniedPermissions  || []).map((p: any) => p.id),
     });
@@ -158,6 +171,7 @@ function UsersPageInner() {
       school: form.school,
       phone_number: form.phone_number,
       roleId: form.roleId || undefined,
+      partner_institution_id: form.partnerInstitutionId || null,
       allowedPermissionIds: form.allowedPermissionIds,
       deniedPermissionIds:  form.deniedPermissionIds,
     };
@@ -632,6 +646,21 @@ function UsersPageInner() {
                     </label>
                   ))}
                 </div>
+              </div>
+
+              {/* SHAPE partner link (for Partner Institution role) */}
+              <div className="space-y-1.5 flex flex-col">
+                <CustomSelect
+                  label="SHAPE Partner Institution"
+                  options={[{ label: "None", value: "" }, ...partnerOptions]}
+                  value={form.partnerInstitutionId}
+                  onChange={(val) => setForm(f => ({ ...f, partnerInstitutionId: val }))}
+                  placeholder="Link to consortium partner (optional)"
+                  className="w-full"
+                />
+                <p className="text-[10px] text-slate-400">
+                  Required for Partner Institution users — scopes CMS edits to that organisation only.
+                </p>
               </div>
 
               {/* Permission Overrides */}

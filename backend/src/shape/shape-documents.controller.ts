@@ -8,10 +8,13 @@ import {
   Delete,
   Query,
   UseGuards,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Public } from '../common/decorators/public.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { PartnerScopeGuard } from '../auth/guards/partner-scope.guard';
 import { RequirePermission } from '../auth/decorators/permissions.decorator';
 import { ShapeDocumentsService } from './shape-documents.service';
 import {
@@ -30,11 +33,15 @@ export class ShapeDocumentsController {
     return this.service.findAll(false, category);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard, PartnerScopeGuard)
   @RequirePermission([...SHAPE_VIEW_PERMS])
   @Get('admin')
-  findAllAdmin(@Query('category') category?: string) {
-    return this.service.findAll(true, category);
+  findAllAdmin(@Req() req: any, @Query('category') category?: string) {
+    return this.service.findAll(
+      true,
+      category,
+      req.partnerScopeId || undefined,
+    );
   }
 
   @Public()
@@ -43,27 +50,46 @@ export class ShapeDocumentsController {
     return this.service.findOne(identifier, false);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard, PartnerScopeGuard)
   @RequirePermission([...SHAPE_MANAGE_PERMS])
   @Post()
-  create(@Body() dto: CreateShapeDocumentDto) {
+  create(@Req() req: any, @Body() dto: CreateShapeDocumentDto) {
+    if (req.partnerScopeId) {
+      dto.partner_id = req.partnerScopeId;
+    }
     return this.service.create(dto);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard, PartnerScopeGuard)
   @RequirePermission([...SHAPE_MANAGE_PERMS])
   @Patch(':id')
-  update(
+  async update(
+    @Req() req: any,
     @Param('id') id: string,
     @Body() dto: Partial<CreateShapeDocumentDto>,
   ) {
+    await this.assertOwnsDocument(req, id);
+    if (req.partnerScopeId) {
+      dto.partner_id = req.partnerScopeId;
+    }
     return this.service.update(id, dto);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard, PartnerScopeGuard)
   @RequirePermission([...SHAPE_MANAGE_PERMS])
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Req() req: any, @Param('id') id: string) {
+    await this.assertOwnsDocument(req, id);
     return this.service.remove(id);
+  }
+
+  private async assertOwnsDocument(req: any, id: string) {
+    if (!req.partnerScopeId) return;
+    const doc = await this.service.findOne(id, true);
+    if (doc.partner_id !== req.partnerScopeId) {
+      throw new ForbiddenException(
+        'You can only manage documents for your institution.',
+      );
+    }
   }
 }

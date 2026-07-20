@@ -14,6 +14,7 @@ import {
 import { StaffMember } from '../../staff/entities/staff-member.entity';
 import { Role } from './role.entity';
 import { AppPermission } from './app-permission.entity';
+import { PartnerInstitution } from '../../shape/entities/partner-institution.entity';
 
 export enum UserRole {
   SUPER_ADMIN = 'super_admin',
@@ -25,6 +26,8 @@ export enum UserRole {
   FACULTY = 'faculty',
   HELPDESK = 'helpdesk',
   CONTENT_MANAGER = 'content_manager',
+  PARTNER_INSTITUTION = 'partner_institution',
+  GRANT_FUNDER = 'grant_funder',
 }
 
 export enum UserType {
@@ -151,6 +154,14 @@ export class User {
   @OneToOne(() => StaffMember, { nullable: true })
   @JoinColumn({ name: 'staff_member_id' })
   staff_member: StaffMember;
+
+  /** SHAPE partner institution this user represents (partner_institution role). */
+  @Column({ type: 'uuid', nullable: true })
+  partner_institution_id: string | null;
+
+  @ManyToOne(() => PartnerInstitution, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'partner_institution_id' })
+  partner_institution: PartnerInstitution;
 
   @DeleteDateColumn()
   deleted_at: Date;

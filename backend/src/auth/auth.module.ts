@@ -14,6 +14,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { MailModule } from '../mail/mail.module';
 
 import { PermissionsGuard } from './guards/permissions.guard';
+import { PartnerScopeGuard } from './guards/partner-scope.guard';
 import { WsJwtGuard } from './guards/ws-jwt.guard';
 import { AuditInterceptor } from './interceptors/audit.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
@@ -44,6 +45,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     AuthService,
     JwtStrategy,
     PermissionsGuard,
+    PartnerScopeGuard,
     WsJwtGuard,
     {
       provide: APP_INTERCEPTOR,
@@ -51,7 +53,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     },
   ],
   controllers: [AuthController, RolesController],
-  exports: [AuthService, PermissionsGuard, WsJwtGuard],
+  exports: [AuthService, PermissionsGuard, PartnerScopeGuard, WsJwtGuard],
 })
 export class AuthModule {
   constructor() {

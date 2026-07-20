@@ -11,7 +11,7 @@ export class ShapeDocumentsService {
     private readonly repo: Repository<ShapeDocument>,
   ) {}
 
-  async findAll(admin = false, category?: string) {
+  async findAll(admin = false, category?: string, partnerScopeId?: string) {
     const qb = this.repo
       .createQueryBuilder('d')
       .leftJoinAndSelect('d.work_package', 'wp')
@@ -20,6 +20,9 @@ export class ShapeDocumentsService {
     if (!admin) {
       qb.andWhere('d.is_published = :pub', { pub: true });
       qb.andWhere('d.is_public = :isPublic', { isPublic: true });
+    }
+    if (admin && partnerScopeId) {
+      qb.andWhere('d.partner_id = :partnerScopeId', { partnerScopeId });
     }
     if (category) {
       qb.andWhere('d.category = :category', { category });

@@ -11,8 +11,11 @@ export class ShapePartnersService {
     private readonly repo: Repository<PartnerInstitution>,
   ) {}
 
-  async findAll(admin = false) {
-    const where = admin ? {} : { is_published: true };
+  async findAll(admin = false, partnerScopeId?: string) {
+    const where: any = admin ? {} : { is_published: true };
+    if (admin && partnerScopeId) {
+      where.id = partnerScopeId;
+    }
     return this.repo.find({
       where,
       order: { sort_order: 'ASC', name: 'ASC' },

@@ -11,7 +11,7 @@ export class ShapeEventsService {
     private readonly repo: Repository<ShapeEvent>,
   ) {}
 
-  async findAll(admin = false, status?: string) {
+  async findAll(admin = false, status?: string, partnerScopeId?: string) {
     const qb = this.repo
       .createQueryBuilder('e')
       .leftJoinAndSelect('e.host_partner', 'host')
@@ -19,6 +19,9 @@ export class ShapeEventsService {
       .orderBy('e.event_date', 'DESC');
     if (!admin) {
       qb.andWhere('e.is_published = :pub', { pub: true });
+    }
+    if (admin && partnerScopeId) {
+      qb.andWhere('e.host_partner_id = :partnerScopeId', { partnerScopeId });
     }
     if (status) {
       qb.andWhere('e.status = :status', { status });

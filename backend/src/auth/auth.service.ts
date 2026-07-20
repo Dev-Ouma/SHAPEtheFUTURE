@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException, ConflictException, NotFoundException
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { Role } from './entities/role.entity';
 import { AppPermission } from './entities/app-permission.entity';
 import { AuditLog } from './entities/audit-log.entity';
@@ -183,7 +183,7 @@ export class AuthService {
     return provisioning;
   }
 
-  async register(data: { email: string, fullName: string, username?: string, role?: string, roleId?: string, userType?: string, department?: string, school?: string, phone_number?: string }): Promise<{ user: User; provisioning: UserProvisioningDetails }> {
+  async register(data: { email: string, fullName: string, username?: string, role?: string, roleId?: string, userType?: string, department?: string, school?: string, phone_number?: string, partner_institution_id?: string | null }): Promise<{ user: User; provisioning: UserProvisioningDetails }> {
     const normalizedEmail = data.email.trim().toLowerCase();
     // Generate secure random alphanumeric password (12 chars)
     const otp = randomBytes(6).toString('hex');
@@ -248,13 +248,21 @@ export class AuthService {
       department: data.department,
       school: data.school,
       phone_number: data.phone_number,
+      partner_institution_id: data.partner_institution_id || null,
       account_status: 'active',
       provisioned_password_expires_at: expiresAt,
     };
 
     if (data.roleId) {
       const roleEntity = await this.roleRepository.findOne({ where: { id: data.roleId } });
-      if (roleEntity) payload.role = roleEntity;
+      if (roleEntity) {
+        payload.role = roleEntity;
+        if (roleEntity.name === 'Partner Institution') {
+          payload.role_legacy = UserRole.PARTNER_INSTITUTION;
+        } else if (roleEntity.name === 'Grant Funder') {
+          payload.role_legacy = UserRole.GRANT_FUNDER;
+        }
+      }
     }
 
     const user = this.userRepository.create(payload);
@@ -490,8 +498,17 @@ export class AuthService {
       const role = await this.roleRepository.findOne({ where: { id: (updateData as any).roleId } });
       if (role) {
         user.role = role;
+        if (role.name === 'Partner Institution') {
+          user.role_legacy = UserRole.PARTNER_INSTITUTION;
+        } else if (role.name === 'Grant Funder') {
+          user.role_legacy = UserRole.GRANT_FUNDER;
+        }
       }
       delete (updateData as any).roleId;
+    }
+
+    if ((updateData as any).partner_institution_id === '') {
+      (updateData as any).partner_institution_id = null;
     }
 
     // Handle Manual Overrides
@@ -643,6 +660,25 @@ export class AuthService {
       },
       { name: 'Institutional Viewer', slug: 'viewer', is_system: true, pSlugs: ['dashboard.view'] },
       {
+        name: 'Partner Institution',
+        slug: 'partner_institution',
+        is_system: true,
+        pSlugs: [
+          'dashboard.view',
+          'shape.view',
+          'shape.manage',
+        ],
+      },
+      {
+        name: 'Grant Funder',
+        slug: 'grant_funder',
+        is_system: true,
+        pSlugs: [
+          'dashboard.view',
+          'shape.view',
+        ],
+      },
+      {
         name: 'Service Desk Manager',
         slug: 'service_desk_manager',
         is_system: true,
@@ -787,6 +823,14 @@ export class AuthService {
       if (rCfg.name === 'Service Desk Manager') {
         role.description =
           'Service Desk Manager — both Helpdesk and ICT lanes, plus elevated ICT tooling (status, KB, password desk)';
+      }
+      if (rCfg.name === 'Partner Institution') {
+        role.description =
+          'SHAPE partner institution user — manage own institution profile, events, and documents';
+      }
+      if (rCfg.name === 'Grant Funder') {
+        role.description =
+          'Erasmus+ / grant funder — read-only access to SHAPE dashboards and project data';
       }
       await this.roleRepository.save(role);
     }
