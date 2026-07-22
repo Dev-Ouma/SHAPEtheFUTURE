@@ -7,7 +7,7 @@ Erasmus+ **Grant Management & Dissemination Portal** for *Strengthening Higher E
 | **Website** | https://shape.ouk.ac.ke |
 | **CMS / Admin** | https://shape.ouk.ac.ke/admin |
 
-Stack heritage: [OUK-Websites](https://github.com/DevMwarabu/OUK-Websites). **Production deploy:** [DEPLOYMENT.md](./DEPLOYMENT.md).
+Stack heritage: [OUK-Websites](https://github.com/DevMwarabu/OUK-Websites). **Production deploy:** [DEPLOYMENT.md](./DEPLOYMENT.md). **PMIS/GMIS capability map:** [docs/shape-pmis-gmis.md](./docs/shape-pmis-gmis.md).
 
 ---
 
@@ -101,7 +101,7 @@ shapethefuture/
 ├── frontend/                 # Next.js public site + /admin CMS
 ├── backend/                  # NestJS API + TypeORM entities
 │   └── src/shape/            # SHAPE domain (partners, WPs, events, KPIs…)
-├── docs/                     # Deploy hygiene + edge/TLS notes
+├── docs/                     # Deploy hygiene, edge/TLS, PMIS/GMIS capability map
 ├── DEPLOYMENT.md             # Production cutover guide
 ├── docker-compose.yml        # Full stack (prod-oriented)
 ├── docker-compose.prod.yml   # Bake FE public env in image
@@ -160,6 +160,8 @@ If an admin user already exists, seed can run without rotating the password (set
 ---
 
 ## Public portal routes
+
+Primary navigation is **complete** (Home → Contact). Capability status vs a full GMIS: [docs/shape-pmis-gmis.md](./docs/shape-pmis-gmis.md).
 
 | Path | Purpose |
 |------|---------|

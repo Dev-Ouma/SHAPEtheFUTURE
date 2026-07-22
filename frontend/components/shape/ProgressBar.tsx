@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useInView, useReducedMotion } from "framer-motion";
 
 type Props = {
   value: number;
@@ -10,11 +11,36 @@ type Props = {
 
 export default function ProgressBar({ value, className = "", tone = "primary" }: Props) {
   const pct = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.6 });
+  const reduce = useReducedMotion();
+  const [width, setWidth] = useState(reduce ? pct : 0);
+
+  useEffect(() => {
+    if (reduce) {
+      setWidth(pct);
+      return;
+    }
+    if (inView) setWidth(pct);
+  }, [inView, pct, reduce]);
+
   return (
-    <div className={`progress-bar ${className}`} role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+    <div
+      ref={ref}
+      className={`progress-bar ${className}`}
+      role="progressbar"
+      aria-valuenow={pct}
+      aria-valuemin={0}
+      aria-valuemax={100}
+    >
       <div
-        className={tone === "secondary" ? "progress-bar-fill-secondary" : "progress-bar-fill"}
-        style={{ width: `${pct}%` }}
+        className={
+          tone === "secondary" ? "progress-bar-fill-secondary" : "progress-bar-fill"
+        }
+        style={{
+          width: `${width}%`,
+          transition: reduce ? undefined : "width 1s cubic-bezier(0.22, 1, 0.36, 1)",
+        }}
       />
     </div>
   );

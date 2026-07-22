@@ -9,6 +9,7 @@ import ShapePartnersStrip from "@/components/shape/ShapePartnersStrip";
 import ProjectInfoCard from "@/components/shape/ProjectInfoCard";
 import HomeObjectives from "@/components/shape/HomeObjectives";
 import EuFundingBadge from "@/components/shape/EuFundingBadge";
+import ShapeReveal from "@/components/shape/ShapeReveal";
 import {
   getShapeDashboard,
   getShapePartners,
@@ -58,11 +59,11 @@ export default async function Home({ params }: { params: { locale: string } }) {
     .slice(0, 3);
 
   const stats = [
-    { value: dashboard.project_years, label: "Year project" },
+    { value: dashboard.project_years, label: "Years" },
     { value: dashboard.countries, label: "Countries" },
     { value: dashboard.universities, label: "Universities" },
     { value: dashboard.work_packages, label: "Work packages" },
-    { value: dashboard.events_held, label: "Events" },
+    { value: dashboard.events_held, label: "Events held" },
     {
       value: `${dashboard.deliverables_done}/${dashboard.deliverables_total}`,
       label: "Deliverables",
@@ -82,7 +83,7 @@ export default async function Home({ params }: { params: { locale: string } }) {
 
       <section className="shape-section">
         <div className="container mx-auto px-6 grid lg:grid-cols-12 gap-10 lg:gap-12 items-start">
-          <div className="lg:col-span-7 space-y-6">
+          <ShapeReveal className="lg:col-span-7 space-y-6">
             <div>
               <p className="shape-eyebrow mb-4">The project</p>
               <h2 className="text-3xl md:text-5xl font-serif font-black text-primary-darker uppercase tracking-tight leading-[0.95] mb-6">
@@ -111,10 +112,10 @@ export default async function Home({ params }: { params: { locale: string } }) {
             >
               Learn more <ArrowRight size={14} />
             </Link>
-          </div>
-          <div className="lg:col-span-5">
+          </ShapeReveal>
+          <ShapeReveal className="lg:col-span-5" delay={0.12}>
             <ProjectInfoCard acronym={home.acronym} erasmusCall={home.erasmusCall} />
-          </div>
+          </ShapeReveal>
         </div>
       </section>
 
@@ -122,7 +123,7 @@ export default async function Home({ params }: { params: { locale: string } }) {
 
       <section className="shape-section">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+          <ShapeReveal className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
             <div>
               <p className="shape-eyebrow mb-3">Work packages</p>
               <h2 className="text-3xl md:text-4xl font-serif font-black text-primary-darker uppercase tracking-tight">
@@ -135,7 +136,7 @@ export default async function Home({ params }: { params: { locale: string } }) {
             >
               View all WPs →
             </Link>
-          </div>
+          </ShapeReveal>
           <ShapeWpPreview packages={workPackages.slice(0, 8)} />
         </div>
       </section>
@@ -143,7 +144,7 @@ export default async function Home({ params }: { params: { locale: string } }) {
       {news.length > 0 ? (
         <section className="shape-section">
           <div className="container mx-auto px-6">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+            <ShapeReveal className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
               <div>
                 <p className="shape-eyebrow mb-3">Latest news</p>
                 <h2 className="text-3xl md:text-4xl font-serif font-black text-primary-darker uppercase tracking-tight">
@@ -156,21 +157,22 @@ export default async function Home({ params }: { params: { locale: string } }) {
               >
                 All news →
               </Link>
-            </div>
+            </ShapeReveal>
             <div className="grid md:grid-cols-3 gap-8">
-              {news.map((item: any) => (
-                <Link
-                  key={item.id || item.slug}
-                  href={`/news/${item.slug}`}
-                  className="group border-t-2 border-primary pt-6"
-                >
-                  <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-3">
-                    {item.category || item.type || "Update"}
-                  </p>
-                  <h3 className="font-serif text-xl font-black text-primary-darker uppercase tracking-tight group-hover:text-primary transition-colors line-clamp-3">
-                    {item.title}
-                  </h3>
-                </Link>
+              {news.map((item: any, i: number) => (
+                <ShapeReveal key={item.id || item.slug} delay={i * 0.08}>
+                  <Link
+                    href={`/news/${item.slug}`}
+                    className="group block border-t-2 border-primary pt-6 transition-transform duration-300 hover:-translate-y-1"
+                  >
+                    <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-3">
+                      {item.category || item.type || "Update"}
+                    </p>
+                    <h3 className="font-serif text-xl font-black text-primary-darker uppercase tracking-tight group-hover:text-primary transition-colors line-clamp-3">
+                      {item.title}
+                    </h3>
+                  </Link>
+                </ShapeReveal>
               ))}
             </div>
           </div>
@@ -179,7 +181,7 @@ export default async function Home({ params }: { params: { locale: string } }) {
 
       <section className="shape-section bg-primary-darker text-white">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+          <ShapeReveal className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.4em] text-secondary mb-3">
                 Consortium
@@ -194,34 +196,37 @@ export default async function Home({ params }: { params: { locale: string } }) {
             >
               Meet the partners →
             </Link>
-          </div>
+          </ShapeReveal>
           <ShapePartnersStrip partners={partners} />
         </div>
       </section>
 
       <section className="shape-section">
         <div className="container mx-auto px-6">
-          <p className="shape-eyebrow mb-4">Quick links</p>
-          <h2 className="text-3xl font-serif font-black text-primary-darker uppercase tracking-tight mb-10">
-            Explore the portal
-          </h2>
+          <ShapeReveal>
+            <p className="shape-eyebrow mb-4">Quick links</p>
+            <h2 className="text-3xl font-serif font-black text-primary-darker uppercase tracking-tight mb-10">
+              Explore the portal
+            </h2>
+          </ShapeReveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { href: "/documents", title: "Documents", desc: "Deliverables, reports, templates" },
               { href: "/events", title: "Events", desc: "Meetings, workshops, agendas" },
               { href: "/media", title: "Media", desc: "Press coverage and photo gallery" },
               { href: "/contact", title: "Contact", desc: "Coordinator office & enquiry form" },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="border border-slate-200 p-6 hover:border-primary hover:bg-slate-50 transition-colors"
-              >
-                <h3 className="font-serif text-xl font-black text-primary-darker uppercase mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-slate-500">{item.desc}</p>
-              </Link>
+            ].map((item, i) => (
+              <ShapeReveal key={item.href} delay={i * 0.06}>
+                <Link
+                  href={item.href}
+                  className="block border border-slate-200 p-6 transition-all duration-300 hover:border-primary hover:bg-slate-50 hover:-translate-y-1"
+                >
+                  <h3 className="font-serif text-xl font-black text-primary-darker uppercase mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-slate-500">{item.desc}</p>
+                </Link>
+              </ShapeReveal>
             ))}
           </div>
         </div>

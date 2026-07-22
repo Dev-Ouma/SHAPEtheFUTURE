@@ -76,15 +76,19 @@
   }
 
   .shape-stat {
-    @apply flex flex-col items-start gap-1 border-l-2 border-secondary pl-4 py-1;
+    @apply flex flex-col items-start gap-2 md:px-5 lg:px-6;
+  }
+
+  .shape-stat-index {
+    @apply text-[9px] font-black uppercase tracking-[0.35em] text-secondary;
   }
 
   .shape-stat-value {
-    @apply font-serif text-3xl md:text-4xl font-black text-primary-darker tracking-tight leading-none;
+    @apply font-serif text-4xl md:text-5xl font-black text-primary-darker tracking-tighter leading-none transition-colors duration-300 group-hover:text-primary;
   }
 
   .shape-stat-label {
-    @apply text-[10px] font-black uppercase tracking-[0.25em] text-slate-500;
+    @apply text-[10px] font-black uppercase tracking-[0.22em] text-slate-500 max-w-[9rem] leading-snug;
   }
 
   .progress-bar {
@@ -117,6 +121,58 @@
       radial-gradient(circle at 80% 20%, rgba(3, 123, 144, 0.45), transparent 40%),
       radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
     background-size: auto, auto, 32px 32px;
+  }
+}
+
+/* SHAPE homepage ambient motion — calm, brand-led */
+@keyframes shape-hero-bloom-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-6%, 4%, 0) scale(1.08);
+  }
+}
+
+@keyframes shape-hero-bloom-drift-alt {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(5%, -3%, 0) scale(1.06);
+  }
+}
+
+@keyframes shape-hero-grid-drift {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 48px 48px, 48px 48px;
+  }
+}
+
+.shape-hero-bloom {
+  animation: shape-hero-bloom-drift 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+.shape-hero-bloom-alt {
+  animation: shape-hero-bloom-drift-alt 22s ease-in-out infinite;
+  will-change: transform;
+}
+
+.shape-hero-grid {
+  animation: shape-hero-grid-drift 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shape-hero-bloom,
+  .shape-hero-bloom-alt,
+  .shape-hero-grid {
+    animation: none !important;
   }
 }
 
