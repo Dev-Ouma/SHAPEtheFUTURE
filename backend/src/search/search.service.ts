@@ -3,7 +3,6 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
-import { PublishStatus } from '../common/enums/publish-status.enum';
 import { Program } from '../programs/entities/program.entity';
 import { CourseUnit } from '../programs/entities/course-unit.entity';
 import { News } from '../news/entities/news.entity';
@@ -17,12 +16,23 @@ import { Department } from '../programs/entities/department.entity';
 import { Job } from '../careers/entities/job.entity';
 import { PeerLearner } from '../peer-learners/entities/peer-learner.entity';
 import { Download } from '../downloads/entities/download.entity';
+import { PartnerInstitution } from '../shape/entities/partner-institution.entity';
+import { WorkPackage } from '../shape/entities/work-package.entity';
+import { ShapeEvent } from '../shape/entities/shape-event.entity';
+import { ShapeDocument } from '../shape/entities/shape-document.entity';
+import { ShapeActivity } from '../shape/entities/shape-activity.entity';
+import { ShapeKpi } from '../shape/entities/shape-kpi.entity';
+import { ShapeRisk } from '../shape/entities/shape-risk.entity';
+import { ShapeSdlcStage } from '../shape/entities/shape-sdlc-stage.entity';
+import { ShapeContactMessage } from '../shape/entities/shape-contact-message.entity';
 import { SearchAnalytic } from './entities/search-analytics.entity';
 import { normalizeLocale, pickLocalized, AppLocale } from '../common/locale';
 
 /** Short TTLs: search is query-shaped and CMS content can change. */
 const SEARCH_CACHE_TTL_MS = 30_000;
 const SUGGESTIONS_CACHE_TTL_MS = 45_000;
+/** Bump when indexed sources change so stale Redis/memory entries are ignored. */
+const SEARCH_CACHE_VERSION = 'v2';
 
 @Injectable()
 export class SearchService {
@@ -54,6 +64,24 @@ export class SearchService {
     private readonly peerLearnerRepository: Repository<PeerLearner>,
     @InjectRepository(Download)
     private readonly downloadRepository: Repository<Download>,
+    @InjectRepository(PartnerInstitution)
+    private readonly shapePartnerRepository: Repository<PartnerInstitution>,
+    @InjectRepository(WorkPackage)
+    private readonly shapeWorkPackageRepository: Repository<WorkPackage>,
+    @InjectRepository(ShapeEvent)
+    private readonly shapeEventRepository: Repository<ShapeEvent>,
+    @InjectRepository(ShapeDocument)
+    private readonly shapeDocumentRepository: Repository<ShapeDocument>,
+    @InjectRepository(ShapeActivity)
+    private readonly shapeActivityRepository: Repository<ShapeActivity>,
+    @InjectRepository(ShapeKpi)
+    private readonly shapeKpiRepository: Repository<ShapeKpi>,
+    @InjectRepository(ShapeRisk)
+    private readonly shapeRiskRepository: Repository<ShapeRisk>,
+    @InjectRepository(ShapeSdlcStage)
+    private readonly shapeSdlcRepository: Repository<ShapeSdlcStage>,
+    @InjectRepository(ShapeContactMessage)
+    private readonly shapeContactRepository: Repository<ShapeContactMessage>,
     @InjectRepository(SearchAnalytic)
     private readonly analyticsRepository: Repository<SearchAnalytic>,
   ) {}
@@ -68,8 +96,8 @@ export class SearchService {
     const filterKey = (filter || 'all').toLowerCase();
     const cacheKey =
       q.length < 2
-        ? `search:v1:featured:${locale}`
-        : `search:v1:${locale}:${filterKey}:${q.toLowerCase()}`;
+        ? `search:${SEARCH_CACHE_VERSION}:featured:${locale}`
+        : `search:${SEARCH_CACHE_VERSION}:${locale}:${filterKey}:${q.toLowerCase()}`;
 
     let result = await this.cacheManager.get<any>(cacheKey);
     if (!result) {
@@ -103,19 +131,21 @@ export class SearchService {
     locale: AppLocale,
   ) {
     if (!query || query.length < 2) {
-      const featuredPrograms = await this.programRepository.find({
-        where: {
-          is_featured: true,
-          is_published: true,
-          status: PublishStatus.PUBLISHED,
-        },
-        relations: ['school'],
-        take: 3,
+      const featuredPartners = await this.shapePartnerRepository.find({
+        where: { is_published: true },
+        order: { sort_order: 'ASC' },
+        take: 6,
       });
       return {
-        programs: featuredPrograms.map((p) => this.localizeProgram(p, locale)),
+        programs: [],
         news: [],
         pages: [],
+        partners: featuredPartners,
+        workPackages: [],
+        events: [],
+        documents: [],
+        activities: [],
+        sdlcStages: [],
         featured: true,
       };
     }
@@ -141,6 +171,18 @@ export class SearchService {
       staffCount,
       publications,
       publicationsCount,
+      partners,
+      partnersCount,
+      workPackages,
+      workPackagesCount,
+      events,
+      eventsCount,
+      documents,
+      documentsCount,
+      activities,
+      activitiesCount,
+      sdlcStages,
+      sdlcStagesCount,
     ] = await Promise.all([
       this.programRepository
         .createQueryBuilder('p')
@@ -175,7 +217,7 @@ export class SearchService {
           'sim',
         )
         .where(
-          'n.title ILIKE :likeQuery OR n.title_sw ILIKE :likeQuery OR n.title % :query OR n.category ILIKE :likeQuery',
+          'n.title ILIKE :likeQuery OR n.title_sw ILIKE :likeQuery OR n.title % :query OR n.category ILIKE :likeQuery OR n.summary ILIKE :likeQuery',
           { query, likeQuery },
         )
         .orderBy('sim', 'DESC')
@@ -184,7 +226,7 @@ export class SearchService {
       this.newsRepository
         .createQueryBuilder('n')
         .where(
-          'n.title ILIKE :likeQuery OR n.title_sw ILIKE :likeQuery OR n.title % :query OR n.category ILIKE :likeQuery',
+          'n.title ILIKE :likeQuery OR n.title_sw ILIKE :likeQuery OR n.title % :query OR n.category ILIKE :likeQuery OR n.summary ILIKE :likeQuery',
           { query, likeQuery },
         )
         .getCount(),
@@ -313,6 +355,127 @@ export class SearchService {
           { query, likeQuery },
         )
         .getCount(),
+
+      this.shapePartnerRepository
+        .createQueryBuilder('sp')
+        .addSelect(
+          "GREATEST(similarity(sp.name, :query), similarity(COALESCE(sp.short_name, ''), :query))",
+          'sim',
+        )
+        .where(
+          'sp.name ILIKE :likeQuery OR sp.short_name ILIKE :likeQuery OR sp.name % :query OR sp.country ILIKE :likeQuery OR sp.city ILIKE :likeQuery OR sp.consortium_role ILIKE :likeQuery OR sp.description ILIKE :likeQuery OR sp.responsibilities ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .andWhere('sp.is_published = :isPub', { isPub: true })
+        .orderBy('sim', 'DESC')
+        .take(10)
+        .getMany(),
+      this.shapePartnerRepository
+        .createQueryBuilder('sp')
+        .where(
+          'sp.name ILIKE :likeQuery OR sp.short_name ILIKE :likeQuery OR sp.name % :query OR sp.country ILIKE :likeQuery OR sp.city ILIKE :likeQuery OR sp.consortium_role ILIKE :likeQuery OR sp.description ILIKE :likeQuery OR sp.responsibilities ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .andWhere('sp.is_published = :isPub', { isPub: true })
+        .getCount(),
+
+      this.shapeWorkPackageRepository
+        .createQueryBuilder('wp')
+        .addSelect('similarity(wp.title, :query)', 'sim')
+        .where(
+          'wp.title ILIKE :likeQuery OR wp.code ILIKE :likeQuery OR wp.title % :query OR wp.description ILIKE :likeQuery OR wp.objectives ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .andWhere('wp.is_published = :isPub', { isPub: true })
+        .orderBy('sim', 'DESC')
+        .take(10)
+        .getMany(),
+      this.shapeWorkPackageRepository
+        .createQueryBuilder('wp')
+        .where(
+          'wp.title ILIKE :likeQuery OR wp.code ILIKE :likeQuery OR wp.title % :query OR wp.description ILIKE :likeQuery OR wp.objectives ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .andWhere('wp.is_published = :isPub', { isPub: true })
+        .getCount(),
+
+      this.shapeEventRepository
+        .createQueryBuilder('ev')
+        .addSelect('similarity(ev.title, :query)', 'sim')
+        .where(
+          'ev.title ILIKE :likeQuery OR ev.title % :query OR ev.description ILIKE :likeQuery OR ev.venue ILIKE :likeQuery OR ev.country ILIKE :likeQuery OR ev.outcomes ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .andWhere('ev.is_published = :isPub', { isPub: true })
+        .orderBy('sim', 'DESC')
+        .take(8)
+        .getMany(),
+      this.shapeEventRepository
+        .createQueryBuilder('ev')
+        .where(
+          'ev.title ILIKE :likeQuery OR ev.title % :query OR ev.description ILIKE :likeQuery OR ev.venue ILIKE :likeQuery OR ev.country ILIKE :likeQuery OR ev.outcomes ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .andWhere('ev.is_published = :isPub', { isPub: true })
+        .getCount(),
+
+      this.shapeDocumentRepository
+        .createQueryBuilder('doc')
+        .addSelect('similarity(doc.title, :query)', 'sim')
+        .where(
+          'doc.title ILIKE :likeQuery OR doc.title % :query OR doc.description ILIKE :likeQuery OR doc.category ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .andWhere('doc.is_published = :isPub', { isPub: true })
+        .andWhere('doc.is_public = :isPublic', { isPublic: true })
+        .orderBy('sim', 'DESC')
+        .take(10)
+        .getMany(),
+      this.shapeDocumentRepository
+        .createQueryBuilder('doc')
+        .where(
+          'doc.title ILIKE :likeQuery OR doc.title % :query OR doc.description ILIKE :likeQuery OR doc.category ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .andWhere('doc.is_published = :isPub', { isPub: true })
+        .andWhere('doc.is_public = :isPublic', { isPublic: true })
+        .getCount(),
+
+      this.shapeActivityRepository
+        .createQueryBuilder('act')
+        .addSelect('similarity(act.title, :query)', 'sim')
+        .where(
+          'act.title ILIKE :likeQuery OR act.title % :query OR act.description ILIKE :likeQuery OR act.status ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .orderBy('sim', 'DESC')
+        .take(8)
+        .getMany(),
+      this.shapeActivityRepository
+        .createQueryBuilder('act')
+        .where(
+          'act.title ILIKE :likeQuery OR act.title % :query OR act.description ILIKE :likeQuery OR act.status ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .getCount(),
+
+      this.shapeSdlcRepository
+        .createQueryBuilder('sd')
+        .addSelect('similarity(sd.title, :query)', 'sim')
+        .where(
+          'sd.title ILIKE :likeQuery OR sd.title % :query OR sd.description ILIKE :likeQuery OR sd.objectives ILIKE :likeQuery OR sd.outputs ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .orderBy('sim', 'DESC')
+        .take(6)
+        .getMany(),
+      this.shapeSdlcRepository
+        .createQueryBuilder('sd')
+        .where(
+          'sd.title ILIKE :likeQuery OR sd.title % :query OR sd.description ILIKE :likeQuery OR sd.objectives ILIKE :likeQuery OR sd.outputs ILIKE :likeQuery',
+          { query, likeQuery },
+        )
+        .getCount(),
     ]);
 
     const count =
@@ -323,9 +486,14 @@ export class SearchService {
       menusCount +
       courseUnitsCount +
       staffCount +
-      publicationsCount;
+      publicationsCount +
+      partnersCount +
+      workPackagesCount +
+      eventsCount +
+      documentsCount +
+      activitiesCount +
+      sdlcStagesCount;
 
-    // Calculate true facets for frontend filtering
     const facets = {
       programs: programsCount,
       news: newsCount,
@@ -335,6 +503,12 @@ export class SearchService {
       courseUnits: courseUnitsCount,
       staff: staffCount,
       publications: publicationsCount,
+      partners: partnersCount,
+      workPackages: workPackagesCount,
+      events: eventsCount,
+      documents: documentsCount,
+      activities: activitiesCount,
+      sdlcStages: sdlcStagesCount,
     };
 
     return {
@@ -346,6 +520,12 @@ export class SearchService {
       courseUnits: courseUnits.map((u) => this.localizeCourseUnit(u, locale)),
       staff,
       publications: publications.map((p) => this.localizePublication(p, locale)),
+      partners,
+      workPackages,
+      events,
+      documents,
+      activities,
+      sdlcStages,
       count,
       facets,
     };
@@ -432,7 +612,7 @@ export class SearchService {
     const q = (query || '').trim();
     if (q.length < 2) return [];
 
-    const cacheKey = `search:suggest:v1:${locale}:${q.toLowerCase()}`;
+    const cacheKey = `search:suggest:${SEARCH_CACHE_VERSION}:${locale}:${q.toLowerCase()}`;
     const cached = await this.cacheManager.get<any[]>(cacheKey);
     if (cached) return cached;
 
@@ -446,93 +626,116 @@ export class SearchService {
   }
 
   private async executeSuggestions(query: string, locale: AppLocale) {
-    const [programs, shortCourses, news, pages, staff] = await Promise.all([
-      this.programRepository
-        .createQueryBuilder('p')
-        .select(['p.id', 'p.title', 'p.title_sw', 'p.slug'])
-        .addSelect(
-          "GREATEST(similarity(p.title, :query), similarity(COALESCE(p.title_sw, ''), :query))",
-          'sim',
-        )
-        .where('p.title ILIKE :likeQuery OR p.title_sw ILIKE :likeQuery OR p.title % :query', {
-          query,
-          likeQuery: `%${query}%`,
-        })
-        .andWhere('p.status = :pubStatus', { pubStatus: 'PUBLISHED' })
-        .andWhere('p.is_published = :isPub', { isPub: true })
-        .orderBy('sim', 'DESC')
-        .take(3)
-        .getMany(),
+    const likeQuery = `%${query}%`;
+    const [partners, workPackages, events, documents, news, pages] =
+      await Promise.all([
+        this.shapePartnerRepository
+          .createQueryBuilder('sp')
+          .select(['sp.id', 'sp.name', 'sp.short_name', 'sp.slug', 'sp.country'])
+          .addSelect(
+            "GREATEST(similarity(sp.name, :query), similarity(COALESCE(sp.short_name, ''), :query))",
+            'sim',
+          )
+          .where(
+            'sp.name ILIKE :likeQuery OR sp.short_name ILIKE :likeQuery OR sp.name % :query OR sp.country ILIKE :likeQuery',
+            { query, likeQuery },
+          )
+          .andWhere('sp.is_published = :isPub', { isPub: true })
+          .orderBy('sim', 'DESC')
+          .take(3)
+          .getMany(),
 
-      this.shortCourseRepository
-        .createQueryBuilder('sc')
-        .select(['sc.id', 'sc.title', 'sc.title_sw', 'sc.slug'])
-        .addSelect(
-          "GREATEST(similarity(sc.title, :query), similarity(COALESCE(sc.title_sw, ''), :query))",
-          'sim',
-        )
-        .where('sc.title ILIKE :likeQuery OR sc.title_sw ILIKE :likeQuery OR sc.title % :query', {
-          query,
-          likeQuery: `%${query}%`,
-        })
-        .orderBy('sim', 'DESC')
-        .take(3)
-        .getMany(),
+        this.shapeWorkPackageRepository
+          .createQueryBuilder('wp')
+          .select(['wp.id', 'wp.title', 'wp.code', 'wp.slug'])
+          .addSelect('similarity(wp.title, :query)', 'sim')
+          .where(
+            'wp.title ILIKE :likeQuery OR wp.code ILIKE :likeQuery OR wp.title % :query',
+            { query, likeQuery },
+          )
+          .andWhere('wp.is_published = :isPub', { isPub: true })
+          .orderBy('sim', 'DESC')
+          .take(3)
+          .getMany(),
 
-      this.newsRepository
-        .createQueryBuilder('n')
-        .select(['n.id', 'n.title', 'n.title_sw', 'n.slug'])
-        .addSelect(
-          "GREATEST(similarity(n.title, :query), similarity(COALESCE(n.title_sw, ''), :query))",
-          'sim',
-        )
-        .where('n.title ILIKE :likeQuery OR n.title_sw ILIKE :likeQuery OR n.title % :query', {
-          query,
-          likeQuery: `%${query}%`,
-        })
-        .orderBy('sim', 'DESC')
-        .take(3)
-        .getMany(),
+        this.shapeEventRepository
+          .createQueryBuilder('ev')
+          .select(['ev.id', 'ev.title', 'ev.slug', 'ev.venue'])
+          .addSelect('similarity(ev.title, :query)', 'sim')
+          .where('ev.title ILIKE :likeQuery OR ev.title % :query', {
+            query,
+            likeQuery,
+          })
+          .andWhere('ev.is_published = :isPub', { isPub: true })
+          .orderBy('sim', 'DESC')
+          .take(2)
+          .getMany(),
 
-      this.pageRepository
-        .createQueryBuilder('pg')
-        .select(['pg.id', 'pg.title', 'pg.title_sw', 'pg.slug'])
-        .addSelect(
-          "GREATEST(similarity(pg.title, :query), similarity(COALESCE(pg.title_sw, ''), :query))",
-          'sim',
-        )
-        .where('pg.title ILIKE :likeQuery OR pg.title_sw ILIKE :likeQuery OR pg.title % :query', {
-          query,
-          likeQuery: `%${query}%`,
-        })
-        .orderBy('sim', 'DESC')
-        .take(2)
-        .getMany(),
+        this.shapeDocumentRepository
+          .createQueryBuilder('doc')
+          .select(['doc.id', 'doc.title', 'doc.slug', 'doc.category'])
+          .addSelect('similarity(doc.title, :query)', 'sim')
+          .where('doc.title ILIKE :likeQuery OR doc.title % :query', {
+            query,
+            likeQuery,
+          })
+          .andWhere('doc.is_published = :isPub', { isPub: true })
+          .andWhere('doc.is_public = :isPublic', { isPublic: true })
+          .orderBy('sim', 'DESC')
+          .take(2)
+          .getMany(),
 
-      this.staffRepository
-        .createQueryBuilder('s')
-        .select(['s.id', 's.full_name', 's.job_title', 's.profile_slug'])
-        .addSelect('similarity(s.full_name, :query)', 'sim')
-        .where('s.full_name ILIKE :likeQuery OR s.full_name % :query', {
-          query,
-          likeQuery: `%${query}%`,
-        })
-        .orderBy('sim', 'DESC')
-        .take(2)
-        .getMany(),
-    ]);
+        this.newsRepository
+          .createQueryBuilder('n')
+          .select(['n.id', 'n.title', 'n.title_sw', 'n.slug'])
+          .addSelect(
+            "GREATEST(similarity(n.title, :query), similarity(COALESCE(n.title_sw, ''), :query))",
+            'sim',
+          )
+          .where(
+            'n.title ILIKE :likeQuery OR n.title_sw ILIKE :likeQuery OR n.title % :query',
+            { query, likeQuery },
+          )
+          .orderBy('sim', 'DESC')
+          .take(2)
+          .getMany(),
 
-    // Stable type codes — UI translates via SearchPage/Nav keys.
+        this.pageRepository
+          .createQueryBuilder('pg')
+          .select(['pg.id', 'pg.title', 'pg.title_sw', 'pg.slug'])
+          .addSelect(
+            "GREATEST(similarity(pg.title, :query), similarity(COALESCE(pg.title_sw, ''), :query))",
+            'sim',
+          )
+          .where(
+            'pg.title ILIKE :likeQuery OR pg.title_sw ILIKE :likeQuery OR pg.title % :query',
+            { query, likeQuery },
+          )
+          .orderBy('sim', 'DESC')
+          .take(1)
+          .getMany(),
+      ]);
+
     return [
-      ...programs.map((p) => ({
-        type: 'programme',
-        label: pickLocalized(locale, p.title, (p as any).title_sw),
-        href: `/programmes/${p.slug}`,
+      ...partners.map((p) => ({
+        type: 'partner',
+        label: p.short_name ? `${p.name} (${p.short_name})` : p.name,
+        href: `/partners/${p.slug}`,
       })),
-      ...shortCourses.map((p) => ({
-        type: 'short_course',
-        label: pickLocalized(locale, p.title, (p as any).title_sw),
-        href: `/academics/professional-development-courses/${p.slug}`,
+      ...workPackages.map((wp) => ({
+        type: 'work_package',
+        label: `${wp.code} · ${wp.title}`,
+        href: `/work-packages/${wp.slug}`,
+      })),
+      ...events.map((ev) => ({
+        type: 'event',
+        label: ev.title,
+        href: `/events/${ev.slug}`,
+      })),
+      ...documents.map((doc) => ({
+        type: 'document',
+        label: doc.title,
+        href: `/documents`,
       })),
       ...news.map((n) => ({
         type: 'news',
@@ -544,12 +747,7 @@ export class SearchService {
         label: pickLocalized(locale, p.title, (p as any).title_sw),
         href: `/${p.slug}`,
       })),
-      ...staff.map((s) => ({
-        type: 'staff',
-        label: (s as any).full_name,
-        href: `/about/staff/${(s as any).profile_slug}`,
-      })),
-    ].slice(0, 8);
+    ].slice(0, 10);
   }
 
   async getAnalytics() {
@@ -611,6 +809,15 @@ export class SearchService {
       jobs,
       downloads,
       peerLearners,
+      partners,
+      workPackages,
+      events,
+      documents,
+      activities,
+      kpis,
+      risks,
+      sdlcStages,
+      contacts,
     ] = await Promise.all([
       this.staffRepository.find({
         where: [
@@ -666,9 +873,149 @@ export class SearchService {
         where: [{ name: ILike(searchQuery) }, { email: ILike(searchQuery) }],
         take: 5,
       }),
+      this.shapePartnerRepository.find({
+        where: [
+          { name: ILike(searchQuery) },
+          { short_name: ILike(searchQuery) },
+          { country: ILike(searchQuery) },
+          { contact_email: ILike(searchQuery) },
+        ],
+        take: 10,
+      }),
+      this.shapeWorkPackageRepository.find({
+        where: [
+          { title: ILike(searchQuery) },
+          { code: ILike(searchQuery) },
+          { description: ILike(searchQuery) },
+        ],
+        take: 10,
+      }),
+      this.shapeEventRepository.find({
+        where: [
+          { title: ILike(searchQuery) },
+          { venue: ILike(searchQuery) },
+          { country: ILike(searchQuery) },
+        ],
+        take: 10,
+      }),
+      this.shapeDocumentRepository.find({
+        where: [
+          { title: ILike(searchQuery) },
+          { category: ILike(searchQuery) as any },
+          { description: ILike(searchQuery) },
+        ],
+        take: 10,
+      }),
+      this.shapeActivityRepository.find({
+        where: [{ title: ILike(searchQuery) }, { description: ILike(searchQuery) }],
+        take: 8,
+      }),
+      this.shapeKpiRepository.find({
+        where: [
+          { label: ILike(searchQuery) },
+          { key: ILike(searchQuery) },
+          { value: ILike(searchQuery) },
+        ],
+        take: 8,
+      }),
+      this.shapeRiskRepository.find({
+        where: [
+          { title: ILike(searchQuery) },
+          { description: ILike(searchQuery) },
+          { owner: ILike(searchQuery) },
+        ],
+        take: 8,
+      }),
+      this.shapeSdlcRepository.find({
+        where: [
+          { title: ILike(searchQuery) },
+          { description: ILike(searchQuery) },
+          { objectives: ILike(searchQuery) },
+        ],
+        take: 8,
+      }),
+      this.shapeContactRepository.find({
+        where: [
+          { name: ILike(searchQuery) },
+          { email: ILike(searchQuery) },
+          { subject: ILike(searchQuery) },
+          { organization: ILike(searchQuery) },
+        ],
+        take: 8,
+      }),
     ]);
 
     const results = [
+      ...partners.map((p) => ({
+        id: p.id,
+        title: p.name,
+        subtitle: [p.short_name, p.country, p.consortium_role].filter(Boolean).join(' · '),
+        type: 'SHAPE Partner',
+        link: `/admin/shape-partners`,
+      })),
+      ...workPackages.map((wp) => ({
+        id: wp.id,
+        title: `${wp.code} · ${wp.title}`,
+        subtitle: wp.status || 'Work Package',
+        type: 'SHAPE Work Package',
+        link: `/admin/shape-work-packages`,
+      })),
+      ...events.map((ev) => ({
+        id: ev.id,
+        title: ev.title,
+        subtitle: [ev.venue, ev.country, ev.event_date].filter(Boolean).join(' · '),
+        type: 'SHAPE Event',
+        link: `/admin/shape-events`,
+      })),
+      ...documents.map((d) => ({
+        id: d.id,
+        title: d.title,
+        subtitle: d.category || 'Document',
+        type: 'SHAPE Document',
+        link: `/admin/shape-documents`,
+      })),
+      ...activities.map((a) => ({
+        id: a.id,
+        title: a.title,
+        subtitle: a.status || 'Activity',
+        type: 'SHAPE Activity',
+        link: `/admin/shape-activities`,
+      })),
+      ...kpis.map((k) => ({
+        id: k.id,
+        title: k.label,
+        subtitle: `${k.key} · ${k.value}${k.unit ? ` ${k.unit}` : ''}`,
+        type: 'SHAPE KPI',
+        link: `/admin/shape-kpis`,
+      })),
+      ...risks.map((r) => ({
+        id: r.id,
+        title: r.title,
+        subtitle: `${r.status} · ${r.likelihood}/${r.impact}`,
+        type: 'SHAPE Risk',
+        link: `/admin/shape-risks`,
+      })),
+      ...sdlcStages.map((s) => ({
+        id: s.id,
+        title: s.title,
+        subtitle: `SDLC · ${s.progress_percent ?? 0}%`,
+        type: 'SHAPE SDLC',
+        link: `/admin/shape-sdlc`,
+      })),
+      ...contacts.map((c) => ({
+        id: c.id,
+        title: c.subject,
+        subtitle: `${c.name} · ${c.email}`,
+        type: 'SHAPE Contact',
+        link: `/admin/shape-contact`,
+      })),
+      ...news.map((n) => ({
+        id: n.id,
+        title: n.title,
+        subtitle: 'News / Announcement',
+        type: 'News',
+        link: `/admin/news?id=${n.id}`,
+      })),
       ...staff.map((s) => ({
         id: s.id,
         title: s.full_name,
@@ -710,13 +1057,6 @@ export class SearchService {
         subtitle: 'Static Page',
         type: 'Page',
         link: `/admin/pages?id=${p.id}`,
-      })),
-      ...news.map((n) => ({
-        id: n.id,
-        title: n.title,
-        subtitle: 'News / Announcement',
-        type: 'News',
-        link: `/admin/news?id=${n.id}`,
       })),
       ...jobs.map((j) => ({
         id: j.id,

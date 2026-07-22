@@ -33,7 +33,14 @@ export class SearchController {
   }
 
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermission(['pages.view', 'pages.manage', 'news.view', 'news.manage'])
+  @RequirePermission([
+    'pages.view',
+    'pages.manage',
+    'news.view',
+    'news.manage',
+    'shape.view',
+    'shape.manage',
+  ])
   @Get('admin')
   adminSearch(@Query('q') query: string) {
     return this.searchService.adminGlobalSearch(query);

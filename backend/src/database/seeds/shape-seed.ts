@@ -1133,7 +1133,7 @@ export const runShapeSeed = async (dataSource: DataSource) => {
     if (doc) {
       Object.assign(doc, data);
     } else {
-      doc = docRepo.create(data as any);
+      doc = docRepo.create(data as any) as unknown as ShapeDocument;
     }
     await docRepo.save(doc);
   }

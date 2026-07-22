@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Loader2, X, Command, User, FileText, GraduationCap, Building2, Briefcase, Globe, Download, Users, Layers } from 'lucide-react';
+import { Search, Loader2, X, Command, User, FileText, GraduationCap, Building2, Briefcase, Globe, Download, Users, Layers, Handshake, FolderKanban, Calendar, BarChart3, ShieldCheck, Mail, Clock } from 'lucide-react';
 import { getApi } from '@/lib/api';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAdminMenu } from '@/context/AdminMenuContext';
@@ -30,6 +30,15 @@ const TypeIcon = ({ type, isMenu }: { type: string, isMenu?: boolean }) => {
     case 'Career': return <Briefcase size={14} className="text-rose-500" />;
     case 'Download': return <Download size={14} className="text-indigo-500" />;
     case 'Peer Learner': return <Users size={14} className="text-cyan-500" />;
+    case 'SHAPE Partner': return <Handshake size={14} className="text-[#037b90]" />;
+    case 'SHAPE Work Package': return <FolderKanban size={14} className="text-[#037b90]" />;
+    case 'SHAPE Event': return <Calendar size={14} className="text-[#ff7f50]" />;
+    case 'SHAPE Document': return <FileText size={14} className="text-[#037b90]" />;
+    case 'SHAPE Activity': return <Clock size={14} className="text-slate-500" />;
+    case 'SHAPE KPI': return <BarChart3 size={14} className="text-emerald-600" />;
+    case 'SHAPE Risk': return <ShieldCheck size={14} className="text-rose-500" />;
+    case 'SHAPE SDLC': return <Layers size={14} className="text-[#037b90]" />;
+    case 'SHAPE Contact': return <Mail size={14} className="text-[#ff7f50]" />;
     default: return <Search size={14} className="text-slate-400" />;
   }
 };
@@ -159,7 +168,7 @@ export default function AdminGlobalSearch() {
           onFocus={() => query.length >= 2 && setIsOpen(true)}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Global Admin Search..." 
+          placeholder="Search SHAPE CMS & site modules…" 
           className="bg-transparent border-none focus:ring-0 text-xs font-bold uppercase tracking-widest ml-3 w-full outline-none placeholder:text-slate-300"
         />
         <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] text-slate-400 font-bold ml-2">

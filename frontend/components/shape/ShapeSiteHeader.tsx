@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, usePathname } from "@/i18n/routing";
 import { SHAPE_NAV_LINKS } from "@/lib/shape-api";
 import NavLanguageControls from "@/components/NavLanguageControls";
+import ShapeSiteSearch from "@/components/shape/ShapeSiteSearch";
 
 type Props = {
   isMaintenanceActive?: boolean;
@@ -123,7 +124,8 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
           </div>
         </nav>
 
-        <div className="hidden lg:flex items-center gap-3 ml-auto">
+        <div className="hidden lg:flex items-center gap-2 ml-auto">
+          <ShapeSiteSearch onDark={!solid} />
           <NavLanguageControls onDark={!solid} />
           <Link
             href="/dashboard"
@@ -133,14 +135,17 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
           </Link>
         </div>
 
-        <button
-          type="button"
-          className={`lg:hidden ml-auto p-2 ${solid ? "text-primary-darker" : "text-white"}`}
-          aria-label="Open menu"
-          onClick={() => setMobileOpen(true)}
-        >
-          <Menu size={24} />
-        </button>
+        <div className="lg:hidden ml-auto flex items-center gap-1">
+          <ShapeSiteSearch onDark={!solid} />
+          <button
+            type="button"
+            className={`p-2 ${solid ? "text-primary-darker" : "text-white"}`}
+            aria-label="Open menu"
+            onClick={() => setMobileOpen(true)}
+          >
+            <Menu size={24} />
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -158,6 +163,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
               </button>
             </div>
             <div className="overflow-y-auto h-[calc(100%-72px)] px-6 py-6 space-y-1">
+              <ShapeSiteSearch mobile />
               {SHAPE_NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
