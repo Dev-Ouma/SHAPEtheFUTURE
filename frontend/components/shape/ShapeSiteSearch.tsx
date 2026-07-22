@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Search, X, Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { getApi } from "@/lib/api";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -15,16 +15,8 @@ type Props = {
   mobile?: boolean;
 };
 
-const TYPE_LABEL: Record<string, string> = {
-  partner: "Partner",
-  work_package: "Work package",
-  event: "Event",
-  document: "Document",
-  news: "News",
-  page: "Page",
-};
-
 export default function ShapeSiteSearch({ onDark = false, mobile = false }: Props) {
+  const t = useTranslations("Shape.search");
   const locale = useLocale();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -102,11 +94,11 @@ export default function ShapeSiteSearch({ onDark = false, mobile = false }: Prop
     return (
       <button
         type="button"
-        aria-label="Search"
+        aria-label={t("button")}
         onClick={() => setOpen(true)}
         className="w-full flex items-center gap-3 py-3 text-sm font-black uppercase tracking-widest border-b border-white/10 hover:text-secondary"
       >
-        <Search size={16} /> Search
+        <Search size={16} /> {t("button")}
       </button>
     );
   }
@@ -116,7 +108,7 @@ export default function ShapeSiteSearch({ onDark = false, mobile = false }: Prop
       {!mobile ? (
         <button
           type="button"
-          aria-label="Search the SHAPE website"
+          aria-label={t("aria")}
           onClick={() => setOpen(true)}
           className={`p-2 transition-colors ${
             onDark
@@ -159,13 +151,13 @@ export default function ShapeSiteSearch({ onDark = false, mobile = false }: Prop
                     ref={inputRef}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search partners, work packages, events, documents…"
+                    placeholder={t("placeholder")}
                     className="flex-1 bg-transparent outline-none text-sm text-primary-darker placeholder:text-slate-400"
-                    aria-label="Search query"
+                    aria-label={t("query")}
                   />
                   <button
                     type="button"
-                    aria-label="Close search"
+                    aria-label={t("close")}
                     onClick={() => setOpen(false)}
                     className="p-1 text-slate-400 hover:text-primary-darker"
                   >
@@ -189,7 +181,7 @@ export default function ShapeSiteSearch({ onDark = false, mobile = false }: Prop
                             {s.label}
                           </span>
                           <span className="text-[9px] font-black uppercase tracking-widest text-secondary shrink-0">
-                            {TYPE_LABEL[s.type] || s.type}
+                            {s.type}
                           </span>
                         </Link>
                       </li>
@@ -197,17 +189,17 @@ export default function ShapeSiteSearch({ onDark = false, mobile = false }: Prop
                   </ul>
                 ) : query.trim().length >= 2 && !loading ? (
                   <p className="px-5 py-8 text-center text-xs text-slate-500">
-                    No quick matches — press Enter to search the full site.
+                    {t("noResults")}
                   </p>
                 ) : (
                   <p className="px-5 py-6 text-[10px] font-bold uppercase tracking-widest text-slate-400 text-center">
-                    Tip: press ⌘K / Ctrl+K anytime
+                    Tip: ⌘K / Ctrl+K
                   </p>
                 )}
 
                 <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    System-wide search
+                    SHAPE
                   </span>
                   <button
                     type="button"
@@ -215,7 +207,7 @@ export default function ShapeSiteSearch({ onDark = false, mobile = false }: Prop
                     disabled={query.trim().length < 2}
                     className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-secondary disabled:opacity-40"
                   >
-                    View all results →
+                    {t("viewAll")} →
                   </button>
                 </div>
               </motion.div>

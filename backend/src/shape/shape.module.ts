@@ -11,6 +11,7 @@ import { ShapeKpi } from './entities/shape-kpi.entity';
 import { ShapeRisk } from './entities/shape-risk.entity';
 import { ShapeSdlcStage } from './entities/shape-sdlc-stage.entity';
 import { ShapeContactMessage } from './entities/shape-contact-message.entity';
+import { ShapePressItem } from './entities/shape-press-item.entity';
 
 import { ShapePartnersService } from './shape-partners.service';
 import { ShapeWorkPackagesService } from './shape-work-packages.service';
@@ -22,6 +23,7 @@ import { ShapeRisksService } from './shape-risks.service';
 import { ShapeSdlcService } from './shape-sdlc.service';
 import { ShapeContactService } from './shape-contact.service';
 import { ShapeDashboardService } from './shape-dashboard.service';
+import { ShapePressService } from './shape-press.service';
 
 import { ShapePartnersController } from './shape-partners.controller';
 import { ShapeWorkPackagesController } from './shape-work-packages.controller';
@@ -33,6 +35,7 @@ import { ShapeRisksController } from './shape-risks.controller';
 import { ShapeSdlcController } from './shape-sdlc.controller';
 import { ShapeContactController } from './shape-contact.controller';
 import { ShapeDashboardController } from './shape-dashboard.controller';
+import { ShapePressController } from './shape-press.controller';
 
 @Module({
   imports: [
@@ -46,6 +49,7 @@ import { ShapeDashboardController } from './shape-dashboard.controller';
       ShapeRisk,
       ShapeSdlcStage,
       ShapeContactMessage,
+      ShapePressItem,
     ]),
     AuthModule,
   ],
@@ -60,6 +64,7 @@ import { ShapeDashboardController } from './shape-dashboard.controller';
     ShapeSdlcController,
     ShapeContactController,
     ShapeDashboardController,
+    ShapePressController,
   ],
   providers: [
     ShapePartnersService,
@@ -72,6 +77,7 @@ import { ShapeDashboardController } from './shape-dashboard.controller';
     ShapeSdlcService,
     ShapeContactService,
     ShapeDashboardService,
+    ShapePressService,
   ],
   exports: [
     ShapePartnersService,
@@ -84,6 +90,7 @@ import { ShapeDashboardController } from './shape-dashboard.controller';
     ShapeSdlcService,
     ShapeContactService,
     ShapeDashboardService,
+    ShapePressService,
   ],
 })
 export class ShapeModule {}

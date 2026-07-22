@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { SHAPE_NAV_LINKS } from "@/lib/shape-api";
 import EuFundingBadge from "@/components/shape/EuFundingBadge";
@@ -13,14 +14,23 @@ type Props = {
 
 export default function ShapeFooter({
   contactEmail = "shape@ouk.ac.ke",
-  blurb = "Strengthening Higher Education for Smart Cities — a three-year Erasmus+ partnership across East Africa and Europe.",
+  blurb,
 }: Props) {
+  const t = useTranslations("Shape");
   const year = new Date().getFullYear();
   const quick = SHAPE_NAV_LINKS.filter((l) =>
     ["/the-project", "/partners", "/work-packages", "/dashboard", "/documents", "/events", "/contact"].includes(
       l.href,
     ),
   );
+  const explore = [
+    { titleKey: "map" as const, href: "/map" },
+    { titleKey: "media" as const, href: "/media" },
+    { titleKey: "gallery" as const, href: "/gallery" },
+    { titleKey: "sdlc" as const, href: "/sdlc" },
+    { titleKey: "monitoring" as const, href: "/monitoring" },
+    { titleKey: "news" as const, href: "/news" },
+  ];
 
   return (
     <footer className="bg-primary-darker text-white border-t border-white/5" id="main-footer">
@@ -33,17 +43,16 @@ export default function ShapeFooter({
                 Erasmus+ · OUK
               </p>
             </div>
-            <p className="text-sm text-slate-400 leading-relaxed">{blurb}</p>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Co-funded by the European Union. Views and opinions expressed are those of the author(s)
-              only and do not necessarily reflect those of the European Union or EACEA.
+            <p className="text-sm text-slate-400 leading-relaxed">
+              {blurb || t("chrome.footerBlurb")}
             </p>
+            <p className="text-xs text-slate-500 leading-relaxed">{t("chrome.euDisclaimer")}</p>
             <EuFundingBadge variant="dark" className="bg-primary-darker/40 border-white/15" />
           </div>
 
           <div>
             <h4 className="text-[10px] font-black uppercase tracking-[0.35em] text-slate-500 border-l-2 border-primary pl-3 mb-6">
-              Quick links
+              {t("chrome.quickLinks")}
             </h4>
             <ul className="space-y-3">
               {quick.map((l) => (
@@ -52,7 +61,7 @@ export default function ShapeFooter({
                     href={l.href}
                     className="text-sm font-semibold text-slate-300 hover:text-secondary transition-colors"
                   >
-                    {l.title}
+                    {t(`nav.${l.titleKey}`)}
                   </Link>
                 </li>
               ))}
@@ -61,22 +70,22 @@ export default function ShapeFooter({
 
           <div>
             <h4 className="text-[10px] font-black uppercase tracking-[0.35em] text-slate-500 border-l-2 border-primary pl-3 mb-6">
-              Coordinator
+              {t("chrome.coordinator")}
             </h4>
-            <p className="text-sm font-bold text-white mb-4">Open University of Kenya</p>
+            <p className="text-sm font-bold text-white mb-4">{t("chrome.ouk")}</p>
             <ul className="space-y-4 text-sm text-slate-400">
               <li className="flex gap-3">
-                <MapPin size={16} className="text-primary shrink-0 mt-0.5" />
-                <span>Technopolis Development Authority, Kenya</span>
+                <MapPin size={16} className="text-primary shrink-0 mt-0.5" aria-hidden />
+                <span>{t("chrome.oukAddress")}</span>
               </li>
               <li className="flex gap-3">
-                <Mail size={16} className="text-primary shrink-0 mt-0.5" />
+                <Mail size={16} className="text-primary shrink-0 mt-0.5" aria-hidden />
                 <a href={`mailto:${contactEmail}`} className="hover:text-white">
                   {contactEmail}
                 </a>
               </li>
               <li className="flex gap-3">
-                <Phone size={16} className="text-primary shrink-0 mt-0.5" />
+                <Phone size={16} className="text-primary shrink-0 mt-0.5" aria-hidden />
                 <span>+254 20 2311438</span>
               </li>
             </ul>
@@ -84,23 +93,16 @@ export default function ShapeFooter({
 
           <div>
             <h4 className="text-[10px] font-black uppercase tracking-[0.35em] text-slate-500 border-l-2 border-primary pl-3 mb-6">
-              Explore
+              {t("chrome.explore")}
             </h4>
             <ul className="space-y-3">
-              {[
-                { title: "Project Map", href: "/map" },
-                { title: "Media", href: "/media" },
-                { title: "Gallery", href: "/gallery" },
-                { title: "SDLC", href: "/sdlc" },
-                { title: "Monitoring", href: "/monitoring" },
-                { title: "News", href: "/news" },
-              ].map((l) => (
+              {explore.map((l) => (
                 <li key={l.href}>
                   <Link
                     href={l.href}
                     className="text-sm font-semibold text-slate-300 hover:text-secondary transition-colors"
                   >
-                    {l.title}
+                    {t(`nav.${l.titleKey}`)}
                   </Link>
                 </li>
               ))}
@@ -109,18 +111,18 @@ export default function ShapeFooter({
         </div>
 
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-4 text-xs text-slate-500">
-          <p>© {year} Open University of Kenya | SHAPE Erasmus+. All rights reserved.</p>
+          <p>{t("chrome.rights", { year })}</p>
           <div className="flex flex-wrap gap-x-5 gap-y-2 uppercase tracking-widest font-bold text-[10px]">
             <Link href="/accessibility" className="hover:text-secondary transition-colors">
-              Accessibility
+              {t("chrome.accessibility")}
             </Link>
             <Link href="/privacy" className="hover:text-secondary transition-colors">
-              Privacy
+              {t("chrome.privacy")}
             </Link>
             <Link href="/privacy-center" className="hover:text-secondary transition-colors">
-              Cookies
+              {t("chrome.cookies")}
             </Link>
-            <span>Co-funded by the European Union</span>
+            <span>{t("chrome.cofunded")}</span>
           </div>
         </div>
       </div>

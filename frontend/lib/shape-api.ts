@@ -192,6 +192,11 @@ export type ShapeEvent = {
   minutes_url?: string;
   presentations_url?: string;
   gallery_urls?: string[];
+  gallery_category?: string;
+  video_url?: string;
+  captions_url?: string;
+  transcript?: string;
+  sign_language_url?: string;
   attendance?: string;
   outcomes?: string;
 };
@@ -199,12 +204,18 @@ export type ShapeEvent = {
 export type ShapeDocument = {
   id: string;
   title: string;
+  title_sw?: string;
   /** Canonical category key from CMS (e.g. financial, policy_briefs). */
   category: string;
   /** Display label for the category filter menu. */
   category_label?: string;
   description?: string;
+  description_sw?: string;
   file_url?: string;
+  file_type?: string;
+  captions_url?: string;
+  transcript?: string;
+  sign_language_url?: string;
   work_package?: string;
   published_at?: string;
 };
@@ -708,10 +719,16 @@ export function normalizeShapeDocument(raw: any): ShapeDocument {
   return {
     id: String(raw?.id || raw?.slug || ""),
     title: raw?.title || "Untitled document",
+    title_sw: raw?.title_sw || undefined,
     category,
     category_label: documentCategoryLabel(category),
     description: raw?.description || undefined,
+    description_sw: raw?.description_sw || undefined,
     file_url: raw?.file_url || undefined,
+    file_type: raw?.file_type || undefined,
+    captions_url: raw?.captions_url || undefined,
+    transcript: raw?.transcript || undefined,
+    sign_language_url: raw?.sign_language_url || undefined,
     work_package: wp,
     published_at: raw?.published_at || undefined,
   };
@@ -779,12 +796,43 @@ export async function getShapeWorkPackage(slug: string): Promise<ShapeWorkPackag
 }
 
 export async function getShapeEvents(): Promise<ShapeEvent[]> {
-  return cachedList("/shape/events", SHAPE_EVENTS_FALLBACK);
+  const raw = await cachedList<any>("/shape/events", SHAPE_EVENTS_FALLBACK);
+  return raw.map(normalizeShapeEvent);
 }
 
 export async function getShapeEvent(slug: string): Promise<ShapeEvent | null> {
   const fallback = SHAPE_EVENTS_FALLBACK.find((e) => e.slug === slug) || null;
-  return cachedOne(`/shape/events/${encodeURIComponent(slug)}`, fallback);
+  const data = await cachedOne<any>(`/shape/events/${encodeURIComponent(slug)}`, fallback);
+  return data ? normalizeShapeEvent(data) : null;
+}
+
+export function normalizeShapeEvent(raw: any): ShapeEvent {
+  return {
+    id: String(raw?.id || raw?.slug || ""),
+    slug: raw?.slug || "",
+    title: raw?.title || "Event",
+    date: raw?.date || raw?.event_date || undefined,
+    end_date: raw?.end_date || undefined,
+    venue: raw?.venue || undefined,
+    country: raw?.country || undefined,
+    host:
+      typeof raw?.host === "string"
+        ? raw.host
+        : raw?.host_partner?.short_name || raw?.host_partner?.name || undefined,
+    status: raw?.status || undefined,
+    summary: raw?.summary || raw?.description || undefined,
+    agenda: raw?.agenda || undefined,
+    minutes_url: raw?.minutes_url || undefined,
+    presentations_url: raw?.presentations_url || undefined,
+    gallery_urls: Array.isArray(raw?.gallery_urls) ? raw.gallery_urls : [],
+    gallery_category: raw?.gallery_category || undefined,
+    video_url: raw?.video_url || undefined,
+    captions_url: raw?.captions_url || undefined,
+    transcript: raw?.transcript || undefined,
+    sign_language_url: raw?.sign_language_url || undefined,
+    attendance: raw?.attendance || raw?.attendance_notes || undefined,
+    outcomes: raw?.outcomes || undefined,
+  };
 }
 
 export async function getShapeDocuments(params?: {
@@ -950,64 +998,97 @@ export async function getShapeAdminList(resource: string) {
   }
 }
 
-/** Full SHAPE PMIS primary navigation. */
+/** Full SHAPE PMIS primary navigation (`titleKey` → messages Shape.nav.*). */
 export const SHAPE_NAV_LINKS = [
-  { title: "Home", href: "/" },
-  { title: "The Project", href: "/the-project" },
-  { title: "Partners", href: "/partners" },
-  { title: "Work Packages", href: "/work-packages" },
-  { title: "Workplan", href: "/workplan" },
-  { title: "Events", href: "/events" },
-  { title: "Dashboard", href: "/dashboard" },
-  { title: "Documents", href: "/documents" },
-  { title: "News", href: "/news" },
-  { title: "SDLC", href: "/sdlc" },
-  { title: "Monitoring", href: "/monitoring" },
-  { title: "Map", href: "/map" },
-  { title: "Media", href: "/media" },
-  { title: "Contact", href: "/contact" },
+  { titleKey: "home", href: "/" },
+  { titleKey: "theProject", href: "/the-project" },
+  { titleKey: "partners", href: "/partners" },
+  { titleKey: "workPackages", href: "/work-packages" },
+  { titleKey: "workplan", href: "/workplan" },
+  { titleKey: "events", href: "/events" },
+  { titleKey: "dashboard", href: "/dashboard" },
+  { titleKey: "documents", href: "/documents" },
+  { titleKey: "news", href: "/news" },
+  { titleKey: "sdlc", href: "/sdlc" },
+  { titleKey: "monitoring", href: "/monitoring" },
+  { titleKey: "map", href: "/map" },
+  { titleKey: "media", href: "/media" },
+  { titleKey: "contact", href: "/contact" },
 ] as const;
 
 export type ShapePressItem = {
+  id?: string;
   title: string;
+  title_sw?: string;
   source: string;
+  source_sw?: string;
   url: string;
   date?: string;
+  sort_order?: number;
 };
 
-/** External press / partner coverage (Prosper-style media list). */
+/** Fallback press list when CMS `/shape/press` is empty. */
 export const SHAPE_PRESS_COVERAGE: ShapePressItem[] = [
   {
     title: "SHAPE kick-off: Open University of Kenya hosts Erasmus+ smart-cities consortium",
+    title_sw:
+      "Uzinduzi wa SHAPE: Chuo Kikuu Huria cha Kenya kinakaribisha muungano wa Erasmus+ wa miji mahiri",
     source: "Open University of Kenya",
+    source_sw: "Chuo Kikuu Huria cha Kenya",
     url: "https://ouk.ac.ke/",
     date: "2025",
   },
   {
     title: "Moi University partners in East Africa–Europe smart cities higher education project",
+    title_sw:
+      "Chuo Kikuu cha Moi kinashiriki mradi wa elimu ya juu wa miji mahiri Afrika Mashariki–Ulaya",
     source: "Moi University",
+    source_sw: "Chuo Kikuu cha Moi",
     url: "https://www.mu.ac.ke/",
     date: "2025",
   },
   {
     title: "Makerere University joins SHAPE capacity-building partnership",
+    title_sw: "Chuo Kikuu cha Makerere kinaungana na ushirikiano wa SHAPE",
     source: "Makerere University",
+    source_sw: "Chuo Kikuu cha Makerere",
     url: "https://www.makerere.ac.ug/",
     date: "2025",
   },
   {
     title: "Otto von Guericke University Magdeburg — European partner in SHAPE",
+    title_sw: "Chuo Kikuu cha Otto von Guericke Magdeburg — mshirika wa Ulaya katika SHAPE",
     source: "OVGU Magdeburg",
     url: "https://www.ovgu.de/en/",
     date: "2025",
   },
   {
     title: "University of Tartu contributes digital learning expertise to SHAPE",
+    title_sw: "Chuo Kikuu cha Tartu kinachangia utaalamu wa kujifunza kidijitali kwa SHAPE",
     source: "University of Tartu",
     url: "https://ut.ee/en",
     date: "2025",
   },
 ];
+
+export function normalizeShapePress(raw: any): ShapePressItem {
+  return {
+    id: raw?.id ? String(raw.id) : undefined,
+    title: raw?.title || "Untitled",
+    title_sw: raw?.title_sw || undefined,
+    source: raw?.source || "",
+    source_sw: raw?.source_sw || undefined,
+    url: raw?.url || "#",
+    date: raw?.date || undefined,
+    sort_order: Number(raw?.sort_order ?? 0) || 0,
+  };
+}
+
+export async function getShapePress(): Promise<ShapePressItem[]> {
+  const raw = await cachedList<any>("/shape/press", SHAPE_PRESS_COVERAGE);
+  const items = raw.map(normalizeShapePress);
+  return items.length ? items : SHAPE_PRESS_COVERAGE;
+}
 
 export type ShapeObjective = { title: string; text: string };
 

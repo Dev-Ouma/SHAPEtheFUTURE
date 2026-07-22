@@ -29,6 +29,7 @@ export default function ShapeDocumentsAdmin() {
       fields={[
         { key: "title", label: "Title", required: true },
         { key: "slug", label: "Slug", required: true },
+        { key: "title_sw", label: "Title (Kiswahili)" },
         {
           key: "category",
           label: "Category",
@@ -36,8 +37,12 @@ export default function ShapeDocumentsAdmin() {
           options: DOC_CATEGORIES,
         },
         { key: "description", label: "Description", type: "textarea", hint: "Describe the document for screen readers and search; prefer HTML summaries over image-only PDFs." },
-        { key: "file_url", label: "File URL", hint: "Upload tagged/accessible PDFs (PDF/UA) or Word files with proper headings when possible." },
-        { key: "file_type", label: "File type" },
+        { key: "description_sw", label: "Description (Kiswahili)", type: "textarea" },
+        { key: "file_url", label: "File / media URL", hint: "Upload tagged/accessible PDFs (PDF/UA) or Word files with proper headings when possible. For video/audio, also add captions and transcript below." },
+        { key: "file_type", label: "File type (pdf, mp4, …)" },
+        { key: "captions_url", label: "Captions URL (.vtt)", hint: "Closed captions track for video/audio (WCAG 1.2.2)." },
+        { key: "transcript", label: "Transcript", type: "textarea", hint: "Full text alternative for media or complex documents." },
+        { key: "sign_language_url", label: "Sign language URL", hint: "Optional sign-language interpretation video or page." },
         { key: "work_package_id", label: "Work package ID (UUID)" },
         { key: "partner_id", label: "Partner ID (UUID)" },
         {

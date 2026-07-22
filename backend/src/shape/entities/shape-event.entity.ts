@@ -70,6 +70,22 @@ export class ShapeEvent {
   @Column({ type: 'simple-json', nullable: true })
   gallery_urls: string[];
 
+  /** Gallery grouping on the public /gallery page (e.g. Meetings, Workshops). */
+  @Column({ type: 'varchar', nullable: true })
+  gallery_category: string | null;
+
+  @Column({ nullable: true })
+  video_url: string;
+
+  @Column({ nullable: true })
+  captions_url: string;
+
+  @Column({ type: 'text', nullable: true })
+  transcript: string;
+
+  @Column({ nullable: true })
+  sign_language_url: string;
+
   @Column({ nullable: true })
   work_package_id: string | null;
 

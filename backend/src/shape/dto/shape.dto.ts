@@ -210,6 +210,26 @@ export class CreateShapeEventDto {
 
   @IsString()
   @IsOptional()
+  gallery_category?: string;
+
+  @IsString()
+  @IsOptional()
+  video_url?: string;
+
+  @IsString()
+  @IsOptional()
+  captions_url?: string;
+
+  @IsString()
+  @IsOptional()
+  transcript?: string;
+
+  @IsString()
+  @IsOptional()
+  sign_language_url?: string;
+
+  @IsString()
+  @IsOptional()
   work_package_id?: string;
 
   @IsBoolean()
@@ -227,6 +247,14 @@ export class CreateShapeDocumentDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsString()
+  @IsOptional()
+  title_sw?: string;
+
+  @IsString()
+  @IsOptional()
+  description_sw?: string;
 
   @IsIn([
     'deliverables',
@@ -257,6 +285,18 @@ export class CreateShapeDocumentDto {
 
   @IsString()
   @IsOptional()
+  captions_url?: string;
+
+  @IsString()
+  @IsOptional()
+  transcript?: string;
+
+  @IsString()
+  @IsOptional()
+  sign_language_url?: string;
+
+  @IsString()
+  @IsOptional()
   work_package_id?: string;
 
   @IsString()
@@ -277,6 +317,38 @@ export class CreateShapeDocumentDto {
 
   @IsOptional()
   published_at?: string | Date;
+}
+
+export class CreateShapePressDto {
+  @IsString()
+  title: string;
+
+  @IsString()
+  @IsOptional()
+  title_sw?: string;
+
+  @IsString()
+  source: string;
+
+  @IsString()
+  @IsOptional()
+  source_sw?: string;
+
+  @IsString()
+  url: string;
+
+  @IsString()
+  @IsOptional()
+  date?: string;
+
+  @IsNumber()
+  @IsOptional()
+  @Type(() => Number)
+  sort_order?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  is_published?: boolean;
 }
 
 export class CreateShapeActivityDto {

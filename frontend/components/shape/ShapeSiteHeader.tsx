@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { SHAPE_NAV_LINKS } from "@/lib/shape-api";
 import NavLanguageControls from "@/components/NavLanguageControls";
@@ -16,6 +17,8 @@ const PRIMARY = SHAPE_NAV_LINKS.slice(0, 7);
 const MORE = SHAPE_NAV_LINKS.slice(7);
 
 export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) {
+  const t = useTranslations("Shape.nav");
+  const tc = useTranslations("Shape.chrome");
   const pathname = usePathname();
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -39,7 +42,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
     if (!mobileOpen) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const t = window.setTimeout(() => mobileCloseRef.current?.focus(), 50);
+    const timer = window.setTimeout(() => mobileCloseRef.current?.focus(), 50);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setMobileOpen(false);
@@ -49,7 +52,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = prev;
-      window.clearTimeout(t);
+      window.clearTimeout(timer);
       window.removeEventListener("keydown", onKey);
     };
   }, [mobileOpen]);
@@ -91,6 +94,8 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
     }`;
   };
 
+  const label = (key: (typeof SHAPE_NAV_LINKS)[number]["titleKey"]) => t(key);
+
   return (
     <header
       className={`fixed w-full z-50 transition-all duration-500 ${
@@ -106,13 +111,13 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
         aria-hidden={scrolled}
       >
         <div className="container mx-auto px-4 lg:px-6 py-2 flex items-center justify-between gap-4 text-white text-[10px] font-black uppercase tracking-[0.2em]">
-          <span>Erasmus+ · Co-funded by the European Union</span>
+          <span>{tc("erasmusBanner")}</span>
           <span className="hidden sm:inline text-white/80">shape.ouk.ac.ke</span>
         </div>
       </div>
 
       <div className="container mx-auto px-4 lg:px-6 flex items-center gap-4 py-3.5">
-        <Link href="/" className="shrink-0 group" aria-label="SHAPE home">
+        <Link href="/" className="shrink-0 group" aria-label={t("homeAria")}>
           <div className="flex items-baseline gap-2">
             <span
               className={`font-serif text-2xl md:text-3xl font-black tracking-tight leading-none ${
@@ -127,10 +132,13 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
           </div>
         </Link>
 
-        <nav className="hidden lg:flex flex-1 items-center justify-center gap-1 xl:gap-2 min-w-0" aria-label="Primary">
+        <nav
+          className="hidden lg:flex flex-1 items-center justify-center gap-1 xl:gap-2 min-w-0"
+          aria-label={t("primary")}
+        >
           {PRIMARY.map((link) => (
             <Link key={link.href} href={link.href} className={`nav-link px-2 py-2 ${linkClass(link.href)}`}>
-              {link.title}
+              {label(link.titleKey)}
             </Link>
           ))}
           <div className="relative" ref={moreRef}>
@@ -143,7 +151,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
               aria-controls="nav-more-menu"
               id="nav-more-button"
             >
-              More <ChevronDown size={12} aria-hidden />
+              {t("more")} <ChevronDown size={12} aria-hidden />
             </button>
             <AnimatePresence>
               {moreOpen && (
@@ -163,7 +171,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
                       role="menuitem"
                       className="block px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-slate-600 hover:text-primary hover:bg-slate-50"
                     >
-                      {link.title}
+                      {label(link.titleKey)}
                     </Link>
                   ))}
                 </motion.div>
@@ -179,7 +187,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
             href="/dashboard"
             className="bg-secondary text-white px-4 py-2.5 text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-colors"
           >
-            Progress
+            {t("progress")}
           </Link>
         </div>
 
@@ -189,7 +197,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
             ref={menuButtonRef}
             type="button"
             className={`p-2 ${solid ? "text-primary-darker" : "text-white"}`}
-            aria-label="Open menu"
+            aria-label={t("openMenu")}
             aria-expanded={mobileOpen}
             aria-controls="mobile-nav-dialog"
             onClick={() => setMobileOpen(true)}
@@ -205,7 +213,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
             id="mobile-nav-dialog"
             role="dialog"
             aria-modal="true"
-            aria-label="Site navigation"
+            aria-label={t("mobile")}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -216,7 +224,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
               <button
                 ref={mobileCloseRef}
                 type="button"
-                aria-label="Close menu"
+                aria-label={t("closeMenu")}
                 onClick={() => {
                   setMobileOpen(false);
                   menuButtonRef.current?.focus();
@@ -225,7 +233,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
                 <X size={24} aria-hidden />
               </button>
             </div>
-            <nav className="overflow-y-auto h-[calc(100%-72px)] px-6 py-6 space-y-1" aria-label="Mobile">
+            <nav className="overflow-y-auto h-[calc(100%-72px)] px-6 py-6 space-y-1" aria-label={t("mobile")}>
               <ShapeSiteSearch mobile />
               {SHAPE_NAV_LINKS.map((link) => (
                 <Link
@@ -233,7 +241,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
                   href={link.href}
                   className="block py-3 text-sm font-black uppercase tracking-widest border-b border-white/10 hover:text-secondary"
                 >
-                  {link.title}
+                  {label(link.titleKey)}
                 </Link>
               ))}
               <div className="pt-6">

@@ -115,6 +115,7 @@ const ROUTE_PERMISSION_MAP: Record<string, string | string[]> = {
   '/admin/shape-work-packages': ['shape.view', 'shape.manage', 'pages.view', 'pages.manage'],
   '/admin/shape-events': ['shape.view', 'shape.manage', 'pages.view', 'pages.manage'],
   '/admin/shape-documents': ['shape.view', 'shape.manage', 'pages.view', 'pages.manage'],
+  '/admin/shape-press': ['shape.view', 'shape.manage', 'pages.view', 'pages.manage'],
   '/admin/shape-kpis': ['shape.view', 'shape.manage', 'pages.view', 'pages.manage'],
   '/admin/shape-activities': ['shape.view', 'shape.manage', 'pages.view', 'pages.manage'],
   '/admin/shape-risks': ['shape.view', 'shape.manage', 'pages.view', 'pages.manage'],

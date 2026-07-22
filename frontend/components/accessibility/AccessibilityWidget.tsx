@@ -21,6 +21,7 @@ import {
   Keyboard,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import {
   useAccessibility,
@@ -114,6 +115,7 @@ function Segmented<T extends string>({
 
 export default function AccessibilityWidget({ variant = "public" }: { variant?: "public" | "admin" }) {
   const a11y = useAccessibility();
+  const t = useTranslations("Shape.a11y");
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
 
@@ -147,10 +149,10 @@ export default function AccessibilityWidget({ variant = "public" }: { variant?: 
         aria-expanded={a11y.openPanel}
         aria-controls="a11y-settings-panel"
         onClick={() => a11y.setOpenPanel(!a11y.openPanel)}
-        title="Accessibility settings (Alt+A)"
+        title={`${t("openSettings")} (Alt+A)`}
       >
         <Accessibility size={22} aria-hidden />
-        <span className="sr-only">Open accessibility settings</span>
+        <span className="sr-only">{t("openSettings")}</span>
       </button>
 
       <AnimatePresence>
@@ -179,15 +181,15 @@ export default function AccessibilityWidget({ variant = "public" }: { variant?: 
               <header className="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 bg-primary-darker text-white">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary">
-                    WCAG 2.2 AA
+                    {t("settingsBadge")}
                   </p>
                   <h2 id={titleId} className="font-serif text-xl font-black uppercase tracking-tight">
-                    Accessibility
+                    {t("settingsTitle")}
                   </h2>
                 </div>
                 <button
                   type="button"
-                  aria-label="Close accessibility settings"
+                  aria-label={t("close")}
                   onClick={() => a11y.setOpenPanel(false)}
                   className="p-2 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
                 >
@@ -404,7 +406,7 @@ export default function AccessibilityWidget({ variant = "public" }: { variant?: 
                         className="text-primary font-bold underline"
                         onClick={() => a11y.setOpenPanel(false)}
                       >
-                        Accessibility statement →
+                        {t("statementLink")}
                       </Link>
                     </li>
                   </ul>
@@ -417,14 +419,14 @@ export default function AccessibilityWidget({ variant = "public" }: { variant?: 
                   onClick={a11y.resetPrefs}
                   className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-primary"
                 >
-                  <RotateCcw size={14} /> Reset
+                  <RotateCcw size={14} /> {t("reset")}
                 </button>
                 <button
                   type="button"
                   onClick={() => a11y.setOpenPanel(false)}
                   className="bg-primary text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest hover:bg-secondary"
                 >
-                  Done
+                  {t("close")}
                 </button>
               </footer>
             </motion.div>

@@ -35,6 +35,12 @@ export class ShapeDocument {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  title_sw: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  description_sw: string | null;
+
   @Column({ type: 'varchar', default: 'other' })
   category: ShapeDocumentCategory;
 
@@ -46,6 +52,18 @@ export class ShapeDocument {
 
   @Column({ type: 'int', nullable: true })
   file_size: number | null;
+
+  /** WebVTT / caption track URL for video or audio assets. */
+  @Column({ nullable: true })
+  captions_url: string;
+
+  /** Full text transcript for media or document accessibility. */
+  @Column({ type: 'text', nullable: true })
+  transcript: string;
+
+  /** Optional sign-language interpretation video/page URL. */
+  @Column({ nullable: true })
+  sign_language_url: string;
 
   @Column({ nullable: true })
   work_package_id: string | null;

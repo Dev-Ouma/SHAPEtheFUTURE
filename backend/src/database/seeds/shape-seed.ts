@@ -8,6 +8,7 @@ import { ShapeActivity } from '../../shape/entities/shape-activity.entity';
 import { ShapeKpi } from '../../shape/entities/shape-kpi.entity';
 import { ShapeRisk } from '../../shape/entities/shape-risk.entity';
 import { ShapeSdlcStage } from '../../shape/entities/shape-sdlc-stage.entity';
+import { ShapePressItem } from '../../shape/entities/shape-press-item.entity';
 import { User, UserRole, UserType, AccountStatus } from '../../auth/entities/user.entity';
 import { Role } from '../../auth/entities/role.entity';
 import { Setting } from '../../settings/entities/setting.entity';
@@ -45,6 +46,7 @@ export const runShapeSeed = async (dataSource: DataSource) => {
   const kpiRepo = dataSource.getRepository(ShapeKpi);
   const riskRepo = dataSource.getRepository(ShapeRisk);
   const sdlcRepo = dataSource.getRepository(ShapeSdlcStage);
+  const pressRepo = dataSource.getRepository(ShapePressItem);
   const userRepo = dataSource.getRepository(User);
   const settingRepo = dataSource.getRepository(Setting);
   const newsRepo = dataSource.getRepository(News);
@@ -656,6 +658,7 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       '/uploads/shape/events/event-3d-consortium-meeting.png',
       '/uploads/shape/events/event-3d-kickoff-workshop.png',
     ],
+    gallery_category: 'Meetings',
     is_published: true,
   };
   if (kickoff) {
@@ -664,6 +667,71 @@ export const runShapeSeed = async (dataSource: DataSource) => {
     kickoff = eventRepo.create(kickoffData);
   }
   await eventRepo.save(kickoff);
+
+  console.log('Seeding SHAPE press coverage...');
+  const pressData = [
+    {
+      title:
+        'SHAPE kick-off: Open University of Kenya hosts Erasmus+ smart-cities consortium',
+      title_sw:
+        'Uzinduzi wa SHAPE: Chuo Kikuu Huria cha Kenya kinakaribisha muungano wa Erasmus+ wa miji mahiri',
+      source: 'Open University of Kenya',
+      source_sw: 'Chuo Kikuu Huria cha Kenya',
+      url: 'https://ouk.ac.ke/',
+      date: '2025',
+      sort_order: 1,
+      is_published: true,
+    },
+    {
+      title:
+        'Moi University partners in East Africa–Europe smart cities higher education project',
+      title_sw:
+        'Chuo Kikuu cha Moi kinashiriki mradi wa elimu ya juu wa miji mahiri Afrika Mashariki–Ulaya',
+      source: 'Moi University',
+      source_sw: 'Chuo Kikuu cha Moi',
+      url: 'https://www.mu.ac.ke/',
+      date: '2025',
+      sort_order: 2,
+      is_published: true,
+    },
+    {
+      title: 'Makerere University joins SHAPE capacity-building partnership',
+      title_sw: 'Chuo Kikuu cha Makerere kinaungana na ushirikiano wa SHAPE',
+      source: 'Makerere University',
+      source_sw: 'Chuo Kikuu cha Makerere',
+      url: 'https://www.makerere.ac.ug/',
+      date: '2025',
+      sort_order: 3,
+      is_published: true,
+    },
+    {
+      title: 'Otto von Guericke University Magdeburg — European partner in SHAPE',
+      title_sw: 'Chuo Kikuu cha Otto von Guericke Magdeburg — mshirika wa Ulaya katika SHAPE',
+      source: 'OVGU Magdeburg',
+      url: 'https://www.ovgu.de/en/',
+      date: '2025',
+      sort_order: 4,
+      is_published: true,
+    },
+    {
+      title: 'University of Tartu contributes digital learning expertise to SHAPE',
+      title_sw: 'Chuo Kikuu cha Tartu kinachangia utaalamu wa kujifunza kidijitali kwa SHAPE',
+      source: 'University of Tartu',
+      url: 'https://ut.ee/en',
+      date: '2025',
+      sort_order: 5,
+      is_published: true,
+    },
+  ];
+  for (const data of pressData) {
+    let item = await pressRepo.findOne({ where: { url: data.url } });
+    if (item) {
+      Object.assign(item, data);
+    } else {
+      item = pressRepo.create(data);
+    }
+    await pressRepo.save(item);
+  }
 
   console.log('Seeding SHAPE activities...');
   const activitiesData = [

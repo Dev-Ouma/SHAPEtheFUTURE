@@ -125,14 +125,32 @@ function ShapeSearchInner() {
   const staticPages: ResultItem[] = useMemo(() => {
     if (query.trim().length < 2) return [];
     const q = query.toLowerCase();
-    return SHAPE_NAV_LINKS.filter(
-      (l) =>
-        l.title.toLowerCase().includes(q) ||
+    const labels: Record<string, string> = {
+      home: "Home",
+      theProject: "The Project",
+      partners: "Partners",
+      workPackages: "Work Packages",
+      workplan: "Workplan",
+      events: "Events",
+      dashboard: "Dashboard",
+      documents: "Documents",
+      news: "News",
+      sdlc: "SDLC",
+      monitoring: "Monitoring",
+      map: "Map",
+      media: "Media",
+      contact: "Contact",
+    };
+    return SHAPE_NAV_LINKS.filter((l) => {
+      const title = labels[l.titleKey] || l.titleKey;
+      return (
+        title.toLowerCase().includes(q) ||
         l.href.replace("/", "").includes(q) ||
-        "shape erasmus project".includes(q),
-    ).map((l) => ({
+        "shape erasmus project".includes(q)
+      );
+    }).map((l) => ({
       id: `nav-${l.href}`,
-      title: l.title,
+      title: labels[l.titleKey] || l.titleKey,
       subtitle: "Site page",
       href: l.href,
       type: "pages" as Filter,

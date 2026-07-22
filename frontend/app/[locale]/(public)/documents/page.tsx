@@ -1,5 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import ShapePageHero from "@/components/shape/ShapePageHero";
 import DocumentsClient from "@/components/shape/DocumentsClient";
 import { getShapeDocuments } from "@/lib/shape-api";
@@ -19,14 +20,15 @@ export async function generateMetadata({
 }
 
 export default async function DocumentsPage() {
+  const t = await getTranslations("Shape.pages");
   const documents = await getShapeDocuments();
 
   return (
     <div className="bg-white">
       <ShapePageHero
         eyebrow="Knowledge hub"
-        title="Documents"
-        subtitle="Search and filter project deliverables, reports, minutes, presentations, and templates."
+        title={t("documentsTitle")}
+        subtitle={t("documentsSubtitle")}
       />
       <section className="shape-section">
         <div className="container mx-auto px-6">
