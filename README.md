@@ -166,7 +166,7 @@ Use that same email/password to sign in at `/admin`. Change credentials for any 
 | Path | Purpose |
 |------|---------|
 | `/` | Home — hero, stats, overview, news, WPs, partners |
-| `/about` | Objectives, outcomes, funding, Erasmus+ |
+| `/the-project` | Objectives, outcomes, funding, Erasmus+ |
 | `/partners` | Nine partner institutions |
 | `/work-packages` | WP1–WP8 with progress |
 | `/workplan` | Activity timeline |

@@ -953,7 +953,7 @@ export async function getShapeAdminList(resource: string) {
 /** Full SHAPE PMIS primary navigation. */
 export const SHAPE_NAV_LINKS = [
   { title: "Home", href: "/" },
-  { title: "About", href: "/about" },
+  { title: "The Project", href: "/the-project" },
   { title: "Partners", href: "/partners" },
   { title: "Work Packages", href: "/work-packages" },
   { title: "Workplan", href: "/workplan" },
@@ -964,9 +964,50 @@ export const SHAPE_NAV_LINKS = [
   { title: "SDLC", href: "/sdlc" },
   { title: "Monitoring", href: "/monitoring" },
   { title: "Map", href: "/map" },
-  { title: "Gallery", href: "/gallery" },
+  { title: "Media", href: "/media" },
   { title: "Contact", href: "/contact" },
 ] as const;
+
+export type ShapePressItem = {
+  title: string;
+  source: string;
+  url: string;
+  date?: string;
+};
+
+/** External press / partner coverage (Prosper-style media list). */
+export const SHAPE_PRESS_COVERAGE: ShapePressItem[] = [
+  {
+    title: "SHAPE kick-off: Open University of Kenya hosts Erasmus+ smart-cities consortium",
+    source: "Open University of Kenya",
+    url: "https://ouk.ac.ke/",
+    date: "2025",
+  },
+  {
+    title: "Moi University partners in East Africa–Europe smart cities higher education project",
+    source: "Moi University",
+    url: "https://www.mu.ac.ke/",
+    date: "2025",
+  },
+  {
+    title: "Makerere University joins SHAPE capacity-building partnership",
+    source: "Makerere University",
+    url: "https://www.makerere.ac.ug/",
+    date: "2025",
+  },
+  {
+    title: "Otto von Guericke University Magdeburg — European partner in SHAPE",
+    source: "OVGU Magdeburg",
+    url: "https://www.ovgu.de/en/",
+    date: "2025",
+  },
+  {
+    title: "University of Tartu contributes digital learning expertise to SHAPE",
+    source: "University of Tartu",
+    url: "https://ut.ee/en",
+    date: "2025",
+  },
+];
 
 export type ShapeObjective = { title: string; text: string };
 
@@ -1072,4 +1113,4 @@ export function resolveShapeHomeSettings(settings: Record<string, any> = {}) {
   };
 }
 
-/** CMS menu seed (optional): mirror SHAPE_NAV_LINKS into header/footer menus if needed. */
+/** CMS menu seed (optional): mirror SHAPE_NAV_LINKS — first item is "The Project" → `/the-project`. */

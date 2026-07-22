@@ -14,14 +14,14 @@ const TEXT_KEYS = [
   { key: "shape_hero_title", label: "Homepage — Hero title (brand)", type: "text" as const },
   { key: "shape_hero_text", label: "Homepage — Hero supporting text", type: "textarea" as const },
   { key: "shape_intro", label: "Homepage — Intro paragraph", type: "textarea" as const },
-  { key: "shape_acronym", label: "Project Information — Acronym", type: "textarea" as const },
-  { key: "shape_erasmus_call", label: "Project Information — Erasmus+ Call", type: "textarea" as const },
+  { key: "shape_acronym", label: "The Project — Acronym (fact sheet)", type: "textarea" as const },
+  { key: "shape_erasmus_call", label: "The Project — Erasmus+ Call (fact sheet)", type: "textarea" as const },
   {
     key: "shape_objectives_json",
-    label: "Objectives JSON (array of {title, text})",
+    label: "The Project — Objectives JSON (array of {title, text})",
     type: "textarea" as const,
   },
-  { key: "shape_overview", label: "Project Overview text", type: "textarea" as const },
+  { key: "shape_overview", label: "The Project — Overview text", type: "textarea" as const },
   { key: "contact_email", label: "Contact email", type: "text" as const },
   { key: "news_hub_eyebrow", label: "News hub — Eyebrow", type: "text" as const },
   { key: "news_hub_title", label: "News hub — Title", type: "text" as const },
@@ -43,7 +43,7 @@ const TEXT_KEYS = [
 ] as const;
 
 const IMAGE_KEYS = [
-  { key: "shape_overview_image", label: "Homepage — Overview image" },
+  { key: "shape_overview_image", label: "The Project / Homepage — Overview image" },
   { key: "news_hub_image_tablet", label: "News hub — 3D tablet visual" },
   { key: "news_hub_image_orb", label: "News hub — 3D search orb" },
   { key: "news_hub_image_cards", label: "News hub — 3D cards stack" },
@@ -151,10 +151,11 @@ export default function ShapeHomeAdminPage() {
             SHAPE CMS
           </p>
           <h1 className="text-3xl md:text-4xl font-serif font-black text-primary-darker tracking-tight uppercase">
-            Portal Content
+            The Project &amp; Home
           </h1>
           <p className="text-slate-500 text-sm mt-2 normal-case tracking-normal">
-            Homepage, news hub visuals, and search related-terms — all stored in the database
+            The Project fact sheet, homepage, news hub visuals, and search related-terms — stored in the
+            database
           </p>
         </div>
         <div className="flex gap-3">

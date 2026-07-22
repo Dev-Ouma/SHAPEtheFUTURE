@@ -10,7 +10,7 @@ const STATIC_PATHS: {
   priority: number;
 }[] = [
   { path: "/", changeFrequency: "daily", priority: 1 },
-  { path: "/about", changeFrequency: "monthly", priority: 0.9 },
+  { path: "/the-project", changeFrequency: "monthly", priority: 0.9 },
   { path: "/news", changeFrequency: "daily", priority: 0.9 },
   { path: "/partners", changeFrequency: "weekly", priority: 0.8 },
   { path: "/work-packages", changeFrequency: "weekly", priority: 0.8 },

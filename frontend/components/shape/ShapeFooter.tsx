@@ -4,6 +4,7 @@ import React from "react";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { SHAPE_NAV_LINKS } from "@/lib/shape-api";
+import EuFundingBadge from "@/components/shape/EuFundingBadge";
 
 type Props = {
   contactEmail?: string;
@@ -16,7 +17,7 @@ export default function ShapeFooter({
 }: Props) {
   const year = new Date().getFullYear();
   const quick = SHAPE_NAV_LINKS.filter((l) =>
-    ["/about", "/partners", "/work-packages", "/dashboard", "/documents", "/events", "/contact"].includes(
+    ["/the-project", "/partners", "/work-packages", "/dashboard", "/documents", "/events", "/contact"].includes(
       l.href,
     ),
   );
@@ -37,6 +38,7 @@ export default function ShapeFooter({
               Co-funded by the European Union. Views and opinions expressed are those of the author(s)
               only and do not necessarily reflect those of the European Union or EACEA.
             </p>
+            <EuFundingBadge variant="dark" className="bg-primary-darker/40 border-white/15" />
           </div>
 
           <div>
@@ -87,6 +89,7 @@ export default function ShapeFooter({
             <ul className="space-y-3">
               {[
                 { title: "Project Map", href: "/map" },
+                { title: "Media", href: "/media" },
                 { title: "Gallery", href: "/gallery" },
                 { title: "SDLC", href: "/sdlc" },
                 { title: "Monitoring", href: "/monitoring" },
@@ -107,9 +110,15 @@ export default function ShapeFooter({
 
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-4 text-xs text-slate-500">
           <p>© {year} Open University of Kenya | SHAPE Erasmus+. All rights reserved.</p>
-          <p className="uppercase tracking-widest font-bold text-[10px]">
-            Co-funded by the European Union
-          </p>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 uppercase tracking-widest font-bold text-[10px]">
+            <Link href="/privacy" className="hover:text-secondary transition-colors">
+              Privacy
+            </Link>
+            <Link href="/privacy-center" className="hover:text-secondary transition-colors">
+              Cookies
+            </Link>
+            <span>Co-funded by the European Union</span>
+          </div>
         </div>
       </div>
     </footer>

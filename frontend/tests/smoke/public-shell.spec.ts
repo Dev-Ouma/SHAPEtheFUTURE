@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
  */
 const PUBLIC_PATHS = [
   { path: "/", ready: /SHAPE|Erasmus|Smart Cities|Higher Education/i },
-  { path: "/about", ready: /SHAPE|About|Objectives|Erasmus/i },
+  { path: "/the-project", ready: /SHAPE|The Project|Objectives|Erasmus/i },
   { path: "/partners", ready: /Partner|University|Kenya|consortium/i },
   { path: "/contact", ready: /Contact|SHAPE|form|Open University/i },
 ] as const;

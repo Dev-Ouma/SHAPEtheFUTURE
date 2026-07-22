@@ -28,6 +28,15 @@ export default async function PartnersPage() {
         title="Full Partners"
         subtitle="Nine universities across Kenya, Uganda, Somalia, Germany, Estonia, and Lithuania — each with a distinct role in the Erasmus+ consortium."
       />
+      <section className="shape-section pt-12 pb-0">
+        <div className="container mx-auto px-6 max-w-3xl">
+          <p className="text-slate-600 leading-relaxed text-center">
+            The consortium brings together East African and European public higher-education institutions.
+            Each partner contributes complementary strengths — location, academic focus, and digital
+            pedagogy — to co-design smart-city capacity across the network.
+          </p>
+        </div>
+      </section>
       <section className="shape-section">
         <div className="container mx-auto px-6">
           <PartnersGrid partners={partners} />

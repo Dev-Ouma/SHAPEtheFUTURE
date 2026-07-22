@@ -52,10 +52,10 @@ export default function ShapeHomeHero({
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/about"
+              href="/the-project"
               className="inline-flex items-center gap-2 bg-secondary text-white px-7 py-4 text-[11px] font-black uppercase tracking-widest hover:bg-white hover:text-primary-darker transition-colors"
             >
-              About <ArrowRight size={14} />
+              The Project <ArrowRight size={14} />
             </Link>
             <Link
               href="/partners"

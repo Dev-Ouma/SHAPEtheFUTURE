@@ -6,6 +6,9 @@ import ShapeHomeHero from "@/components/shape/ShapeHomeHero";
 import ShapeStatsStrip from "@/components/shape/ShapeStatsStrip";
 import ShapeWpPreview from "@/components/shape/ShapeWpPreview";
 import ShapePartnersStrip from "@/components/shape/ShapePartnersStrip";
+import ProjectInfoCard from "@/components/shape/ProjectInfoCard";
+import HomeObjectives from "@/components/shape/HomeObjectives";
+import EuFundingBadge from "@/components/shape/EuFundingBadge";
 import {
   getShapeDashboard,
   getShapePartners,
@@ -78,16 +81,16 @@ export default async function Home({ params }: { params: { locale: string } }) {
       <ShapeStatsStrip stats={stats} />
 
       <section className="shape-section">
-        <div className="container mx-auto px-6 grid lg:grid-cols-12 gap-12 items-start">
-          <div className="lg:col-span-5">
-            <p className="shape-eyebrow mb-4">Project overview</p>
-            <h2 className="text-3xl md:text-5xl font-serif font-black text-primary-darker uppercase tracking-tight leading-[0.95] mb-6">
-              Building smart-city capacity through higher education
-            </h2>
-          </div>
-          <div className="lg:col-span-7 space-y-5 text-slate-600 leading-relaxed">
+        <div className="container mx-auto px-6 grid lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+          <div className="lg:col-span-7 space-y-6">
+            <div>
+              <p className="shape-eyebrow mb-4">The project</p>
+              <h2 className="text-3xl md:text-5xl font-serif font-black text-primary-darker uppercase tracking-tight leading-[0.95] mb-6">
+                Building smart-city capacity through higher education
+              </h2>
+            </div>
             {home.overviewImage ? (
-              <div className="relative aspect-[16/9] mb-6 bg-slate-100 overflow-hidden">
+              <div className="relative aspect-[16/9] bg-slate-100 overflow-hidden">
                 <SafeImage
                   src={resolveImageUrl(home.overviewImage)}
                   alt=""
@@ -97,19 +100,27 @@ export default async function Home({ params }: { params: { locale: string } }) {
                 />
               </div>
             ) : null}
-            <p>{home.overview}</p>
-            <p>{home.intro}</p>
+            <div className="space-y-5 text-slate-600 leading-relaxed">
+              <p>{home.overview}</p>
+              <p>{home.intro}</p>
+            </div>
+            <EuFundingBadge />
             <Link
-              href="/about"
+              href="/the-project"
               className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-primary hover:text-secondary"
             >
-              Read the full story <ArrowRight size={14} />
+              Learn more <ArrowRight size={14} />
             </Link>
+          </div>
+          <div className="lg:col-span-5">
+            <ProjectInfoCard acronym={home.acronym} erasmusCall={home.erasmusCall} />
           </div>
         </div>
       </section>
 
-      <section className="shape-section bg-slate-50">
+      <HomeObjectives objectives={home.objectives} />
+
+      <section className="shape-section">
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
             <div>
@@ -198,7 +209,7 @@ export default async function Home({ params }: { params: { locale: string } }) {
             {[
               { href: "/documents", title: "Documents", desc: "Deliverables, reports, templates" },
               { href: "/events", title: "Events", desc: "Meetings, workshops, agendas" },
-              { href: "/map", title: "Map", desc: "Partners across six countries" },
+              { href: "/media", title: "Media", desc: "Press coverage and photo gallery" },
               { href: "/contact", title: "Contact", desc: "Coordinator office & enquiry form" },
             ].map((item) => (
               <Link

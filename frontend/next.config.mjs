@@ -26,33 +26,23 @@ const nextConfig = {
     return [
       {
         source: "/about-us",
-        destination: "/about",
-        permanent: true,
+        destination: "/the-project",
+        permanent: false,
       },
       {
         source: "/about-us/:path*",
-        destination: "/about",
-        permanent: true,
+        destination: "/the-project",
+        permanent: false,
       },
       {
         source: "/sw/about-us",
-        destination: "/sw/about",
-        permanent: true,
+        destination: "/sw/the-project",
+        permanent: false,
       },
       {
         source: "/sw/about-us/:path*",
-        destination: "/sw/about",
-        permanent: true,
-      },
-      {
-        source: "/the-project",
-        destination: "/about",
-        permanent: true,
-      },
-      {
-        source: "/sw/the-project",
-        destination: "/sw/about",
-        permanent: true,
+        destination: "/sw/the-project",
+        permanent: false,
       },
       {
         source: "/contacts",
@@ -62,16 +52,6 @@ const nextConfig = {
       {
         source: "/sw/contacts",
         destination: "/sw/contact",
-        permanent: true,
-      },
-      {
-        source: "/media",
-        destination: "/gallery",
-        permanent: true,
-      },
-      {
-        source: "/sw/media",
-        destination: "/sw/gallery",
         permanent: true,
       },
       {

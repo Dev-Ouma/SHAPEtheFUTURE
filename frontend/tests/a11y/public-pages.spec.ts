@@ -10,7 +10,7 @@ import AxeBuilder from "@axe-core/playwright";
  */
 const PAGES = [
   "/",
-  "/about",
+  "/the-project",
   "/partners",
   "/news",
   "/contact",
