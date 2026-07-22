@@ -153,10 +153,7 @@ export class ResearchController {
 
   @Public()
   @Get('publications/slug/:slug')
-  findOneBySlug(
-    @Param('slug') slug: string,
-    @Query('locale') locale?: string,
-  ) {
+  findOneBySlug(@Param('slug') slug: string, @Query('locale') locale?: string) {
     return this.researchService.findOneBySlug(slug, locale);
   }
 

@@ -5,9 +5,7 @@ import { addColumnIfNotExists } from '../migration-helpers';
  * Layer E: programmes title_sw / overview_sw
  * Layer F: pages.content_sw + news.content_sw
  */
-export class AddProgrammesAndContentLocaleSwFields1782300000000
-  implements MigrationInterface
-{
+export class AddProgrammesAndContentLocaleSwFields1782300000000 implements MigrationInterface {
   name = 'AddProgrammesAndContentLocaleSwFields1782300000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

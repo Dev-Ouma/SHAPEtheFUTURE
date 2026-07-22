@@ -38,7 +38,7 @@ export class ShapeRisk {
   @Column({ nullable: true })
   category: string;
 
-  @Column({ default: true })
+  @Column({ default: false })
   is_published: boolean;
 
   @Column({ type: 'int', default: 0 })

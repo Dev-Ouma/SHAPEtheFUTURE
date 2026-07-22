@@ -7,7 +7,7 @@ Erasmus+ **Grant Management & Dissemination Portal** for *Strengthening Higher E
 | **Website** | https://shape.ouk.ac.ke |
 | **CMS / Admin** | https://shape.ouk.ac.ke/admin |
 
-Based on the same stack as [OUK-Websites](https://github.com/DevMwarabu/OUK-Websites).
+Stack heritage: [OUK-Websites](https://github.com/DevMwarabu/OUK-Websites). **Production deploy:** [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ---
 
@@ -79,10 +79,10 @@ sequenceDiagram
 | **Backend** | NestJS 11, TypeORM, Passport JWT, Swagger |
 | **Database** | PostgreSQL 15 (pgvector image) |
 | **Cache** | Redis (falls back to in-memory in local dev) |
-| **CMS** | Custom `/admin` SPA (same pattern as OUK main site) |
+| **CMS** | Custom `/admin` SPA |
 | **Deploy** | Docker Compose + Nginx |
 
-### Brand colours (OUK)
+### Brand colours
 
 | Token | Hex |
 |-------|-----|
@@ -101,9 +101,15 @@ shapethefuture/
 ├── frontend/                 # Next.js public site + /admin CMS
 ├── backend/                  # NestJS API + TypeORM entities
 │   └── src/shape/            # SHAPE domain (partners, WPs, events, KPIs…)
+├── docs/                     # Deploy hygiene + edge/TLS notes
+├── DEPLOYMENT.md             # Production cutover guide
 ├── docker-compose.yml        # Full stack (prod-oriented)
+├── docker-compose.prod.yml   # Bake FE public env in image
+├── docker-compose.dev.yml    # Local weak defaults (not for public hosts)
+├── docker-compose.tls.yml    # HTTPS overlay
 ├── docker-compose.shape.yml  # Local Postgres (+ Redis) only
-├── nginx.conf                # Reverse proxy
+├── nginx.conf                # HTTP reverse proxy
+├── nginx.ssl.example.conf    # TLS edge config (shape.ouk.ac.ke)
 └── .env.example              # Template secrets (no real credentials)
 ```
 
@@ -121,11 +127,10 @@ Postgres is mapped to **localhost:5433** (avoids clashing with a local Postgres 
 
 ### 2. Configure env
 
-Copy examples and adjust:
-
 ```bash
 cp .env.example .env
-# also: backend/.env and frontend/.env.local
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
 ```
 
 ### 3. Install, seed, run
@@ -135,6 +140,8 @@ cp .env.example .env
 cd backend && npm install && npm run start:dev
 
 # Seed SHAPE content + admin user (once)
+export SEED_ADMIN_EMAIL=admin@ouk.ac.ke
+export SEED_ADMIN_PASSWORD='your-strong-local-password'
 cd backend && npm run seed:shape
 
 # Website
@@ -146,18 +153,9 @@ cd frontend && npm install && npm run dev
 | Website | http://localhost:3000 |
 | Admin CMS | http://localhost:3000/admin |
 | API | http://localhost:3001 |
+| API health | http://localhost:3001/health |
 
-### Seed admin (local)
-
-Set a password in your environment before seeding — never commit it:
-
-```bash
-export SEED_ADMIN_EMAIL=admin@ouk.ac.ke
-export SEED_ADMIN_PASSWORD='your-strong-local-password'
-cd backend && npm run seed:shape
-```
-
-Use that same email/password to sign in at `/admin`. Change credentials for any shared or production environment.
+If an admin user already exists, seed can run without rotating the password (set `SEED_ADMIN_PASSWORD` only when creating or rotating).
 
 ---
 
@@ -177,8 +175,14 @@ Use that same email/password to sign in at `/admin`. Change credentials for any 
 | `/sdlc` | Project development cycle |
 | `/monitoring` | M&E + risk register |
 | `/map` | Interactive partner map |
+| `/media` | Press coverage + gallery |
 | `/gallery` | Media gallery |
+| `/accessibility` | Accessibility statement |
 | `/contact` | Coordinator + contact form |
+
+Legacy OUK academic/about routes are **fenced** (308 → `/the-project`) and disallowed in `robots.txt`.
+
+Public pages fall back to built-in seed content if the API is empty or unreachable.
 
 ---
 
@@ -186,10 +190,15 @@ Use that same email/password to sign in at `/admin`. Change credentials for any 
 
 SHAPE content managers (under **SHAPE Project** in the sidebar):
 
-- Homepage content · Partners · Work packages · Events · Documents  
+- Homepage · Partners · Work packages · Events · Documents · Press  
 - KPIs · Activities · Risks · SDLC · Contact inbox · News · Hero slides  
 
-Role-based access; Super Administrator has full control.
+| Role | Scope |
+|------|--------|
+| Super Admin / consortium coordinator | Full CMS including KPIs, risks, SDLC, press, contact inbox |
+| Partner institution | Scoped partners / WPs / events / documents / activities |
+
+New records default to **draft** until published.
 
 ---
 
@@ -197,29 +206,49 @@ Role-based access; Super Administrator has full control.
 
 **Public**
 
-- `GET /shape/partners` · `/work-packages` · `/events` · `/documents`
+- `GET /shape/partners` · `/work-packages` · `/events` · `/documents` · `/press`
 - `GET /shape/activities` · `/kpis` · `/risks` · `/sdlc` · `/dashboard`
 - `POST /shape/contact`
-- `GET /news` · `GET /settings/public`
+- `GET /news` · `GET /settings/public` · `GET /health`
 
 **Admin** (JWT cookie `ouk_admin_token`)
 
-- `GET /shape/*/admin` + `POST` / `PATCH` / `DELETE` mutations
+- `GET /shape/*/admin` + `POST` / `PATCH` / `DELETE` mutations  
 - `POST /auth/login` · `GET /auth/me`
 
 ---
 
-## Production notes
+## Tests & CI
 
 ```bash
-# Configure strong secrets in .env for shape.ouk.ac.ke
-docker compose up -d --build
+# Backend Shape unit tests
+cd backend && npx jest src/shape --runInBand
+
+# Frontend
+cd frontend && npm run typecheck
+cd frontend && npm run build   # eslint ignored during build; npm run lint remains available
+cd frontend && npm run test:a11y
+cd frontend && npm run test:smoke
+
+# Deploy pre-flight
+node scripts/check-deploy-hygiene.mjs
 ```
 
-- Set `NEXT_PUBLIC_SITE_URL=https://shape.ouk.ac.ke`
-- Set `NEXT_PUBLIC_API_URL=https://shape.ouk.ac.ke/api`
-- `TYPEORM_SYNCHRONIZE=false` in production; use migrations
-- Never commit `.env` files or database dumps
+---
+
+## Production (short)
+
+Full guide: **[DEPLOYMENT.md](./DEPLOYMENT.md)**.
+
+```bash
+cp .env.example .env   # strong POSTGRES_PASSWORD + JWT_SECRET
+node scripts/check-deploy-hygiene.mjs
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+- `TYPEORM_SYNCHRONIZE=false` in production; use migrations or a reconciled dump  
+- Never commit `.env` files or database dumps  
+- TLS: add `docker-compose.tls.yml` after certs for `shape.ouk.ac.ke`  
 
 ---
 

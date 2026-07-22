@@ -35,7 +35,8 @@ export class SeedCmsBodyLocaleSw1782600000000 implements MigrationInterface {
         slug: 'vice-chancellor',
         content_sw:
           '<p>Chuo Kikuu Huria cha Kenya kiko katika makutano ya teknolojia na uwezo wa binadamu. Kama Makamu wa Chansela, maono yangu ni kuongoza taasisi ambayo haifuati tu kasi ya dunia, bali inaweka kasi kwa mustakabali wa elimu ya juu.</p><p>Tunajenga zaidi ya chuo kikuu; tunajenga mtandao wa kimataifa wa wanafunzi na viongozi. Dhamira yetu kwa ufundishaji unaoendeshwa na teknolojia inahakikisha wanafunzi wetu wako tayari kwa changamoto za kesho, leo.</p>',
-        meta_title_sw: 'Maono ya Makamu wa Chansela | Chuo Kikuu Huria cha Kenya',
+        meta_title_sw:
+          'Maono ya Makamu wa Chansela | Chuo Kikuu Huria cha Kenya',
       },
       {
         slug: 'about/complaints',
@@ -125,13 +126,7 @@ export class SeedCmsBodyLocaleSw1782600000000 implements MigrationInterface {
              "description_sw" = COALESCE(NULLIF(TRIM("description_sw"), ''), $3::text),
              "cta_text_sw" = COALESCE(NULLIF(TRIM("cta_text_sw"), ''), $4::character varying)
          WHERE "cta_text" = $5::character varying`,
-        [
-          h.title_sw,
-          h.tagline_sw,
-          h.description_sw,
-          h.cta_text_sw,
-          h.cta_text,
-        ],
+        [h.title_sw, h.tagline_sw, h.description_sw, h.cta_text_sw, h.cta_text],
       );
     }
 

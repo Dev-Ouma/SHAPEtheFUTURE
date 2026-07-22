@@ -5,9 +5,7 @@ import { addColumnIfNotExists } from '../migration-helpers';
  * Layer L: additive Swahili columns + seed for careers, tenders, adverts,
  * testimonials, and research publications (upsert-if-empty).
  */
-export class AddPublicContentLocaleSwFields1782900000000
-  implements MigrationInterface
-{
+export class AddPublicContentLocaleSwFields1782900000000 implements MigrationInterface {
   name = 'AddPublicContentLocaleSwFields1782900000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

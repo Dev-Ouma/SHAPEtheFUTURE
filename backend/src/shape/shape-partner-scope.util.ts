@@ -2,11 +2,9 @@ import { SelectQueryBuilder } from 'typeorm';
 import { ForbiddenException } from '@nestjs/common';
 
 /** Restrict WP queries to packages led by or listing the partner. */
-export function applyPartnerWorkPackageScope<T extends { leader_partner_id?: string | null; partner_ids?: string[] }>(
-  qb: SelectQueryBuilder<T>,
-  alias: string,
-  partnerScopeId?: string | null,
-) {
+export function applyPartnerWorkPackageScope<
+  T extends { leader_partner_id?: string | null; partner_ids?: string[] },
+>(qb: SelectQueryBuilder<T>, alias: string, partnerScopeId?: string | null) {
   if (!partnerScopeId) return qb;
   return qb.andWhere(
     `(${alias}.leader_partner_id = :partnerScopeId OR CAST(${alias}.partner_ids AS text) ILIKE :partnerLike)`,

@@ -4,9 +4,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * Layer K: backfill Swahili for news summaries/bodies, academic calendar,
  * and footer menu titles (upsert-if-empty only).
  */
-export class SeedNewsCalendarFooterLocaleSw1782800000000
-  implements MigrationInterface
-{
+export class SeedNewsCalendarFooterLocaleSw1782800000000 implements MigrationInterface {
   name = 'SeedNewsCalendarFooterLocaleSw1782800000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

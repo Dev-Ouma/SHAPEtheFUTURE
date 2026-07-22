@@ -375,7 +375,9 @@ export class SearchService {
     return {
       ...row,
       title: pickLocalized(locale, row.title, (row as any).title_sw),
-      overview: pickLocalized(locale, row.overview, (row as any).overview_sw) || row.overview,
+      overview:
+        pickLocalized(locale, row.overview, (row as any).overview_sw) ||
+        row.overview,
       school: this.localizeSchool((row as any).school, locale),
     };
   }
@@ -384,7 +386,9 @@ export class SearchService {
     return {
       ...row,
       title: pickLocalized(locale, row.title, (row as any).title_sw),
-      summary: pickLocalized(locale, (row as any).summary, (row as any).summary_sw) || (row as any).summary,
+      summary:
+        pickLocalized(locale, (row as any).summary, (row as any).summary_sw) ||
+        (row as any).summary,
     };
   }
 
@@ -392,7 +396,9 @@ export class SearchService {
     return {
       ...row,
       title: pickLocalized(locale, row.title, (row as any).title_sw),
-      summary: pickLocalized(locale, (row as any).summary, (row as any).summary_sw) || (row as any).summary,
+      summary:
+        pickLocalized(locale, (row as any).summary, (row as any).summary_sw) ||
+        (row as any).summary,
     };
   }
 
@@ -400,7 +406,9 @@ export class SearchService {
     return {
       ...row,
       title: pickLocalized(locale, row.title, (row as any).title_sw),
-      overview: pickLocalized(locale, row.overview, (row as any).overview_sw) || row.overview,
+      overview:
+        pickLocalized(locale, row.overview, (row as any).overview_sw) ||
+        row.overview,
       school: this.localizeSchool((row as any).school, locale),
     };
   }
@@ -435,7 +443,12 @@ export class SearchService {
     return {
       ...row,
       title: pickLocalized(locale, row.title, (row as any).title_sw),
-      abstract: pickLocalized(locale, (row as any).abstract, (row as any).abstract_sw) || (row as any).abstract,
+      abstract:
+        pickLocalized(
+          locale,
+          (row as any).abstract,
+          (row as any).abstract_sw,
+        ) || (row as any).abstract,
     };
   }
 
@@ -460,11 +473,17 @@ export class SearchService {
   private async executeSuggestions(query: string, locale: AppLocale) {
     const likeQuery = `%${query}%`;
     const pubStatus = 'PUBLISHED';
-    const [partners, workPackages, events, documents, news] =
-      await Promise.all([
+    const [partners, workPackages, events, documents, news] = await Promise.all(
+      [
         this.shapePartnerRepository
           .createQueryBuilder('sp')
-          .select(['sp.id', 'sp.name', 'sp.short_name', 'sp.slug', 'sp.country'])
+          .select([
+            'sp.id',
+            'sp.name',
+            'sp.short_name',
+            'sp.slug',
+            'sp.country',
+          ])
           .addSelect(
             "GREATEST(similarity(sp.name, :query), similarity(COALESCE(sp.short_name, ''), :query))",
             'sim',
@@ -534,7 +553,8 @@ export class SearchService {
           .orderBy('sim', 'DESC')
           .take(2)
           .getMany(),
-      ]);
+      ],
+    );
 
     return [
       ...partners.map((p) => ({
@@ -613,17 +633,9 @@ export class SearchService {
 
     const searchQuery = `%${query}%`;
 
+    // SHAPE CMS search only — do not surface leftover OUK entities in admin.
     const [
-      staff,
-      publications,
-      schools,
-      departments,
-      programs,
-      pages,
       news,
-      jobs,
-      downloads,
-      peerLearners,
       partners,
       workPackages,
       events,
@@ -634,59 +646,9 @@ export class SearchService {
       sdlcStages,
       contacts,
     ] = await Promise.all([
-      this.staffRepository.find({
-        where: [
-          { full_name: ILike(searchQuery) },
-          { job_title: ILike(searchQuery) },
-          { email: ILike(searchQuery) },
-        ],
-        take: 10,
-      }),
-      this.publicationRepository.find({
-        where: [
-          { title: ILike(searchQuery) },
-          { doi: ILike(searchQuery) },
-          { journal_name: ILike(searchQuery) },
-        ],
-        take: 10,
-      }),
-      this.schoolRepository.find({
-        where: [{ name: ILike(searchQuery) }, { slug: ILike(searchQuery) }],
-        take: 5,
-      }),
-      this.departmentRepository.find({
-        where: [{ name: ILike(searchQuery) }, { slug: ILike(searchQuery) }],
-        take: 5,
-      }),
-      this.programRepository.find({
-        where: [
-          { title: ILike(searchQuery) },
-          { programme_code: ILike(searchQuery) },
-        ],
-        take: 10,
-      }),
-      this.pageRepository.find({
-        where: [{ title: ILike(searchQuery) }],
-        take: 10,
-      }),
       this.newsRepository.find({
         where: [{ title: ILike(searchQuery) }],
         take: 10,
-      }),
-      this.jobRepository.find({
-        where: [
-          { title: ILike(searchQuery) },
-          { reference_code: ILike(searchQuery) },
-        ],
-        take: 10,
-      }),
-      this.downloadRepository.find({
-        where: [{ title: ILike(searchQuery) }],
-        take: 5,
-      }),
-      this.peerLearnerRepository.find({
-        where: [{ name: ILike(searchQuery) }, { email: ILike(searchQuery) }],
-        take: 5,
       }),
       this.shapePartnerRepository.find({
         where: [
@@ -722,7 +684,10 @@ export class SearchService {
         take: 10,
       }),
       this.shapeActivityRepository.find({
-        where: [{ title: ILike(searchQuery) }, { description: ILike(searchQuery) }],
+        where: [
+          { title: ILike(searchQuery) },
+          { description: ILike(searchQuery) },
+        ],
         take: 8,
       }),
       this.shapeKpiRepository.find({
@@ -760,11 +725,13 @@ export class SearchService {
       }),
     ]);
 
-    const results = [
+    return [
       ...partners.map((p) => ({
         id: p.id,
         title: p.name,
-        subtitle: [p.short_name, p.country, p.consortium_role].filter(Boolean).join(' · '),
+        subtitle: [p.short_name, p.country, p.consortium_role]
+          .filter(Boolean)
+          .join(' · '),
         type: 'SHAPE Partner',
         link: `/admin/shape-partners`,
       })),
@@ -778,7 +745,9 @@ export class SearchService {
       ...events.map((ev) => ({
         id: ev.id,
         title: ev.title,
-        subtitle: [ev.venue, ev.country, ev.event_date].filter(Boolean).join(' · '),
+        subtitle: [ev.venue, ev.country, ev.event_date]
+          .filter(Boolean)
+          .join(' · '),
         type: 'SHAPE Event',
         link: `/admin/shape-events`,
       })),
@@ -831,71 +800,6 @@ export class SearchService {
         type: 'News',
         link: `/admin/news?id=${n.id}`,
       })),
-      ...staff.map((s) => ({
-        id: s.id,
-        title: s.full_name,
-        subtitle: s.job_title,
-        type: 'Staff',
-        link: `/admin/staff/form?id=${s.id}`,
-      })),
-      ...publications.map((p) => ({
-        id: p.id,
-        title: p.title,
-        subtitle: p.type,
-        type: 'Publication',
-        link: `/admin/research/publications/form?id=${p.id}`,
-      })),
-      ...schools.map((s) => ({
-        id: s.id,
-        title: s.name,
-        subtitle: s.slug,
-        type: 'School',
-        link: `/admin/schools`,
-      })),
-      ...departments.map((d) => ({
-        id: d.id,
-        title: d.name,
-        subtitle: d.slug,
-        type: 'Department',
-        link: `/admin/departments`,
-      })),
-      ...programs.map((p) => ({
-        id: p.id,
-        title: p.title,
-        subtitle: p.programme_code,
-        type: 'Program',
-        link: `/admin/programs?id=${p.id}`,
-      })),
-      ...pages.map((p) => ({
-        id: p.id,
-        title: p.title,
-        subtitle: 'Static Page',
-        type: 'Page',
-        link: `/admin/pages?id=${p.id}`,
-      })),
-      ...jobs.map((j) => ({
-        id: j.id,
-        title: j.title,
-        subtitle: j.reference_code,
-        type: 'Career',
-        link: `/admin/careers/jobs?id=${j.id}`,
-      })),
-      ...downloads.map((d) => ({
-        id: d.id,
-        title: d.title,
-        subtitle: 'Downloadable Resource',
-        type: 'Download',
-        link: `/admin/downloads`,
-      })),
-      ...peerLearners.map((p) => ({
-        id: p.id,
-        title: p.name,
-        subtitle: 'Peer Learner',
-        type: 'Peer Learner',
-        link: `/admin/peer-learners`,
-      })),
     ];
-
-    return results;
   }
 }

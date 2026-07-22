@@ -13,9 +13,9 @@ COPY package*.json ./
 RUN npm ci
 
 FROM deps AS builder
-ARG NEXT_PUBLIC_API_URL=https://www.ouk.ac.ke/api
-ARG NEXT_PUBLIC_SOCKET_URL=https://www.ouk.ac.ke
-ARG NEXT_PUBLIC_SITE_URL=https://www.ouk.ac.ke
+ARG NEXT_PUBLIC_API_URL=https://shape.ouk.ac.ke/api
+ARG NEXT_PUBLIC_SOCKET_URL=https://shape.ouk.ac.ke
+ARG NEXT_PUBLIC_SITE_URL=https://shape.ouk.ac.ke
 ARG NEXT_PUBLIC_GA_MEASUREMENT_ID=
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     NEXT_PUBLIC_SOCKET_URL=$NEXT_PUBLIC_SOCKET_URL \

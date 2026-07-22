@@ -1,5 +1,10 @@
 import type { MetadataRoute } from "next";
-import { getNews, getPrograms, getSchools } from "@/lib/api";
+import { getNews } from "@/lib/api";
+import {
+  getShapeEvents,
+  getShapePartners,
+  getShapeWorkPackages,
+} from "@/lib/shape-api";
 import { sitemapEntry } from "@/lib/seo";
 
 const STATIC_PATHS: {
@@ -14,12 +19,18 @@ const STATIC_PATHS: {
   { path: "/news", changeFrequency: "daily", priority: 0.9 },
   { path: "/partners", changeFrequency: "weekly", priority: 0.8 },
   { path: "/work-packages", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/workplan", changeFrequency: "weekly", priority: 0.7 },
+  { path: "/media", changeFrequency: "weekly", priority: 0.7 },
   { path: "/gallery", changeFrequency: "weekly", priority: 0.7 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.7 },
   { path: "/documents", changeFrequency: "weekly", priority: 0.6 },
   { path: "/dashboard", changeFrequency: "weekly", priority: 0.5 },
   { path: "/events", changeFrequency: "weekly", priority: 0.5 },
+  { path: "/monitoring", changeFrequency: "weekly", priority: 0.5 },
+  { path: "/sdlc", changeFrequency: "monthly", priority: 0.5 },
   { path: "/map", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/accessibility", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/search", changeFrequency: "monthly", priority: 0.3 },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -32,39 +43,44 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   try {
-    const [schoolsRes, programmesRes, newsRes] = await Promise.all([
-      getSchools().catch(() => []),
-      getPrograms({ limit: 200 }).catch(() => ({ data: [] })),
+    const [partners, workPackages, events, newsRes] = await Promise.all([
+      getShapePartners().catch(() => []),
+      getShapeWorkPackages().catch(() => []),
+      getShapeEvents().catch(() => []),
       getNews({ limit: 100 }).catch(() => ({ data: [] })),
     ]);
 
-    const schools = Array.isArray(schoolsRes)
-      ? schoolsRes
-      : (schoolsRes as any)?.data || [];
-    const programmes = Array.isArray(programmesRes)
-      ? programmesRes
-      : (programmesRes as any)?.data || [];
     const news = Array.isArray(newsRes)
       ? newsRes
       : (newsRes as any)?.data || [];
 
-    const schoolEntries = schools
-      .filter((s: any) => s?.slug)
-      .map((s: any) =>
-        sitemapEntry(`/academics/schools/${s.slug}`, {
-          lastModified: s.updated_at ? new Date(s.updated_at) : new Date(),
+    const partnerEntries = partners
+      .filter((p) => p?.slug)
+      .map((p) =>
+        sitemapEntry(`/partners/${p.slug}`, {
+          lastModified: new Date(),
           changeFrequency: "weekly",
-          priority: 0.8,
+          priority: 0.7,
         }),
       );
 
-    const programmeEntries = programmes
-      .filter((p: any) => p?.slug)
-      .map((p: any) =>
-        sitemapEntry(`/programmes/${p.slug}`, {
-          lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
+    const wpEntries = workPackages
+      .filter((wp) => wp?.slug)
+      .map((wp) =>
+        sitemapEntry(`/work-packages/${wp.slug}`, {
+          lastModified: new Date(),
           changeFrequency: "weekly",
-          priority: 0.8,
+          priority: 0.7,
+        }),
+      );
+
+    const eventEntries = events
+      .filter((e) => e?.slug)
+      .map((e) =>
+        sitemapEntry(`/events/${e.slug}`, {
+          lastModified: new Date(),
+          changeFrequency: "weekly",
+          priority: 0.6,
         }),
       );
 
@@ -83,8 +99,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return [
       ...staticRoutes,
-      ...schoolEntries,
-      ...programmeEntries,
+      ...partnerEntries,
+      ...wpEntries,
+      ...eventEntries,
       ...newsEntries,
     ];
   } catch {

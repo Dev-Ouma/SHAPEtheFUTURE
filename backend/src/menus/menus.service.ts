@@ -25,10 +25,8 @@ export class MenusService implements OnModuleInit {
       ? node.featuredNews.map((n: any) => ({
           ...n,
           title: pickLocalized(locale, n.title, n.title_sw),
-          summary:
-            pickLocalized(locale, n.summary, n.summary_sw) || n.summary,
-          content:
-            pickLocalized(locale, n.content, n.content_sw) || n.content,
+          summary: pickLocalized(locale, n.summary, n.summary_sw) || n.summary,
+          content: pickLocalized(locale, n.content, n.content_sw) || n.content,
         }))
       : node.featuredNews;
     return {
@@ -229,8 +227,7 @@ export class MenusService implements OnModuleInit {
             title: child.title,
             slug: child.slug,
             order: child.order,
-            link:
-              (child as { link?: string }).link || `/${child.slug}`,
+            link: (child as { link?: string }).link || `/${child.slug}`,
             parent: savedParent as any,
             position: 'header',
           });

@@ -41,7 +41,8 @@ export const runCalendarSeed = async (dataSource: DataSource) => {
       date_start: '2025-06-01',
       category: 'Holiday',
       description: 'National holiday - all university operations suspended.',
-      description_sw: 'Sikukuu ya kitaifa — shughuli zote za chuo zinasimamishwa.',
+      description_sw:
+        'Sikukuu ya kitaifa — shughuli zote za chuo zinasimamishwa.',
     },
     {
       title: 'Mid-Semester Assessment Week',

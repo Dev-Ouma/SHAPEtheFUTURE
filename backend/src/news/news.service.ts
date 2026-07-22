@@ -24,9 +24,9 @@ export class NewsService {
   }
 
   private localizeNews(news: News, locale: AppLocale): News {
-    const content = pickLocalized(locale, news.content, news.content_sw) || news.content;
-    const summaryEn =
-      news.summary || this.stripHtml(content).slice(0, 200);
+    const content =
+      pickLocalized(locale, news.content, news.content_sw) || news.content;
+    const summaryEn = news.summary || this.stripHtml(content).slice(0, 200);
     return {
       ...news,
       title: pickLocalized(locale, news.title, news.title_sw),

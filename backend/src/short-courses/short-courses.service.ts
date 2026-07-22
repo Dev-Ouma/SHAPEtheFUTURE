@@ -25,7 +25,8 @@ export class ShortCoursesService {
     const localized = {
       ...course,
       title: pickLocalized(locale, course.title, course.title_sw),
-      about: pickLocalized(locale, course.about, course.about_sw) || course.about,
+      about:
+        pickLocalized(locale, course.about, course.about_sw) || course.about,
       overview:
         pickLocalized(locale, course.overview, course.overview_sw) ||
         course.overview,

@@ -47,7 +47,7 @@ export class ShapeSdlcStage {
   @Column({ type: 'simple-json', nullable: true })
   document_urls: string[];
 
-  @Column({ default: true })
+  @Column({ default: false })
   is_published: boolean;
 
   @CreateDateColumn()

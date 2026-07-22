@@ -17,6 +17,7 @@ const LEGACY_OUK_DISALLOW = [
   "/virtual-tour",
   "/partnerships",
   "/service-charter",
+  "/about",
   "/about-us",
   "/faqs",
   "/social",

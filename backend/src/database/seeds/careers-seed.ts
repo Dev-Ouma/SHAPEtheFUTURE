@@ -111,7 +111,8 @@ export const runCareersSeed = async (dataSource: DataSource) => {
       requirements_sw:
         '<ul><li>Ph.D. katika Sayansi ya Kompyuta au uwanja husika</li><li>Uzoefu wa kufundisha wa miaka 10+</li></ul>',
       qualifications: '<ul><li>Published in top-tier journals</li></ul>',
-      qualifications_sw: '<ul><li>Machapisho katika majarida ya ngazi ya juu</li></ul>',
+      qualifications_sw:
+        '<ul><li>Machapisho katika majarida ya ngazi ya juu</li></ul>',
       benefits:
         '<p>Comprehensive medical, house allowance, and extensive research grants.</p>',
       benefits_sw:
@@ -190,7 +191,8 @@ export const runCareersSeed = async (dataSource: DataSource) => {
       responsibilities_sw:
         '<ul><li>Simamia bajeti za mabilioni ya shilingi</li><li>Kuza uhusiano na wafadhili wa kimataifa</li></ul>',
       requirements: '<ul><li>CPA-K, Master’s in Finance</li></ul>',
-      requirements_sw: '<ul><li>CPA-K, Shahada ya Uzamili katika Fedha</li></ul>',
+      requirements_sw:
+        '<ul><li>CPA-K, Shahada ya Uzamili katika Fedha</li></ul>',
       qualifications: '<ul><li>Registered with ICPAK</li></ul>',
       qualifications_sw: '<ul><li>Kusajiliwa na ICPAK</li></ul>',
       benefits: '<p>Executive allowance, vehicle provision.</p>',
@@ -228,11 +230,13 @@ export const runCareersSeed = async (dataSource: DataSource) => {
       responsibilities_sw:
         '<ul><li>Kagua sera za ndani za data</li><li>Shirikiana na Kamishna wa Data</li></ul>',
       requirements: '<ul><li>Degree in Law or Information Security</li></ul>',
-      requirements_sw: '<ul><li>Shahada katika Sheria au Usalama wa Habari</li></ul>',
+      requirements_sw:
+        '<ul><li>Shahada katika Sheria au Usalama wa Habari</li></ul>',
       qualifications: '<ul><li>CIPP certification</li></ul>',
       qualifications_sw: '<ul><li>Cheti cha CIPP</li></ul>',
       benefits: '<p>Continuous training and legal certifications covered.</p>',
-      benefits_sw: '<p>Mafunzo endelevu na vyeti vya kisheria vinafadhiliwa.</p>',
+      benefits_sw:
+        '<p>Mafunzo endelevu na vyeti vya kisheria vinafadhiliwa.</p>',
       application_deadline: pastDeadline, // Will show as closed
       application_method: 'internal',
       status: 'Published',

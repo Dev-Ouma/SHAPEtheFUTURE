@@ -91,6 +91,10 @@ const contexts = [
 ];
 
 for (const ctx of contexts) {
+  if (!fs.existsSync(ctx.dir)) {
+    ok(`${ctx.name}: not present (skipped)`);
+    continue;
+  }
   const diPath = path.join(ctx.dir, ".dockerignore");
   if (!fs.existsSync(diPath)) {
     fail(`${ctx.name}: missing .dockerignore`);

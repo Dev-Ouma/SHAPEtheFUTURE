@@ -14,8 +14,10 @@ export class MaintenanceService {
   private readonly logger = new Logger(MaintenanceService.name);
 
   /** Short process-local cache — /status is hit by every public middleware request. */
-  private statusCache: { value: Record<string, unknown>; expiresAt: number } | null =
-    null;
+  private statusCache: {
+    value: Record<string, unknown>;
+    expiresAt: number;
+  } | null = null;
   private static readonly STATUS_TTL_MS = 15_000;
 
   constructor(
@@ -125,7 +127,10 @@ export class MaintenanceService {
       where: { id: 'singleton' },
     });
     if (!setting) {
-      const live = { mode: MaintenanceMode.LIVE, allowed_modules: [] as string[] };
+      const live = {
+        mode: MaintenanceMode.LIVE,
+        allowed_modules: [] as string[],
+      };
       this.statusCache = {
         value: live,
         expiresAt: nowMs + MaintenanceService.STATUS_TTL_MS,

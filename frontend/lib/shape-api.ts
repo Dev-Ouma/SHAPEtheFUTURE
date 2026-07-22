@@ -441,19 +441,40 @@ export const SHAPE_EVENTS_FALLBACK: ShapeEvent[] = [
     host: "Moi University",
     status: "Completed",
     summary: "Consortium launch and work-package alignment.",
-    gallery_urls: [],
+    gallery_urls: [
+      "/uploads/shape/events/event-3d-consortium-meeting.png",
+      "/uploads/shape/events/event-3d-kickoff-workshop.png",
+    ],
+    gallery_category: "Meetings",
     agenda: "Welcome, partner introductions, WP overviews, next steps.",
     outcomes: "Agreed Year-1 roadmap and communication protocols.",
+  },
+  {
+    id: "2",
+    slug: "curriculum-co-design-workshop",
+    title: "Curriculum Co-design Workshop",
+    date: "2026-10-12",
+    venue: "Makerere University",
+    country: "Uganda",
+    host: "Makerere University",
+    status: "Planned",
+    summary: "Partner co-design of smart-city modules and micro-credentials.",
+    gallery_urls: [],
+    gallery_category: "Workshops",
+    agenda: "Module mapping, industry input, assessment design.",
+    outcomes: "Draft module outlines agreed for WP3 pilots.",
   },
 ];
 
 export const SHAPE_ACTIVITIES_FALLBACK: ShapeActivity[] = [
-  { id: "1", title: "Kick-off Meeting", start: "2026-06", end: "2026-06", status: "completed", work_package: "WP1" },
-  { id: "2", title: "Needs Assessment", start: "2026-07", end: "2026-09", status: "in_progress", work_package: "WP2" },
-  { id: "3", title: "Curriculum Design", start: "2026-10", end: "2027-03", status: "planned", work_package: "WP3" },
-  { id: "4", title: "Platform Development", start: "2027-01", end: "2027-06", status: "planned", work_package: "WP4" },
-  { id: "5", title: "Pilot Training", start: "2027-07", end: "2027-12", status: "planned", work_package: "WP5" },
-  { id: "6", title: "Evaluation", start: "2028-01", end: "2028-12", status: "planned", work_package: "WP6" },
+  { id: "1", title: "Consortium kick-off & governance setup", start: "2026-06-18", end: "2026-06-20", status: "completed", work_package: "WP1" },
+  { id: "2", title: "Baseline needs assessment fieldwork", start: "2026-07-01", end: "2026-09-30", status: "in_progress", work_package: "WP2" },
+  { id: "3", title: "Curriculum co-design sprints", start: "2026-10-01", end: "2027-03-31", status: "planned", work_package: "WP3" },
+  { id: "4", title: "Digital learning platform MVP", start: "2027-01-01", end: "2027-06-30", status: "planned", work_package: "WP4" },
+  { id: "5", title: "Pilot trainer cohorts", start: "2027-07-01", end: "2027-12-31", status: "planned", work_package: "WP5" },
+  { id: "6", title: "QA peer-review cycle", start: "2027-04-01", end: "2027-09-30", status: "planned", work_package: "WP6" },
+  { id: "7", title: "Dissemination & stakeholder forums", start: "2026-09-01", end: "2028-06-30", status: "planned", work_package: "WP7" },
+  { id: "8", title: "Sustainability & institutionalisation plan", start: "2028-01-01", end: "2028-12-31", status: "planned", work_package: "WP8" },
 ];
 
 export const SHAPE_DOCUMENTS_FALLBACK: ShapeDocument[] = [

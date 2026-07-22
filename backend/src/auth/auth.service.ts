@@ -1,4 +1,11 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -42,7 +49,9 @@ export class AuthService {
     const normalizedEmail = email.trim().toLowerCase();
     const user = await this.userRepository
       .createQueryBuilder('user')
-      .where('LOWER(user.email) = :email OR LOWER(user.username) = :email', { email: normalizedEmail })
+      .where('LOWER(user.email) = :email OR LOWER(user.username) = :email', {
+        email: normalizedEmail,
+      })
       .select([
         'user.id',
         'user.email',
@@ -60,15 +69,19 @@ export class AuthService {
       .leftJoinAndSelect('user.allowedPermissions', 'allowedPermissions')
       .leftJoinAndSelect('user.deniedPermissions', 'deniedPermissions')
       .getOne();
-    
+
     if (!user) return null;
 
     if (user.account_status === 'suspended') {
-      throw new UnauthorizedException('Account suspended. Contact ICT Support.');
+      throw new UnauthorizedException(
+        'Account suspended. Contact ICT Support.',
+      );
     }
 
     if (user.locked_until && user.locked_until > new Date()) {
-      const mins = Math.ceil((user.locked_until.getTime() - Date.now()) / 60000);
+      const mins = Math.ceil(
+        (user.locked_until.getTime() - Date.now()) / 60000,
+      );
       throw new UnauthorizedException(
         `Account temporarily locked due to multiple failed login attempts. Try again in ${mins} minute(s) or use Forgot Password.`,
       );
@@ -115,21 +128,21 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    
+
     // Normalize role for token payload: formal role slug takes precedence, falling back to legacy role
     const roleIdentifier = user.role?.slug || user.role_legacy;
-    
-    const payload = { 
-      email: user.email, 
-      sub: user.id, 
+
+    const payload = {
+      email: user.email,
+      sub: user.id,
       role: roleIdentifier,
-      require_password_change: !user.last_password_change_at 
+      require_password_change: !user.last_password_change_at,
     };
-    
+
     return {
       access_token: this.jwtService.sign(payload),
       user,
-      require_password_change: !user.last_password_change_at
+      require_password_change: !user.last_password_change_at,
     };
   }
 
@@ -148,7 +161,8 @@ export class AuthService {
   }
 
   private sanitizeUser(user: User): User {
-    const { password, otp, reset_token, two_factor_secret, ...safe } = user as any;
+    const { password, otp, reset_token, two_factor_secret, ...safe } =
+      user as any;
     return safe as User;
   }
 
@@ -161,8 +175,18 @@ export class AuthService {
     subject = 'Welcome to Open University of Kenya',
   ): Promise<UserProvisioningDetails> {
     const loginUrl = this.getAdminLoginUrl();
-    const emailHtml = this.mailService.getWelcomeEmailTemplate(email, username, temporaryPassword, loginUrl);
-    const emailSent = await this.mailService.sendEmail('system', email, subject, emailHtml);
+    const emailHtml = this.mailService.getWelcomeEmailTemplate(
+      email,
+      username,
+      temporaryPassword,
+      loginUrl,
+    );
+    const emailSent = await this.mailService.sendEmail(
+      'system',
+      email,
+      subject,
+      emailHtml,
+    );
 
     const provisioning: UserProvisioningDetails = {
       username,
@@ -183,7 +207,18 @@ export class AuthService {
     return provisioning;
   }
 
-  async register(data: { email: string, fullName: string, username?: string, role?: string, roleId?: string, userType?: string, department?: string, school?: string, phone_number?: string, partner_institution_id?: string | null }): Promise<{ user: User; provisioning: UserProvisioningDetails }> {
+  async register(data: {
+    email: string;
+    fullName: string;
+    username?: string;
+    role?: string;
+    roleId?: string;
+    userType?: string;
+    department?: string;
+    school?: string;
+    phone_number?: string;
+    partner_institution_id?: string | null;
+  }): Promise<{ user: User; provisioning: UserProvisioningDetails }> {
     const normalizedEmail = data.email.trim().toLowerCase();
     // Generate secure random alphanumeric password (12 chars)
     const otp = randomBytes(6).toString('hex');
@@ -218,10 +253,18 @@ export class AuthService {
     }
 
     // Check against staff_members table to prevent different staff and users sharing the same email
-    const staffCheck = await this.dataSource.query('SELECT full_name FROM staff_members WHERE LOWER(email) = LOWER($1) AND deleted_at IS NULL', [normalizedEmail]);
+    const staffCheck = await this.dataSource.query(
+      'SELECT full_name FROM staff_members WHERE LOWER(email) = LOWER($1) AND deleted_at IS NULL',
+      [normalizedEmail],
+    );
     if (staffCheck.length > 0) {
-      if (staffCheck[0].full_name.trim().toLowerCase() !== data.fullName.trim().toLowerCase()) {
-        throw new ConflictException(`Email ${normalizedEmail} is already associated with a different staff member. Please use the exact same full name as the staff profile, or use a different email.`);
+      if (
+        staffCheck[0].full_name.trim().toLowerCase() !==
+        data.fullName.trim().toLowerCase()
+      ) {
+        throw new ConflictException(
+          `Email ${normalizedEmail} is already associated with a different staff member. Please use the exact same full name as the staff profile, or use a different email.`,
+        );
       }
     }
 
@@ -254,7 +297,9 @@ export class AuthService {
     };
 
     if (data.roleId) {
-      const roleEntity = await this.roleRepository.findOne({ where: { id: data.roleId } });
+      const roleEntity = await this.roleRepository.findOne({
+        where: { id: data.roleId },
+      });
       if (roleEntity) {
         payload.role = roleEntity;
         if (roleEntity.name === 'Partner Institution') {
@@ -287,7 +332,9 @@ export class AuthService {
   }
 
   /** Issue a fresh temporary password and welcome email for an existing user. */
-  async reprovisionAccess(userId: string): Promise<{ user: User; provisioning: UserProvisioningDetails }> {
+  async reprovisionAccess(
+    userId: string,
+  ): Promise<{ user: User; provisioning: UserProvisioningDetails }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
@@ -329,7 +376,8 @@ export class AuthService {
       .createQueryBuilder('user')
       .where('LOWER(user.email) = :email', { email: normalizedEmail })
       .getOne();
-    if (!user) return { message: 'If that email exists, a reset link has been sent.' }; // Generic message for security
+    if (!user)
+      return { message: 'If that email exists, a reset link has been sent.' }; // Generic message for security
 
     const resetToken = randomBytes(32).toString('hex');
     user.reset_token = resetToken;
@@ -338,9 +386,16 @@ export class AuthService {
 
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/reset-password?token=${resetToken}`;
     const emailHtml = this.mailService.getPasswordResetTemplate(resetUrl);
-    const sent = await this.mailService.sendEmail('system', normalizedEmail, 'Password Reset Request', emailHtml);
+    const sent = await this.mailService.sendEmail(
+      'system',
+      normalizedEmail,
+      'Password Reset Request',
+      emailHtml,
+    );
     if (!sent && process.env.NODE_ENV !== 'production') {
-      console.log(`[DEV] Password reset link for ${normalizedEmail}: ${resetUrl}`);
+      console.log(
+        `[DEV] Password reset link for ${normalizedEmail}: ${resetUrl}`,
+      );
     }
 
     // Log Audit
@@ -358,7 +413,7 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string) {
-    const user = await this.userRepository.findOne({ 
+    const user = await this.userRepository.findOne({
       where: { reset_token: token },
       select: [
         'id',
@@ -372,8 +427,14 @@ export class AuthService {
       ],
     });
 
-    if (!user || !user.reset_token_expires || user.reset_token_expires < new Date()) {
-      throw new UnauthorizedException('Invalid or expired password reset token');
+    if (
+      !user ||
+      !user.reset_token_expires ||
+      user.reset_token_expires < new Date()
+    ) {
+      throw new UnauthorizedException(
+        'Invalid or expired password reset token',
+      );
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
@@ -393,13 +454,20 @@ export class AuthService {
       details: {},
     });
 
-    return { message: 'Password has been successfully reset. You may now log in.' };
+    return {
+      message: 'Password has been successfully reset. You may now log in.',
+    };
   }
 
   async forceChangePassword(userId: string, newPassword: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'password', 'last_password_change_at', 'provisioned_password_expires_at'],
+      select: [
+        'id',
+        'password',
+        'last_password_change_at',
+        'provisioned_password_expires_at',
+      ],
     });
     if (!user) throw new UnauthorizedException('User not found');
 
@@ -409,8 +477,12 @@ export class AuthService {
     // original provisioning window after the user has set their own password.
     user.provisioned_password_expires_at = null as any;
     await this.userRepository.save(user);
-    
-    await this.auditRepository.save({ user, action: 'PASSWORD_CHANGED_FORCED', details: {} });
+
+    await this.auditRepository.save({
+      user,
+      action: 'PASSWORD_CHANGED_FORCED',
+      details: {},
+    });
     return { message: 'Password updated successfully' };
   }
 
@@ -463,39 +535,52 @@ export class AuthService {
 
   async update(id: string, updateData: Partial<User>) {
     // Load user WITH all relations so TypeORM doesn't wipe them on save
-    const user = await this.userRepository.findOne({ 
+    const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['role', 'allowedPermissions', 'deniedPermissions']
+      relations: ['role', 'allowedPermissions', 'deniedPermissions'],
     });
     if (!user) throw new NotFoundException('User not found');
-    
+
     if (updateData.email) {
       updateData.email = updateData.email.trim().toLowerCase();
     }
     if (updateData.username) {
       updateData.username = updateData.username.trim().toLowerCase();
     }
-    
+
     if (updateData.password) {
       updateData.password = await bcrypt.hash(updateData.password, 10);
     }
-    
+
     // Check if email or name is changing, and enforce consistency with staff_members
     const targetEmail = updateData.email || user.email;
     const targetName = updateData.full_name || user.full_name;
-    
-    if ((updateData.email && updateData.email !== user.email) || (updateData.full_name && updateData.full_name !== user.full_name)) {
-      const staffCheck = await this.dataSource.query('SELECT full_name FROM staff_members WHERE email = $1 AND deleted_at IS NULL', [targetEmail]);
+
+    if (
+      (updateData.email && updateData.email !== user.email) ||
+      (updateData.full_name && updateData.full_name !== user.full_name)
+    ) {
+      const staffCheck = await this.dataSource.query(
+        'SELECT full_name FROM staff_members WHERE email = $1 AND deleted_at IS NULL',
+        [targetEmail],
+      );
       if (staffCheck.length > 0) {
-        if (staffCheck[0].full_name.trim().toLowerCase() !== targetName.trim().toLowerCase()) {
-          throw new ConflictException(`Email ${targetEmail} is already associated with a different staff member. Please use the exact same full name as the staff profile, or use a different email.`);
+        if (
+          staffCheck[0].full_name.trim().toLowerCase() !==
+          targetName.trim().toLowerCase()
+        ) {
+          throw new ConflictException(
+            `Email ${targetEmail} is already associated with a different staff member. Please use the exact same full name as the staff profile, or use a different email.`,
+          );
         }
       }
     }
-    
+
     // Handle role update explicitly if roleId is provided
     if ((updateData as any).roleId) {
-      const role = await this.roleRepository.findOne({ where: { id: (updateData as any).roleId } });
+      const role = await this.roleRepository.findOne({
+        where: { id: (updateData as any).roleId },
+      });
       if (role) {
         user.role = role;
         if (role.name === 'Partner Institution') {
@@ -513,15 +598,19 @@ export class AuthService {
 
     // Handle Manual Overrides
     if ((updateData as any).allowedPermissionIds) {
-      user.allowedPermissions = await this.permissionRepository.findByIds((updateData as any).allowedPermissionIds);
+      user.allowedPermissions = await this.permissionRepository.findByIds(
+        (updateData as any).allowedPermissionIds,
+      );
       delete (updateData as any).allowedPermissionIds;
     }
 
     if ((updateData as any).deniedPermissionIds) {
-      user.deniedPermissions = await this.permissionRepository.findByIds((updateData as any).deniedPermissionIds);
+      user.deniedPermissions = await this.permissionRepository.findByIds(
+        (updateData as any).deniedPermissionIds,
+      );
       delete (updateData as any).deniedPermissionIds;
     }
-    
+
     Object.assign(user, updateData);
     return this.userRepository.save(user);
   }
@@ -536,7 +625,12 @@ export class AuthService {
   async findOneWithPermissions(id: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { id },
-      relations: ['role', 'role.permissions', 'allowedPermissions', 'deniedPermissions'],
+      relations: [
+        'role',
+        'role.permissions',
+        'allowedPermissions',
+        'deniedPermissions',
+      ],
     });
   }
 
@@ -597,47 +691,83 @@ export class AuthService {
       { slug: 'infrastructure_analytics', name: 'Infrastructure Analytics' },
     ];
 
-    const permissionData: { name: string, slug: string, description: string }[] = [];
-    modules.forEach(m => {
-      permissionData.push({ 
-        name: `View ${m.name}`, 
-        slug: `${m.slug}.view`, 
-        description: `Read-only access to ${m.name.toLowerCase()}` 
+    const permissionData: {
+      name: string;
+      slug: string;
+      description: string;
+    }[] = [];
+    modules.forEach((m) => {
+      permissionData.push({
+        name: `View ${m.name}`,
+        slug: `${m.slug}.view`,
+        description: `Read-only access to ${m.name.toLowerCase()}`,
       });
-      permissionData.push({ 
-        name: `Manage ${m.name}`, 
-        slug: `${m.slug}.manage`, 
-        description: `Full administrative control over ${m.name.toLowerCase()}` 
+      permissionData.push({
+        name: `Manage ${m.name}`,
+        slug: `${m.slug}.manage`,
+        description: `Full administrative control over ${m.name.toLowerCase()}`,
       });
     });
 
     const permissions: AppPermission[] = [];
     for (const p of permissionData) {
-      let perm = await this.permissionRepository.findOne({ where: { slug: p.slug } });
-      if (!perm) perm = await this.permissionRepository.save(this.permissionRepository.create(p));
+      let perm = await this.permissionRepository.findOne({
+        where: { slug: p.slug },
+      });
+      if (!perm)
+        perm = await this.permissionRepository.save(
+          this.permissionRepository.create(p),
+        );
       permissions.push(perm);
     }
 
-    const pMap = permissions.reduce((acc, p) => ({ ...acc, [p.slug]: p }), {} as Record<string, AppPermission>);
+    const pMap = permissions.reduce(
+      (acc, p) => ({ ...acc, [p.slug]: p }),
+      {} as Record<string, AppPermission>,
+    );
 
     // 2. Define Standard Roles
     const rolesConfig = [
-      { name: 'Super Administrator', slug: 'super_admin', is_system: true, pSlugs: permissionData.map(p => p.slug) },
-      { name: 'Administrator', slug: 'admin', is_system: true, pSlugs: permissionData.map(p => p.slug) },
-      { 
-        name: 'Content Manager', 
-        slug: 'content_manager', 
-        is_system: true, 
+      {
+        name: 'Super Administrator',
+        slug: 'super_admin',
+        is_system: true,
+        pSlugs: permissionData.map((p) => p.slug),
+      },
+      {
+        name: 'Administrator',
+        slug: 'admin',
+        is_system: true,
+        pSlugs: permissionData.map((p) => p.slug),
+      },
+      {
+        name: 'Content Manager',
+        slug: 'content_manager',
+        is_system: true,
         pSlugs: [
-          'dashboard.view', 'home.manage', 'menus.manage', 'pages.manage', 'pages.view',
-          'news.manage', 'news.view', 'downloads.view', 'downloads.manage', 'content.manage',
-          'shape.view', 'shape.manage',
-          'knowledge_hub.view', 'knowledge_hub.manage',
-          'programmes.view', 'programmes.manage',
-          'hero_slides.view', 'hero_slides.manage',
-          'testimonials.view', 'testimonials.manage',
-          'adverts.view', 'adverts.manage',
-        ] 
+          'dashboard.view',
+          'home.manage',
+          'menus.manage',
+          'pages.manage',
+          'pages.view',
+          'news.manage',
+          'news.view',
+          'downloads.view',
+          'downloads.manage',
+          'content.manage',
+          'shape.view',
+          'shape.manage',
+          'knowledge_hub.view',
+          'knowledge_hub.manage',
+          'programmes.view',
+          'programmes.manage',
+          'hero_slides.view',
+          'hero_slides.manage',
+          'testimonials.view',
+          'testimonials.manage',
+          'adverts.view',
+          'adverts.manage',
+        ],
       },
       {
         name: 'General Helpdesk',
@@ -645,38 +775,46 @@ export class AuthService {
         is_system: true,
         pSlugs: [
           'dashboard.view',
-          'complaints.manage', 'complaints.view',
-          'helpdesk.view', 'helpdesk.manage',
-          'campus_feedback.view', 'campus_feedback.manage',
-          'chats.view', 'chats.manage',
+          'complaints.manage',
+          'complaints.view',
+          'helpdesk.view',
+          'helpdesk.manage',
+          'campus_feedback.view',
+          'campus_feedback.manage',
+          'chats.view',
+          'chats.manage',
           'my_tickets.view',
         ],
       },
       {
-        name: 'Academic Editor', 
-        slug: 'editor', 
-        is_system: true, 
-        pSlugs: ['dashboard.view', 'schools.view', 'programmes.view', 'programmes.manage', 'course_units.manage'] 
+        name: 'Academic Editor',
+        slug: 'editor',
+        is_system: true,
+        pSlugs: [
+          'dashboard.view',
+          'schools.view',
+          'programmes.view',
+          'programmes.manage',
+          'course_units.manage',
+        ],
       },
-      { name: 'Institutional Viewer', slug: 'viewer', is_system: true, pSlugs: ['dashboard.view'] },
+      {
+        name: 'Institutional Viewer',
+        slug: 'viewer',
+        is_system: true,
+        pSlugs: ['dashboard.view'],
+      },
       {
         name: 'Partner Institution',
         slug: 'partner_institution',
         is_system: true,
-        pSlugs: [
-          'dashboard.view',
-          'shape.view',
-          'shape.manage',
-        ],
+        pSlugs: ['dashboard.view', 'shape.view', 'shape.manage'],
       },
       {
         name: 'Grant Funder',
         slug: 'grant_funder',
         is_system: true,
-        pSlugs: [
-          'dashboard.view',
-          'shape.view',
-        ],
+        pSlugs: ['dashboard.view', 'shape.view'],
       },
       {
         name: 'Service Desk Manager',
@@ -685,20 +823,32 @@ export class AuthService {
         pSlugs: [
           'dashboard.view',
           // Both service-desk lanes
-          'helpdesk.view', 'helpdesk.manage',
-          'campus_feedback.view', 'campus_feedback.manage',
-          'complaints.view', 'complaints.manage',
-          'ict.view', 'ict.manage',
-          'chats.view', 'chats.manage',
+          'helpdesk.view',
+          'helpdesk.manage',
+          'campus_feedback.view',
+          'campus_feedback.manage',
+          'complaints.view',
+          'complaints.manage',
+          'ict.view',
+          'ict.manage',
+          'chats.view',
+          'chats.manage',
           'my_tickets.view',
           // Elevated ICT tooling (formerly ICT Support)
-          'ict_status.view', 'ict_status.manage',
-          'ict_knowledge.view', 'ict_knowledge.manage',
-          'ict_password.view', 'ict_password.manage',
-          'users.view', 'users.manage',
-          'logs.view', 'logs.manage',
-          'recycle_bin.view', 'recycle_bin.manage',
-          'maintenance.view', 'maintenance.manage',
+          'ict_status.view',
+          'ict_status.manage',
+          'ict_knowledge.view',
+          'ict_knowledge.manage',
+          'ict_password.view',
+          'ict_password.manage',
+          'users.view',
+          'users.manage',
+          'logs.view',
+          'logs.manage',
+          'recycle_bin.view',
+          'recycle_bin.manage',
+          'maintenance.view',
+          'maintenance.manage',
           // Combined analytics
           'reports.view',
           'infrastructure_analytics.view',
@@ -708,11 +858,7 @@ export class AuthService {
         name: 'ICT Technical Support',
         slug: 'ict_officer',
         is_system: true,
-        pSlugs: [
-          'dashboard.view',
-          'ict.view', 'ict.manage',
-          'my_tickets.view',
-        ],
+        pSlugs: ['dashboard.view', 'ict.view', 'ict.manage', 'my_tickets.view'],
       },
       {
         name: 'Vice Chancellor',
@@ -729,7 +875,11 @@ export class AuthService {
     ];
 
     // Rename legacy role display names → enterprise Service Desk naming.
-    const roleRenames: Array<{ from: string[]; to: string; description: string }> = [
+    const roleRenames: Array<{
+      from: string[];
+      to: string;
+      description: string;
+    }> = [
       {
         from: ['Help Desk', 'HelpDesk', 'Grievance Officer'],
         to: 'General Helpdesk',
@@ -756,14 +906,19 @@ export class AuthService {
           relations: ['users'],
         });
         if (!existing) continue;
-        const targetTaken = await this.roleRepository.findOne({ where: { name: rename.to } });
+        const targetTaken = await this.roleRepository.findOne({
+          where: { name: rename.to },
+        });
         if (targetTaken && targetTaken.id !== existing.id) {
           // Target already exists — move users off the legacy role, then remove it.
           for (const u of existing.users || []) {
             u.role = targetTaken;
             await this.userRepository.save(u);
           }
-          await this.dataSource.query('DELETE FROM role_permissions WHERE role_id = $1', [existing.id]);
+          await this.dataSource.query(
+            'DELETE FROM role_permissions WHERE role_id = $1',
+            [existing.id],
+          );
           await this.roleRepository.delete(existing.id);
           continue;
         }
@@ -774,27 +929,41 @@ export class AuthService {
     }
 
     // Hard-remove obsolete titles if any remain (system flag blocked UI delete).
-    for (const obsoleteName of ['Grievance Officer', 'Grievance Manager', 'ICT Support']) {
+    for (const obsoleteName of [
+      'Grievance Officer',
+      'Grievance Manager',
+      'ICT Support',
+    ]) {
       const obsolete = await this.roleRepository.findOne({
         where: { name: obsoleteName },
         relations: ['users'],
       });
       if (!obsolete) continue;
       const fallbackName =
-        obsoleteName === 'Grievance Officer' ? 'General Helpdesk' : 'Service Desk Manager';
-      const fallback = await this.roleRepository.findOne({ where: { name: fallbackName } });
+        obsoleteName === 'Grievance Officer'
+          ? 'General Helpdesk'
+          : 'Service Desk Manager';
+      const fallback = await this.roleRepository.findOne({
+        where: { name: fallbackName },
+      });
       for (const u of obsolete.users || []) {
         if (!fallback) continue;
         u.role = fallback;
         await this.userRepository.save(u);
       }
-      await this.dataSource.query('DELETE FROM role_permissions WHERE role_id = $1', [obsolete.id]);
+      await this.dataSource.query(
+        'DELETE FROM role_permissions WHERE role_id = $1',
+        [obsolete.id],
+      );
       await this.roleRepository.delete(obsolete.id);
       console.log(`[RBAC] Removed obsolete role: ${obsoleteName}`);
     }
 
     for (const rCfg of rolesConfig) {
-      let role = await this.roleRepository.findOne({ where: { name: rCfg.name }, relations: ['permissions'] });
+      let role = await this.roleRepository.findOne({
+        where: { name: rCfg.name },
+        relations: ['permissions'],
+      });
       if (!role) {
         role = this.roleRepository.create({
           name: rCfg.name,
@@ -809,9 +978,7 @@ export class AuthService {
           is_system_role: rCfg.is_system,
         });
       }
-      role.permissions = rCfg.pSlugs
-        .map(s => pMap[s])
-        .filter(p => !!p);
+      role.permissions = rCfg.pSlugs.map((s) => pMap[s]).filter((p) => !!p);
       if (rCfg.name === 'General Helpdesk') {
         role.description =
           'General Helpdesk — campus feedback (complaints & compliments), infrastructure tickets, and AI chat support';
@@ -838,13 +1005,19 @@ export class AuthService {
     // Align any leftover Help Desk naming variants to General Helpdesk capabilities.
     const helpDeskPermissionSlugs = [
       'dashboard.view',
-      'complaints.manage', 'complaints.view',
-      'helpdesk.view', 'helpdesk.manage',
-      'campus_feedback.view', 'campus_feedback.manage',
-      'chats.view', 'chats.manage',
+      'complaints.manage',
+      'complaints.view',
+      'helpdesk.view',
+      'helpdesk.manage',
+      'campus_feedback.view',
+      'campus_feedback.manage',
+      'chats.view',
+      'chats.manage',
       'my_tickets.view',
     ];
-    const allRolesForAlias = await this.roleRepository.find({ relations: ['permissions'] });
+    const allRolesForAlias = await this.roleRepository.find({
+      relations: ['permissions'],
+    });
     for (const role of allRolesForAlias) {
       const normalized = (role.name || '').replace(/\s+/g, '').toLowerCase();
       if (
@@ -854,9 +1027,13 @@ export class AuthService {
       ) {
         continue;
       }
-      role.permissions = helpDeskPermissionSlugs.map((s) => pMap[s]).filter(Boolean);
+      role.permissions = helpDeskPermissionSlugs
+        .map((s) => pMap[s])
+        .filter(Boolean);
       if (role.name !== 'General Helpdesk') {
-        const taken = allRolesForAlias.find((r) => r.name === 'General Helpdesk' && r.id !== role.id);
+        const taken = allRolesForAlias.find(
+          (r) => r.name === 'General Helpdesk' && r.id !== role.id,
+        );
         if (!taken) role.name = 'General Helpdesk';
       }
       role.description =
@@ -868,7 +1045,9 @@ export class AuthService {
     // when they already have lane access — keeps RBAC assignable without forcing it.
     const myTicketsPerm = pMap['my_tickets.view'];
     if (myTicketsPerm) {
-      const staffish = await this.roleRepository.find({ relations: ['permissions'] });
+      const staffish = await this.roleRepository.find({
+        relations: ['permissions'],
+      });
       for (const role of staffish) {
         const name = (role.name || '').toLowerCase();
         if (name !== 'staff' && name !== 'content manager') continue;
@@ -887,53 +1066,72 @@ export class AuthService {
     // 3. Migrate Existing Users
     const users = await this.userRepository.find({ relations: ['role'] });
     const allRoles = await this.roleRepository.find();
-    const roleSlugMap = rolesConfig.reduce((acc, r) => ({ ...acc, [r.slug]: r.name }), {} as Record<string, string>);
+    const roleSlugMap = rolesConfig.reduce(
+      (acc, r) => ({ ...acc, [r.slug]: r.name }),
+      {} as Record<string, string>,
+    );
 
     for (const user of users) {
       if (!user.role && user.role_legacy) {
         const targetRoleName = roleSlugMap[user.role_legacy];
         if (targetRoleName) {
-           const foundRole = allRoles.find(r => r.name === targetRoleName);
-           if (foundRole) {
-             user.role = foundRole;
-             await this.userRepository.save(user);
-           }
+          const foundRole = allRoles.find((r) => r.name === targetRoleName);
+          if (foundRole) {
+            user.role = foundRole;
+            await this.userRepository.save(user);
+          }
         }
       }
     }
 
-    return { message: 'RBAC Orchestration Complete', permissionsSeeded: permissions.length, rolesSeeded: allRoles.length };
+    return {
+      message: 'RBAC Orchestration Complete',
+      permissionsSeeded: permissions.length,
+      rolesSeeded: allRoles.length,
+    };
   }
 
   async findAllRoles() {
     return this.roleRepository.find({
       relations: ['permissions'],
-      order: { name: 'ASC' }
+      order: { name: 'ASC' },
     });
   }
 
   async findAllPermissions() {
     return this.permissionRepository.find({
-      order: { name: 'ASC' }
+      order: { name: 'ASC' },
     });
   }
 
-  async createRole(data: { name: string, description?: string, permissionIds: string[] }) {
+  async createRole(data: {
+    name: string;
+    description?: string;
+    permissionIds: string[];
+  }) {
     const role = this.roleRepository.create({
       name: data.name,
       description: data.description,
       is_system_role: false,
     });
-    
+
     if (data.permissionIds && data.permissionIds.length > 0) {
-      role.permissions = await this.permissionRepository.findByIds(data.permissionIds);
+      role.permissions = await this.permissionRepository.findByIds(
+        data.permissionIds,
+      );
     }
-    
+
     return this.roleRepository.save(role);
   }
 
-  async updateRole(id: string, data: { name?: string, description?: string, permissionIds?: string[] }) {
-    const role = await this.roleRepository.findOne({ where: { id }, relations: ['permissions'] });
+  async updateRole(
+    id: string,
+    data: { name?: string; description?: string; permissionIds?: string[] },
+  ) {
+    const role = await this.roleRepository.findOne({
+      where: { id },
+      relations: ['permissions'],
+    });
     if (!role) throw new NotFoundException('Role not found');
 
     // System roles may be renamed for display (e.g. ICT Officer → ICT Technical Support)
@@ -942,7 +1140,9 @@ export class AuthService {
       const next = data.name.trim();
       if (!next) throw new BadRequestException('Role name is required');
       if (next !== role.name) {
-        const clash = await this.roleRepository.findOne({ where: { name: next } });
+        const clash = await this.roleRepository.findOne({
+          where: { name: next },
+        });
         if (clash && clash.id !== role.id) {
           throw new ConflictException(`A role named "${next}" already exists`);
         }
@@ -952,7 +1152,9 @@ export class AuthService {
     if (data.description !== undefined) role.description = data.description;
 
     if (data.permissionIds) {
-      role.permissions = await this.permissionRepository.findByIds(data.permissionIds);
+      role.permissions = await this.permissionRepository.findByIds(
+        data.permissionIds,
+      );
     }
 
     return this.roleRepository.save(role);
@@ -961,8 +1163,9 @@ export class AuthService {
   async deleteRole(id: string) {
     const role = await this.roleRepository.findOne({ where: { id } });
     if (!role) throw new NotFoundException('Role not found');
-    if (role.is_system_role) throw new ForbiddenException('System roles cannot be terminated');
-    
+    if (role.is_system_role)
+      throw new ForbiddenException('System roles cannot be terminated');
+
     return this.roleRepository.remove(role);
   }
 

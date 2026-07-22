@@ -51,10 +51,7 @@ export class CareersController {
 
   @Public()
   @Get('slug/:slug')
-  findOneBySlug(
-    @Param('slug') slug: string,
-    @Query('locale') locale?: string,
-  ) {
+  findOneBySlug(@Param('slug') slug: string, @Query('locale') locale?: string) {
     return this.careersService.findOneBySlug(slug, locale);
   }
 

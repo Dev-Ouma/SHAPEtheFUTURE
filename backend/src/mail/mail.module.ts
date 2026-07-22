@@ -6,10 +6,7 @@ import { SettingsModule } from '../settings/settings.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [
-    forwardRef(() => SettingsModule),
-    forwardRef(() => AuthModule),
-  ],
+  imports: [forwardRef(() => SettingsModule), forwardRef(() => AuthModule)],
   controllers: [MailController, ContactController],
   providers: [MailService],
   exports: [MailService],

@@ -34,7 +34,9 @@ export class AddEventsLocaleSwFields1782400000000 implements MigrationInterface 
     ]) {
       for (const col of ['description_sw', 'title_sw']) {
         if (await queryRunner.hasColumn(table, col)) {
-          await queryRunner.query(`ALTER TABLE "${table}" DROP COLUMN "${col}"`);
+          await queryRunner.query(
+            `ALTER TABLE "${table}" DROP COLUMN "${col}"`,
+          );
         }
       }
     }

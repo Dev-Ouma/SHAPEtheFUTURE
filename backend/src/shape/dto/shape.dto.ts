@@ -300,7 +300,16 @@ export class CreateShapeDocumentDto {
     'other',
   ])
   @IsOptional()
-  category?: 'deliverables' | 'reports' | 'minutes' | 'financial' | 'presentations' | 'policy_briefs' | 'publications' | 'templates' | 'other';
+  category?:
+    | 'deliverables'
+    | 'reports'
+    | 'minutes'
+    | 'financial'
+    | 'presentations'
+    | 'policy_briefs'
+    | 'publications'
+    | 'templates'
+    | 'other';
 
   @IsString()
   @IsOptional()

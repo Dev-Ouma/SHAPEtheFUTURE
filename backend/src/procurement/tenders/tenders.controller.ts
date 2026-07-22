@@ -36,10 +36,7 @@ export class TendersController {
 
   @Public()
   @Get(':slug')
-  findOneBySlug(
-    @Param('slug') slug: string,
-    @Query('locale') locale?: string,
-  ) {
+  findOneBySlug(@Param('slug') slug: string, @Query('locale') locale?: string) {
     return this.tendersService.findOneBySlug(slug, locale);
   }
 

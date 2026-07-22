@@ -100,7 +100,9 @@ export class ProgramsService {
       query.andWhere(
         new Brackets((qb) => {
           qb.where('program.title ILIKE :search', { search: searchPattern })
-            .orWhere('program.title_sw ILIKE :search', { search: searchPattern })
+            .orWhere('program.title_sw ILIKE :search', {
+              search: searchPattern,
+            })
             .orWhere('program.slug ILIKE :search', { search: searchPattern })
             .orWhere('program.level ILIKE :search', { search: searchPattern })
             .orWhere('program.programme_code ILIKE :search', {
@@ -145,9 +147,7 @@ export class ProgramsService {
       const [data, total] = await query.getManyAndCount();
 
       return {
-        data: isAdmin
-          ? data
-          : data.map((p) => this.localizeProgram(p, locale)),
+        data: isAdmin ? data : data.map((p) => this.localizeProgram(p, locale)),
         total,
         page,
         totalPages: Math.ceil(total / limit),

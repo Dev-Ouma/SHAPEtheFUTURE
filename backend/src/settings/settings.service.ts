@@ -189,7 +189,10 @@ export class SettingsService implements OnModuleInit {
     const settings = await this.settingRepository.find();
     const raw = settings
       .filter((s) => this.publicKeys.includes(s.key))
-      .reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {} as Record<string, string>);
+      .reduce(
+        (acc, curr) => ({ ...acc, [curr.key]: curr.value }),
+        {} as Record<string, string>,
+      );
 
     if (locale !== 'sw') {
       return {

@@ -4,9 +4,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * GIN trigram indexes for bilingual search ranking (similarity / ILIKE).
  * Idempotent: skips missing columns; safe to re-run.
  */
-export class AddSearchTrgmGinIndexes1782920000000
-  implements MigrationInterface
-{
+export class AddSearchTrgmGinIndexes1782920000000 implements MigrationInterface {
   name = 'AddSearchTrgmGinIndexes1782920000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -61,7 +59,11 @@ export class AddSearchTrgmGinIndexes1782920000000
         index: 'idx_staff_members_full_name_trgm',
       },
       { table: 'schools', column: 'name', index: 'idx_schools_name_trgm' },
-      { table: 'schools', column: 'name_sw', index: 'idx_schools_name_sw_trgm' },
+      {
+        table: 'schools',
+        column: 'name_sw',
+        index: 'idx_schools_name_sw_trgm',
+      },
     ];
 
     for (const t of targets) {

@@ -6,11 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export type ShapeKpiCategory =
-  | 'overview'
-  | 'engagement'
-  | 'outputs'
-  | 'budget';
+export type ShapeKpiCategory = 'overview' | 'engagement' | 'outputs' | 'budget';
 
 @Entity('shape_kpis')
 export class ShapeKpi {
@@ -41,7 +37,7 @@ export class ShapeKpi {
   @Column({ type: 'int', default: 0 })
   sort_order: number;
 
-  @Column({ default: true })
+  @Column({ default: false })
   is_published: boolean;
 
   @CreateDateColumn()

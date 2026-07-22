@@ -9,6 +9,8 @@ const PUBLIC_PATHS = [
   { path: "/the-project", ready: /SHAPE|The Project|Objectives|Erasmus/i },
   { path: "/partners", ready: /Partner|University|Kenya|consortium/i },
   { path: "/contact", ready: /Contact|SHAPE|form|Open University/i },
+  { path: "/media", ready: /Media|Press|Gallery|SHAPE/i },
+  { path: "/accessibility", ready: /Accessibility|WCAG|SHAPE/i },
 ] as const;
 
 for (const { path, ready } of PUBLIC_PATHS) {
@@ -22,15 +24,12 @@ for (const { path, ready } of PUBLIC_PATHS) {
   });
 }
 
-test("personnel directory does not invent mock profiles when empty", async ({
+test("legacy OUK /about routes redirect to the project hub", async ({
   page,
 }) => {
-  // Governing council page — if API empty/offline, show honest empty copy (not fake names).
   const response = await page.goto("/en/about/governing-council", {
     waitUntil: "domcontentloaded",
   });
   expect(response?.status() ?? 0).toBeLessThan(500);
-
-  const body = await page.locator("body").innerText();
-  expect(body).not.toMatch(/Ezra Maritim|Jane Mutua|John Musuku/);
+  await expect(page).toHaveURL(/\/(en\/)?the-project\/?$/);
 });

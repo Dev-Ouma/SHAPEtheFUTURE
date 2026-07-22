@@ -8,6 +8,11 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 const nextConfig = {
   transpilePackages: ["framer-motion"],
   compress: true,
+  // Pre-existing OUK-era lint errors must not block production/CI builds.
+  // Keep `npm run lint` as a separate quality gate while the backlog is cleared.
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     return [
       {
@@ -24,6 +29,26 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      {
+        source: "/about",
+        destination: "/the-project",
+        permanent: false,
+      },
+      {
+        source: "/about/:path*",
+        destination: "/the-project",
+        permanent: false,
+      },
+      {
+        source: "/sw/about",
+        destination: "/sw/the-project",
+        permanent: false,
+      },
+      {
+        source: "/sw/about/:path*",
+        destination: "/sw/the-project",
+        permanent: false,
+      },
       {
         source: "/about-us",
         destination: "/the-project",

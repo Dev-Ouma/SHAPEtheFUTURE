@@ -78,9 +78,7 @@ export class ShapePartnersController {
   @Delete(':id')
   remove(@Req() req: any, @Param('id') id: string) {
     if (req.partnerScopeId) {
-      throw new ForbiddenException(
-        'Partner users cannot delete institutions.',
-      );
+      throw new ForbiddenException('Partner users cannot delete institutions.');
     }
     return this.service.remove(id);
   }

@@ -77,7 +77,8 @@ export class SeedHubPagesLocaleSw1782700000000 implements MigrationInterface {
         content_sw:
           '<p>Utafiti wa OUK unaendeleza ugunduzi unaoendeshwa na teknolojia kupitia machapisho, programu, na ushirikiano.</p>',
         meta_title: 'Research with global impact | Open University of Kenya',
-        meta_title_sw: 'Utafiti wenye athari ya kimataifa | Chuo Kikuu Huria cha Kenya',
+        meta_title_sw:
+          'Utafiti wenye athari ya kimataifa | Chuo Kikuu Huria cha Kenya',
         meta_description:
           'Pioneering digital discovery and bridging theoretical scholarship with practical innovation at OUK.',
         meta_description_sw:

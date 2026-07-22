@@ -62,7 +62,14 @@ export class ShapeDashboardService {
       this.activitiesRepo.count({ where: { is_published: true } }),
       this.sdlcRepo.find({
         where: { is_published: true },
-        select: ['id', 'title', 'slug', 'progress_percent', 'status', 'sort_order'],
+        select: [
+          'id',
+          'title',
+          'slug',
+          'progress_percent',
+          'status',
+          'sort_order',
+        ],
         order: { sort_order: 'ASC' },
       }),
       this.risksRepo.count({
@@ -76,8 +83,10 @@ export class ShapeDashboardService {
     const wpProgressAvg =
       workPackages.length > 0
         ? Math.round(
-            workPackages.reduce((sum, wp) => sum + (wp.progress_percent || 0), 0) /
-              workPackages.length,
+            workPackages.reduce(
+              (sum, wp) => sum + (wp.progress_percent || 0),
+              0,
+            ) / workPackages.length,
           )
         : 0;
 

@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /** Backfill header menu title_sw gaps left after Layer B. */
-export class BackfillMissingMenuTitleSw1782910000000
-  implements MigrationInterface
-{
+export class BackfillMissingMenuTitleSw1782910000000 implements MigrationInterface {
   name = 'BackfillMissingMenuTitleSw1782910000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

@@ -124,6 +124,7 @@ export async function middleware(request: NextRequest) {
     "virtual-tour",
     "partnerships",
     "service-charter",
+    "about",
     "about-us",
     "faqs",
     "social",

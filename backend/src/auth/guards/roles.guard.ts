@@ -33,10 +33,7 @@ export class RolesGuard implements CanActivate {
     // Super Admin inherits any ADMIN-gated surface (legacy RolesGuard routes).
     const hasRole = requiredRoles.some((role) => {
       if (user.role === role) return true;
-      if (
-        user.role === UserRole.SUPER_ADMIN &&
-        role === UserRole.ADMIN
-      ) {
+      if (user.role === UserRole.SUPER_ADMIN && role === UserRole.ADMIN) {
         return true;
       }
       return false;

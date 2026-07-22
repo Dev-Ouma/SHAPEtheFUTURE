@@ -99,7 +99,7 @@ export class ShapeEvent {
   @JoinColumn({ name: 'work_package_id' })
   work_package: WorkPackage;
 
-  @Column({ default: true })
+  @Column({ default: false })
   is_published: boolean;
 
   @CreateDateColumn()

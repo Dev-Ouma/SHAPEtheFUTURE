@@ -9,7 +9,12 @@ import { ShapeKpi } from '../../shape/entities/shape-kpi.entity';
 import { ShapeRisk } from '../../shape/entities/shape-risk.entity';
 import { ShapeSdlcStage } from '../../shape/entities/shape-sdlc-stage.entity';
 import { ShapePressItem } from '../../shape/entities/shape-press-item.entity';
-import { User, UserRole, UserType, AccountStatus } from '../../auth/entities/user.entity';
+import {
+  User,
+  UserRole,
+  UserType,
+  AccountStatus,
+} from '../../auth/entities/user.entity';
 import { Role } from '../../auth/entities/role.entity';
 import { Setting } from '../../settings/entities/setting.entity';
 import { News } from '../../news/entities/news.entity';
@@ -51,22 +56,22 @@ export const runShapeSeed = async (dataSource: DataSource) => {
   const settingRepo = dataSource.getRepository(Setting);
   const newsRepo = dataSource.getRepository(News);
 
-  // Admin CMS login — password MUST come from env (never hardcode secrets)
+  // Admin CMS login — password from env when creating/updating; content seed can run if admin already exists
   console.log('Seeding SHAPE admin user...');
   const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@ouk.ac.ke';
   const adminPassword = process.env.SEED_ADMIN_PASSWORD;
-  if (!adminPassword || adminPassword.length < 10) {
-    throw new Error(
-      'Set SEED_ADMIN_PASSWORD (min 10 chars) in the environment before running the seed. Do not commit passwords.',
-    );
-  }
-  const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
   let admin = await userRepo.findOne({
     where: { email: adminEmail },
     withDeleted: true,
     select: ['id', 'email', 'password', 'full_name', 'is_active', 'deleted_at'],
   });
   if (!admin) {
+    if (!adminPassword || adminPassword.length < 10) {
+      throw new Error(
+        'Set SEED_ADMIN_PASSWORD (min 10 chars) in the environment before running the seed. Do not commit passwords.',
+      );
+    }
+    const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
     admin = await userRepo.save(
       userRepo.create({
         email: adminEmail,
@@ -79,13 +84,22 @@ export const runShapeSeed = async (dataSource: DataSource) => {
         last_password_change_at: new Date(),
       }),
     );
-  } else {
-    admin.password = adminPasswordHash;
+  } else if (adminPassword && adminPassword.length >= 10) {
+    admin.password = await bcrypt.hash(adminPassword, 10);
     admin.deleted_at = null as any;
     admin.is_active = true;
     admin.role_legacy = UserRole.SUPER_ADMIN;
     admin.last_password_change_at = new Date();
     await userRepo.save(admin);
+  } else {
+    // Keep existing credentials; still reactivate so CMS content seed can proceed
+    admin.deleted_at = null as any;
+    admin.is_active = true;
+    admin.role_legacy = UserRole.SUPER_ADMIN;
+    await userRepo.save(admin);
+    console.log(
+      `Admin ${adminEmail} already exists — skipping password update (set SEED_ADMIN_PASSWORD to rotate).`,
+    );
   }
 
   // Link formal Super Administrator role when RBAC tables are present
@@ -102,14 +116,23 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       console.log('Linked admin to Super Administrator role');
     }
   } catch (err: any) {
-    console.warn('Could not link Super Administrator role:', err?.message || err);
+    console.warn(
+      'Could not link Super Administrator role:',
+      err?.message || err,
+    );
   }
 
   // Site settings for SHAPE branding + PROSPER-style homepage CMS keys
   console.log('Seeding SHAPE site settings...');
   const settings = [
-    { key: 'site_name', value: 'SHAPE | Strengthening Higher Education for Smart Cities' },
-    { key: 'site_tagline', value: 'Strengthening Higher Education for Smart Cities' },
+    {
+      key: 'site_name',
+      value: 'SHAPE | Strengthening Higher Education for Smart Cities',
+    },
+    {
+      key: 'site_tagline',
+      value: 'Strengthening Higher Education for Smart Cities',
+    },
     {
       key: 'site_description',
       value:
@@ -117,7 +140,11 @@ export const runShapeSeed = async (dataSource: DataSource) => {
     },
     { key: 'contact_email', value: 'shape@ouk.ac.ke' },
     { key: 'contact_phone', value: '+254 20 2311438' },
-    { key: 'address', value: 'Open University of Kenya, Technopolis Development Authority, Kenya' },
+    {
+      key: 'address',
+      value:
+        'Open University of Kenya, Technopolis Development Authority, Kenya',
+    },
     {
       key: 'shape_hero_eyebrow',
       value: 'East Africa • Higher Education • Smart Cities',
@@ -197,7 +224,14 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       key: 'search_related_terms_json',
       value: JSON.stringify({
         ouk: ['ouk', 'open university of kenya', 'open university'],
-        shape: ['shape', 'erasmus+', 'erasmus', 'smart cities', 'smart city', 'shapethefuture'],
+        shape: [
+          'shape',
+          'erasmus+',
+          'erasmus',
+          'smart cities',
+          'smart city',
+          'shapethefuture',
+        ],
         moi: ['moi', 'moi university'],
         makerere: ['makerere', 'makerere university', 'mak'],
         mak: ['mak', 'makerere', 'makerere university'],
@@ -485,7 +519,8 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       sort_order: 1,
       start_date: '2026-01-01',
       end_date: '2028-12-31',
-      deliverables: 'Project handbook; interim reports; consortium meeting minutes.',
+      deliverables:
+        'Project handbook; interim reports; consortium meeting minutes.',
     },
     {
       code: 'WP2',
@@ -520,13 +555,19 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       objectives:
         'Produce accredited-ready curriculum packages for partner institutions.',
       leader_partner_id: makerere.id,
-      partner_ids: [makerere.id, ouk.id, ovgu.id, partnersBySlug['lithuanian-university-of-health-sciences'].id],
+      partner_ids: [
+        makerere.id,
+        ouk.id,
+        ovgu.id,
+        partnersBySlug['lithuanian-university-of-health-sciences'].id,
+      ],
       progress_percent: 25,
       status: 'in_progress' as const,
       sort_order: 3,
       start_date: '2026-04-01',
       end_date: '2027-06-30',
-      deliverables: 'Curriculum frameworks; module outlines; learning outcomes.',
+      deliverables:
+        'Curriculum frameworks; module outlines; learning outcomes.',
     },
     {
       code: 'WP4',
@@ -573,8 +614,7 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       slug: 'wp6-quality-assurance',
       description:
         'Cross-partner QA processes, peer review, and continuous improvement.',
-      objectives:
-        'Embed quality standards into curriculum and delivery.',
+      objectives: 'Embed quality standards into curriculum and delivery.',
       leader_partner_id: ovgu.id,
       partner_ids: [ovgu.id, makerere.id, ouk.id],
       progress_percent: 15,
@@ -590,8 +630,7 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       slug: 'wp7-dissemination',
       description:
         'Communication, events, publications, and stakeholder outreach.',
-      objectives:
-        'Maximize visibility and uptake of SHAPE outputs.',
+      objectives: 'Maximize visibility and uptake of SHAPE outputs.',
       leader_partner_id: ouk.id,
       partner_ids: allPartnerIds,
       progress_percent: 30,
@@ -607,9 +646,9 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       slug: 'wp8-sustainability',
       description:
         'Long-term institutionalization, funding pathways, and alumni networks.',
-      objectives:
-        'Ensure SHAPE results outlive the grant period.',
-      leader_partner_id: partnersBySlug['lithuanian-university-of-health-sciences'].id,
+      objectives: 'Ensure SHAPE results outlive the grant period.',
+      leader_partner_id:
+        partnersBySlug['lithuanian-university-of-health-sciences'].id,
       partner_ids: [
         partnersBySlug['lithuanian-university-of-health-sciences'].id,
         ouk.id,
@@ -620,7 +659,8 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       sort_order: 8,
       start_date: '2027-06-01',
       end_date: '2028-12-31',
-      deliverables: 'Sustainability plan; MoUs; continuation funding proposals.',
+      deliverables:
+        'Sustainability plan; MoUs; continuation funding proposals.',
     },
   ];
 
@@ -705,8 +745,10 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       is_published: true,
     },
     {
-      title: 'Otto von Guericke University Magdeburg — European partner in SHAPE',
-      title_sw: 'Chuo Kikuu cha Otto von Guericke Magdeburg — mshirika wa Ulaya katika SHAPE',
+      title:
+        'Otto von Guericke University Magdeburg — European partner in SHAPE',
+      title_sw:
+        'Chuo Kikuu cha Otto von Guericke Magdeburg — mshirika wa Ulaya katika SHAPE',
       source: 'OVGU Magdeburg',
       url: 'https://www.ovgu.de/en/',
       date: '2025',
@@ -714,8 +756,10 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       is_published: true,
     },
     {
-      title: 'University of Tartu contributes digital learning expertise to SHAPE',
-      title_sw: 'Chuo Kikuu cha Tartu kinachangia utaalamu wa kujifunza kidijitali kwa SHAPE',
+      title:
+        'University of Tartu contributes digital learning expertise to SHAPE',
+      title_sw:
+        'Chuo Kikuu cha Tartu kinachangia utaalamu wa kujifunza kidijitali kwa SHAPE',
       source: 'University of Tartu',
       url: 'https://ut.ee/en',
       date: '2025',
@@ -1088,7 +1132,8 @@ export const runShapeSeed = async (dataSource: DataSource) => {
     {
       title: 'SHAPE Project Handbook',
       slug: 'shape-project-handbook',
-      description: 'Governance, roles, and reporting procedures for the consortium.',
+      description:
+        'Governance, roles, and reporting procedures for the consortium.',
       category: 'templates' as const,
       file_url: '/uploads/shape/project-handbook.pdf',
       file_type: 'application/pdf',
@@ -1282,7 +1327,8 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       category: 'Announcement',
     },
     {
-      title: 'SHAPE work packages set path from needs assessment to sustainability',
+      title:
+        'SHAPE work packages set path from needs assessment to sustainability',
       slug: 'shape-work-packages-overview',
       summary:
         'Eight work packages guide SHAPE from project management through curriculum, platforms, pilots, QA, dissemination, and sustainability.',

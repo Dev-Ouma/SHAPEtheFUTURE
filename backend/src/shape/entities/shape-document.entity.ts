@@ -85,7 +85,7 @@ export class ShapeDocument {
   @Column({ default: true })
   is_public: boolean;
 
-  @Column({ default: true })
+  @Column({ default: false })
   is_published: boolean;
 
   @Column({ type: 'timestamptz', nullable: true })

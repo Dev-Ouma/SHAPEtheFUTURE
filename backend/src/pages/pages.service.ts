@@ -19,15 +19,19 @@ export class PagesService {
     return {
       ...page,
       title: pickLocalized(locale, page.title, page.title_sw),
-      summary: pickLocalized(locale, page.summary, page.summary_sw) || page.summary,
+      summary:
+        pickLocalized(locale, page.summary, page.summary_sw) || page.summary,
       content:
         pickLocalized(locale, page.content, page.content_sw) || page.content,
       meta_title:
         pickLocalized(locale, page.meta_title, page.meta_title_sw) ||
         page.meta_title,
       meta_description:
-        pickLocalized(locale, page.meta_description, page.meta_description_sw) ||
-        page.meta_description,
+        pickLocalized(
+          locale,
+          page.meta_description,
+          page.meta_description_sw,
+        ) || page.meta_description,
     } as Page;
   }
 

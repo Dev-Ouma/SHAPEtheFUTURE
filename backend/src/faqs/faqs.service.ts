@@ -16,8 +16,7 @@ export class FaqsService {
     return {
       ...faq,
       question: pickLocalized(locale, faq.question, faq.question_sw),
-      answer:
-        pickLocalized(locale, faq.answer, faq.answer_sw) || faq.answer,
+      answer: pickLocalized(locale, faq.answer, faq.answer_sw) || faq.answer,
     } as Faq;
   }
 

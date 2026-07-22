@@ -4,11 +4,14 @@
 !.env.example
 backend/.env
 backend/.env.*
+!backend/.env.example
 frontend/.env
 frontend/.env.*
+!frontend/.env.example
 frontend/.env.local
 ai-service/.env
 ai-service/.env.*
+!ai-service/.env.example
 
 # Full database dumps & local DB files (never commit / never ship)
 ouk_db_dump*

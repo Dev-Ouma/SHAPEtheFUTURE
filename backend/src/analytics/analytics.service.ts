@@ -635,7 +635,10 @@ export class AnalyticsService {
       .select('m.label', 'metric')
       .addSelect('COUNT(*)', 'samples')
       .addSelect(`AVG((m.metadata->>'value')::float)`, 'avg_value')
-      .addSelect(`PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY (m.metadata->>'value')::float)`, 'p75_value')
+      .addSelect(
+        `PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY (m.metadata->>'value')::float)`,
+        'p75_value',
+      )
       .where('m.type = :type', { type: 'WEB_VITAL' })
       .andWhere('m.timestamp BETWEEN :from AND :to', { from, to: now })
       .andWhere("m.label IN ('CLS','FCP','INP','LCP','TTFB')")

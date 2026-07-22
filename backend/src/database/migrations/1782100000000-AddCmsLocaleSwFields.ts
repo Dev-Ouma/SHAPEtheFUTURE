@@ -132,17 +132,9 @@ export class AddCmsLocaleSwFields1782100000000 implements MigrationInterface {
         'Swahili home hero description',
       ],
       ['cta_apply_label', 'Apply Now', 'Navbar / hero apply CTA label (EN)'],
-      [
-        'cta_apply_label_sw',
-        'Omba Sasa',
-        'Navbar / hero apply CTA label (SW)',
-      ],
+      ['cta_apply_label_sw', 'Omba Sasa', 'Navbar / hero apply CTA label (SW)'],
       ['cta_portal_label', 'Portal', 'Navbar portal CTA label (EN)'],
-      [
-        'cta_portal_label_sw',
-        'Langoni',
-        'Navbar portal CTA label (SW)',
-      ],
+      ['cta_portal_label_sw', 'Langoni', 'Navbar portal CTA label (SW)'],
       [
         'footer_mission_sw',
         'Chuo kikuu cha ubunifu kwa ustawi jumuishi',

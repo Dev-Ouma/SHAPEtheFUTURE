@@ -75,7 +75,7 @@ export class WorkPackage {
   @Column({ type: 'int', default: 0 })
   sort_order: number;
 
-  @Column({ default: true })
+  @Column({ default: false })
   is_published: boolean;
 
   @CreateDateColumn()

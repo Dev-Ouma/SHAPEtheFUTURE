@@ -333,8 +333,7 @@ export const runSeed = async (dataSource: DataSource) => {
         'Our policies are designed to ensure fair, transparent, and high-quality educational experiences for all students. This page includes our Admission Policy, Academic Integrity Code, and Privacy Policy.',
       content_sw:
         'Sera zetu zimeundwa kuhakikisha uzoefu wa kielimu ulio sawa, wa uwazi, na wa ubora wa juu kwa wanafunzi wote. Ukurasa huu unajumuisha Sera yetu ya Udahili, Kanuni ya Uadilifu wa Kitaaluma, na Sera ya Faragha.',
-      summary_sw:
-        'Sera rasmi zinazoongoza ubora, uadilifu, na utawala.',
+      summary_sw: 'Sera rasmi zinazoongoza ubora, uadilifu, na utawala.',
       meta_title_sw: 'Sera za Chuo | Chuo Kikuu Huria cha Kenya',
     },
     {

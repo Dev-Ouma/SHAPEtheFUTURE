@@ -102,9 +102,7 @@ import { ShapeModule } from './shape/shape.module';
             if (!host) return undefined;
             const port = configService.get<string>('REDIS_PORT') || '6379';
             const password = configService.get<string>('REDIS_PASSWORD');
-            const auth = password
-              ? `:${encodeURIComponent(password)}@`
-              : '';
+            const auth = password ? `:${encodeURIComponent(password)}@` : '';
             return `redis://${auth}${host}:${port}`;
           })();
 

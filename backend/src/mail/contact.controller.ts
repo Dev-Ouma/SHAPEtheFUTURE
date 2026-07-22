@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Post,
-} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { Public } from '../common/decorators/public.decorator';
 import { MailService } from './mail.service';
 import { SettingsService } from '../settings/settings.service';

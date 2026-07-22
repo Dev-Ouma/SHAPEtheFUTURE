@@ -5,9 +5,7 @@ import { addColumnIfNotExists } from '../migration-helpers';
  * Deep job-body Swahili columns + seed (upsert-if-empty).
  * Also re-asserts the three header menu title_sw rows by slug and English title.
  */
-export class AddJobBodyLocaleSwFields1782930000000
-  implements MigrationInterface
-{
+export class AddJobBodyLocaleSwFields1782930000000 implements MigrationInterface {
   name = 'AddJobBodyLocaleSwFields1782930000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

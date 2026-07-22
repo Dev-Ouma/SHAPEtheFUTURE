@@ -46,16 +46,14 @@ export class CareersService {
     return {
       ...job,
       title: pickLocalized(locale, job.title, job.title_sw),
-      summary: pickLocalized(locale, job.summary, job.summary_sw) || job.summary,
+      summary:
+        pickLocalized(locale, job.summary, job.summary_sw) || job.summary,
       description:
         pickLocalized(locale, job.description, job.description_sw) ||
         job.description,
       responsibilities:
-        pickLocalized(
-          locale,
-          job.responsibilities,
-          job.responsibilities_sw,
-        ) || job.responsibilities,
+        pickLocalized(locale, job.responsibilities, job.responsibilities_sw) ||
+        job.responsibilities,
       requirements:
         pickLocalized(locale, job.requirements, job.requirements_sw) ||
         job.requirements,
@@ -65,11 +63,8 @@ export class CareersService {
       benefits:
         pickLocalized(locale, job.benefits, job.benefits_sw) || job.benefits,
       additional_notes:
-        pickLocalized(
-          locale,
-          job.additional_notes,
-          job.additional_notes_sw,
-        ) || job.additional_notes,
+        pickLocalized(locale, job.additional_notes, job.additional_notes_sw) ||
+        job.additional_notes,
     };
   }
 
