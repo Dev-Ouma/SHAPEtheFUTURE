@@ -164,6 +164,68 @@ export const runShapeSeed = async (dataSource: DataSource) => {
         'Cities across East Africa are growing quickly. Universities must prepare graduates who can design, govern, and operate smarter urban systems — from digital public services to climate resilience and inclusive mobility. SHAPE addresses this gap through a participative capacity-building approach: empowering educators, enhancing institutional strategies, and fostering academic partnerships aligned with national development visions and Erasmus+ CBHE priorities.',
     },
     { key: 'shape_overview_image', value: '' },
+    // News hub — editable from /admin/shape-home
+    { key: 'news_hub_eyebrow', value: 'Institutional intelligence' },
+    { key: 'news_hub_title', value: 'Institutional' },
+    { key: 'news_hub_title_accent', value: 'News Hub' },
+    {
+      key: 'news_hub_subtitle',
+      value:
+        'Project launches, partner milestones, and consortium updates from across SHAPE.',
+    },
+    {
+      key: 'news_hub_search_hint',
+      value:
+        'Showing matches for "{query}" — related wording highlighted below.',
+    },
+    { key: 'news_hub_ticker_label', value: 'Latest' },
+    {
+      key: 'news_hub_image_tablet',
+      value: '/uploads/shape/news/news-3d-tablet.png',
+    },
+    {
+      key: 'news_hub_image_orb',
+      value: '/uploads/shape/news/news-3d-search-orb.png',
+    },
+    {
+      key: 'news_hub_image_cards',
+      value: '/uploads/shape/news/news-3d-cards.png',
+    },
+    {
+      key: 'search_related_terms_json',
+      value: JSON.stringify({
+        ouk: ['ouk', 'open university of kenya', 'open university'],
+        shape: ['shape', 'erasmus+', 'erasmus', 'smart cities', 'smart city', 'shapethefuture'],
+        moi: ['moi', 'moi university'],
+        makerere: ['makerere', 'makerere university', 'mak'],
+        mak: ['mak', 'makerere', 'makerere university'],
+        kiu: ['kiu', 'kampala international university'],
+        mogadishu: ['mogadishu', 'mogadishu university', 'mog'],
+        mog: ['mog', 'mogadishu', 'mogadishu university'],
+        rsu: ['rsu', 'red sea university'],
+        ovgu: ['ovgu', 'otto von guericke', 'magdeburg'],
+        tartu: ['tartu', 'university of tartu'],
+        lsmu: ['lsmu', 'lithuanian university of health sciences'],
+        erasmus: ['erasmus', 'erasmus+', 'eu-funded', 'european union'],
+        kenya: ['kenya', 'kenyan', 'east africa'],
+        uganda: ['uganda', 'ugandan'],
+        somalia: ['somalia', 'somali'],
+        germany: ['germany', 'german'],
+        estonia: ['estonia', 'estonian'],
+        lithuania: ['lithuania', 'lithuanian'],
+        news: ['news', 'announcement', 'update', 'press'],
+        partner: ['partner', 'partners', 'partnership', 'consortium'],
+        workpackage: ['work package', 'work packages', 'wp'],
+        wp: ['wp', 'work package', 'work packages'],
+      }),
+    },
+    { key: 'work_packages_eyebrow', value: 'Delivery architecture' },
+    { key: 'work_packages_title', value: 'Work packages' },
+    {
+      key: 'work_packages_subtitle',
+      value:
+        'Eight coordinated workstreams spanning management, curriculum, platforms, training, quality, dissemination, and sustainability — each led by a consortium partner with clear milestones and deliverables.',
+    },
   ];
   for (const s of settings) {
     const existing = await settingRepo.findOne({ where: { key: s.key } });
@@ -182,16 +244,23 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       slug: 'open-university-of-kenya',
       short_name: 'OUK',
       country: 'Kenya',
-      city: 'Nairobi',
+      city: 'Konza / Nairobi',
       website_url: 'https://ouk.ac.ke',
+      logo_url: '/uploads/shape/partners/ouk.png',
+      consortium_role: 'Project Coordinator',
       region: 'east_africa' as const,
       latitude: -1.286389,
       longitude: 36.817223,
       sort_order: 1,
+      description:
+        'Kenya’s dedicated open and distance university, based at Technopolis Development Authority and delivering flexible digital programmes in science, technology, education, business, and agriculture. OUK coordinates SHAPE as the East African digital-learning and dissemination hub.',
       responsibilities:
-        'Project coordination lead; digital learning infrastructure; regional dissemination hub.',
+        'Overall consortium coordination; digital learning infrastructure; regional dissemination and stakeholder liaison across East Africa.',
       deliverables:
-        'Project management framework; digital platform hosting; partner coordination reports.',
+        'Project management framework; partner coordination reports; digital platform hosting and regional communication channels.',
+      contact_person: 'SHAPE Project Office',
+      contact_email: 'shape@ouk.ac.ke',
+      contact_role: 'Coordination Office',
     },
     {
       name: 'Moi University',
@@ -200,14 +269,21 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       country: 'Kenya',
       city: 'Eldoret',
       website_url: 'https://www.mu.ac.ke',
+      logo_url: '/uploads/shape/partners/moi.svg',
+      consortium_role: 'Kenya Academic Lead',
       region: 'east_africa' as const,
       latitude: 0.5143,
       longitude: 35.2698,
       sort_order: 2,
+      description:
+        'Public university founded in 1984 in Uasin Gishu County, Kenya, with the motto “Foundation of knowledge.” Moi is a multi-campus institution strong in education, health sciences, engineering, and applied research — and hosted SHAPE’s East African kick-off.',
       responsibilities:
-        'Needs assessment lead; curriculum co-development; host for kick-off events.',
+        'Needs assessment leadership; curriculum co-development; hosting inception and partner workshops in Kenya.',
       deliverables:
-        'Needs assessment report; curriculum frameworks; training workshop reports.',
+        'Needs assessment report; curriculum frameworks; training workshop and kick-off reports.',
+      contact_person: 'SHAPE Focal Point — Moi University',
+      contact_email: 'shape@mu.ac.ke',
+      contact_role: 'Institutional Lead',
     },
     {
       name: 'Makerere University',
@@ -216,14 +292,21 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       country: 'Uganda',
       city: 'Kampala',
       website_url: 'https://www.mak.ac.ug',
+      logo_url: '/uploads/shape/partners/makerere.svg',
+      consortium_role: 'Curriculum & QA Co-Lead',
       region: 'east_africa' as const,
       latitude: 0.3344,
       longitude: 32.5675,
       sort_order: 3,
+      description:
+        'Uganda’s oldest and largest university (est. 1922), with nine colleges spanning engineering, health, computing, education, and the social sciences. Motto: “We build for the future.” Makerere anchors SHAPE’s curriculum and quality-assurance workstreams.',
       responsibilities:
-        'Curriculum development; quality assurance co-lead; research outputs.',
+        'Curriculum module design; quality assurance co-leadership; research outputs and peer review.',
       deliverables:
-        'Curriculum modules; QA frameworks; peer-reviewed publications.',
+        'Smart-city curriculum modules; QA frameworks; peer-reviewed publications and teaching resources.',
+      contact_person: 'SHAPE Focal Point — Makerere',
+      contact_email: 'shape@mak.ac.ug',
+      contact_role: 'Institutional Lead',
     },
     {
       name: 'Kampala International University',
@@ -232,14 +315,21 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       country: 'Uganda',
       city: 'Kampala',
       website_url: 'https://www.kiu.ac.ug',
+      logo_url: '/uploads/shape/partners/kiu.svg',
+      consortium_role: 'Pilot Training Lead',
       region: 'east_africa' as const,
       latitude: 0.2975,
       longitude: 32.6064,
       sort_order: 4,
+      description:
+        'A private chartered university in Uganda with a strong international student community and programmes in health sciences, law, business, education, and technology. KIU drives SHAPE pilot training and practitioner engagement in Uganda.',
       responsibilities:
-        'Pilot training delivery; stakeholder engagement in Uganda.',
+        'Pilot training delivery; educator and city-practitioner cohorts; Uganda stakeholder engagement.',
       deliverables:
-        'Pilot training cohorts; stakeholder engagement reports.',
+        'Pilot training cohorts; stakeholder engagement reports; cascade-training materials.',
+      contact_person: 'SHAPE Focal Point — KIU',
+      contact_email: 'shape@kiu.ac.ug',
+      contact_role: 'Institutional Lead',
     },
     {
       name: 'Mogadishu University',
@@ -248,14 +338,21 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       country: 'Somalia',
       city: 'Mogadishu',
       website_url: 'https://mu.edu.so',
+      logo_url: '/uploads/shape/partners/mogadishu.svg',
+      consortium_role: 'Somalia Capital Hub',
       region: 'east_africa' as const,
       latitude: 2.0469,
       longitude: 45.3182,
       sort_order: 5,
+      description:
+        'A leading private higher-education institution in Mogadishu offering programmes across business, education, computing, health, and the social sciences. Mogadishu University anchors SHAPE’s capital-city needs assessment and pilots in Somalia.',
       responsibilities:
-        'Local needs assessment; pilot implementation in Somalia.',
+        'Local needs assessment for Somalia; pilot implementation in Mogadishu; capital-city stakeholder outreach.',
       deliverables:
-        'Country needs brief; pilot participation reports.',
+        'Country needs brief; pilot participation reports; local dissemination activities.',
+      contact_person: 'SHAPE Focal Point — Mogadishu University',
+      contact_email: 'shape@mu.edu.so',
+      contact_role: 'Institutional Lead',
     },
     {
       name: 'Red Sea University',
@@ -264,30 +361,44 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       country: 'Somalia',
       city: 'Bosaso',
       website_url: 'https://rsu.edu.so',
+      logo_url: '/uploads/shape/partners/rsu.svg',
+      consortium_role: 'Northern Somalia Outreach',
       region: 'east_africa' as const,
       latitude: 11.2842,
       longitude: 49.1816,
       sort_order: 6,
+      description:
+        'Higher-education institution serving Puntland’s coastal and northern Somalia from Bosaso, with programmes oriented to regional development, technology, and community capacity building. RSU extends SHAPE’s training cascade beyond the capital.',
       responsibilities:
-        'Coastal/northern Somalia outreach; training cascade.',
+        'Coastal and northern Somalia outreach; regional training cascade; community engagement.',
       deliverables:
-        'Regional training sessions; community engagement notes.',
+        'Regional training sessions; community engagement notes; local partner networks.',
+      contact_person: 'SHAPE Focal Point — Red Sea University',
+      contact_email: 'shape@rsu.edu.so',
+      contact_role: 'Institutional Lead',
     },
     {
-      name: 'Otto von Guericke University',
+      name: 'Otto von Guericke University Magdeburg',
       slug: 'otto-von-guericke-university',
       short_name: 'OVGU',
       country: 'Germany',
       city: 'Magdeburg',
       website_url: 'https://www.ovgu.de',
+      logo_url: '/uploads/shape/partners/ovgu.svg',
+      consortium_role: 'EU Academic Lead',
       region: 'europe' as const,
       latitude: 52.1405,
       longitude: 11.6404,
       sort_order: 7,
+      description:
+        'Research university in Saxony-Anhalt, Germany, named after the scientist Otto von Guericke. Known for engineering, computer science, medicine, and economics, OVGU brings European digital pedagogy and quality frameworks into SHAPE.',
       responsibilities:
-        'European academic lead; digital pedagogy expertise; quality frameworks.',
+        'European academic leadership; digital pedagogy expertise; quality frameworks and mobility exchanges.',
       deliverables:
-        'Pedagogy guidelines; EU mobility exchanges; co-authored reports.',
+        'Pedagogy guidelines; EU mobility exchanges; co-authored technical and teaching reports.',
+      contact_person: 'SHAPE Focal Point — OVGU',
+      contact_email: 'shape@ovgu.de',
+      contact_role: 'Institutional Lead',
     },
     {
       name: 'University of Tartu',
@@ -296,14 +407,21 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       country: 'Estonia',
       city: 'Tartu',
       website_url: 'https://ut.ee',
+      logo_url: '/uploads/shape/partners/tartu.svg',
+      consortium_role: 'Digital Learning Lead',
       region: 'europe' as const,
       latitude: 58.3811,
       longitude: 26.7225,
       sort_order: 8,
+      description:
+        'Estonia’s oldest and highest-ranked university (est. 1632), a European leader in digital education, e-governance research, and IT. Tartu shapes SHAPE’s digital learning platform architecture and e-assessment practices.',
       responsibilities:
-        'Digital learning platform expertise; e-assessment practices.',
+        'Digital learning platform expertise; e-assessment practices; Estonian digital-education know-how transfer.',
       deliverables:
-        'Platform architecture inputs; digital assessment toolkit.',
+        'Platform architecture inputs; digital assessment toolkit; online pedagogy playbooks.',
+      contact_person: 'SHAPE Focal Point — University of Tartu',
+      contact_email: 'shape@ut.ee',
+      contact_role: 'Institutional Lead',
     },
     {
       name: 'Lithuanian University of Health Sciences',
@@ -312,14 +430,21 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       country: 'Lithuania',
       city: 'Kaunas',
       website_url: 'https://lsmu.lt',
+      logo_url: '/uploads/shape/partners/lsmu.svg',
+      consortium_role: 'Health Pathways & Sustainability',
       region: 'europe' as const,
       latitude: 54.8985,
       longitude: 23.9036,
       sort_order: 9,
+      description:
+        'Lithuania’s largest specialised university for medicine, pharmacy, nursing, public health, and veterinary sciences, based in Kaunas. LSMU contributes health-oriented smart-city learning pathways and sustainability planning to SHAPE.',
       responsibilities:
-        'Health sciences curriculum pathways; sustainability planning.',
+        'Health sciences curriculum pathways; sustainability planning; cross-disciplinary health–city linkages.',
       deliverables:
-        'Health education modules; sustainability roadmap inputs.',
+        'Health education modules; sustainability roadmap inputs; joint training materials.',
+      contact_person: 'SHAPE Focal Point — LSMU',
+      contact_email: 'shape@lsmu.lt',
+      contact_role: 'Institutional Lead',
     },
   ];
 
@@ -527,7 +652,10 @@ export const runShapeSeed = async (dataSource: DataSource) => {
     outcomes:
       'Consortium agreement endorsed; WP leads confirmed; first-year workplan approved.',
     work_package_id: wpsByCode['WP1'].id,
-    gallery_urls: [],
+    gallery_urls: [
+      '/uploads/shape/events/event-3d-consortium-meeting.png',
+      '/uploads/shape/events/event-3d-kickoff-workshop.png',
+    ],
     is_published: true,
   };
   if (kickoff) {
@@ -834,6 +962,22 @@ export const runShapeSeed = async (dataSource: DataSource) => {
   console.log('Seeding SHAPE sample documents...');
   const docsData = [
     {
+      title: 'Work Package Deliverables Pack',
+      slug: 'wp-deliverables-pack-placeholder',
+      description:
+        'Placeholder — formal deliverables will appear here as work packages publish outputs.',
+      category: 'deliverables' as const,
+      file_url: null as string | null,
+      file_type: 'application/pdf',
+      file_size: null as number | null,
+      work_package_id: wpsByCode['WP1'].id,
+      partner_id: ouk.id,
+      tags: ['placeholder', 'deliverables'],
+      is_public: true,
+      is_published: true,
+      published_at: new Date('2026-06-01'),
+    },
+    {
       title: 'SHAPE Project Handbook',
       slug: 'shape-project-handbook',
       description: 'Governance, roles, and reporting procedures for the consortium.',
@@ -878,6 +1022,70 @@ export const runShapeSeed = async (dataSource: DataSource) => {
       is_published: true,
       published_at: new Date('2026-04-15'),
     },
+    {
+      title: 'Interim Financial Statement',
+      slug: 'interim-financial-statement-placeholder',
+      description:
+        'Placeholder — partner financial summaries will be published after reporting cycles.',
+      category: 'financial' as const,
+      file_url: null as string | null,
+      file_type: 'application/pdf',
+      file_size: null as number | null,
+      work_package_id: wpsByCode['WP1'].id,
+      partner_id: ouk.id,
+      tags: ['placeholder', 'financial'],
+      is_public: true,
+      is_published: true,
+      published_at: new Date('2026-07-01'),
+    },
+    {
+      title: 'Consortium Kick-off Slide Deck',
+      slug: 'consortium-kickoff-slide-deck-placeholder',
+      description:
+        'Placeholder — meeting and workshop presentations will be uploaded here.',
+      category: 'presentations' as const,
+      file_url: null as string | null,
+      file_type: 'application/pdf',
+      file_size: null as number | null,
+      work_package_id: wpsByCode['WP1'].id,
+      partner_id: moi.id,
+      tags: ['placeholder', 'presentation'],
+      is_public: true,
+      is_published: true,
+      published_at: new Date('2026-06-18'),
+    },
+    {
+      title: 'Smart Cities Higher Education Policy Brief',
+      slug: 'smart-cities-he-policy-brief-placeholder',
+      description:
+        'Placeholder — policy briefs for ministries and city partners will be published here.',
+      category: 'policy_briefs' as const,
+      file_url: null as string | null,
+      file_type: 'application/pdf',
+      file_size: null as number | null,
+      work_package_id: wpsByCode['WP7']?.id || wpsByCode['WP1'].id,
+      partner_id: ouk.id,
+      tags: ['placeholder', 'policy'],
+      is_public: true,
+      is_published: true,
+      published_at: new Date('2026-09-01'),
+    },
+    {
+      title: 'SHAPE Research Note (forthcoming)',
+      slug: 'shape-research-note-placeholder',
+      description:
+        'Placeholder — peer-reviewed and open publications from the consortium.',
+      category: 'publications' as const,
+      file_url: null as string | null,
+      file_type: 'application/pdf',
+      file_size: null as number | null,
+      work_package_id: wpsByCode['WP7']?.id || wpsByCode['WP1'].id,
+      partner_id: ouk.id,
+      tags: ['placeholder', 'publication'],
+      is_public: true,
+      is_published: true,
+      published_at: new Date('2026-10-01'),
+    },
   ];
 
   for (const data of docsData) {
@@ -885,7 +1093,7 @@ export const runShapeSeed = async (dataSource: DataSource) => {
     if (doc) {
       Object.assign(doc, data);
     } else {
-      doc = docRepo.create(data);
+      doc = docRepo.create(data as any);
     }
     await docRepo.save(doc);
   }

@@ -10,9 +10,11 @@ import {
   getShapeDashboard,
   getShapePartners,
   getShapeWorkPackages,
+  resolveShapeHomeSettings,
 } from "@/lib/shape-api";
-import { getNews } from "@/lib/api";
+import { getNews, getSettings, resolveImageUrl } from "@/lib/api";
 import { withLocaleSeo } from "@/lib/seo";
+import SafeImage from "@/components/ui/SafeImage";
 
 export const revalidate = 120;
 
@@ -38,12 +40,15 @@ function asList(data: any): any[] {
 export default async function Home({ params }: { params: { locale: string } }) {
   const { locale } = params;
 
-  const [dashboard, partners, workPackages, newsRes] = await Promise.all([
+  const [dashboard, partners, workPackages, newsRes, settings] = await Promise.all([
     getShapeDashboard(),
     getShapePartners(),
     getShapeWorkPackages(),
     getNews({ limit: 3, type: "All", locale }).catch(() => ({ items: [] })),
+    getSettings(locale).catch(() => ({})),
   ]);
+
+  const home = resolveShapeHomeSettings(settings || {});
 
   const news = asList(newsRes)
     .filter((n: any) => n.type !== "Research")
@@ -63,7 +68,12 @@ export default async function Home({ params }: { params: { locale: string } }) {
 
   return (
     <div className="bg-white">
-      <ShapeHomeHero />
+      <ShapeHomeHero
+        eyebrow={home.heroEyebrow}
+        title={home.heroTitle}
+        text={home.heroText}
+        tagline={home.siteName.includes("|") ? home.siteName.split("|")[1]?.trim() : home.siteName}
+      />
 
       <ShapeStatsStrip stats={stats} />
 
@@ -76,17 +86,19 @@ export default async function Home({ params }: { params: { locale: string } }) {
             </h2>
           </div>
           <div className="lg:col-span-7 space-y-5 text-slate-600 leading-relaxed">
-            <p>
-              SHAPE connects nine universities across East Africa and Europe to strengthen teaching,
-              research, and digital learning for smart cities. Coordinated by the Open University of
-              Kenya and co-funded by Erasmus+, the consortium aligns curricula, platforms, and
-              practitioner training with real urban challenges.
-            </p>
-            <p>
-              Over three years, partners co-design programmes, pilot digital learning services, and
-              share open resources so graduates and city stakeholders can shape more inclusive,
-              resilient urban futures.
-            </p>
+            {home.overviewImage ? (
+              <div className="relative aspect-[16/9] mb-6 bg-slate-100 overflow-hidden">
+                <SafeImage
+                  src={resolveImageUrl(home.overviewImage)}
+                  alt=""
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                />
+              </div>
+            ) : null}
+            <p>{home.overview}</p>
+            <p>{home.intro}</p>
             <Link
               href="/about"
               className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-primary hover:text-secondary"

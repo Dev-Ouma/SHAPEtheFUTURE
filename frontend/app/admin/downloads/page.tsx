@@ -24,6 +24,7 @@ import { getApi, deleteApi } from "@/lib/api";
 import { ArrowRight } from "lucide-react";
 import PermissionGate from "@/components/admin/PermissionGate";
 import { usePermission } from "@/hooks/useAdminPermissions";
+import Highlight from "@/components/Highlight";
 
 interface Download {
   id: string;
@@ -239,7 +240,7 @@ function AdminDownloadsListingInner() {
                          <div>
                             <span className="text-[9px] font-black uppercase tracking-widest text-primary/60">{doc.category.name}</span>
                             <h4 className="text-xl font-black text-primary-darker leading-tight uppercase tracking-tighter group-hover:text-primary transition-colors font-serif line-clamp-1">
-                               {doc.title}
+                               <Highlight text={doc.title || ""} query={search} quiet />
                             </h4>
                          </div>
                       </div>

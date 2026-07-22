@@ -35,6 +35,10 @@ export default function ShapeEventsAdmin() {
         { key: "presentations_url", label: "Presentations URL" },
         { key: "attendance_notes", label: "Attendance notes", type: "textarea" },
         { key: "work_package_id", label: "Work package ID (UUID)" },
+        { key: "gallery_image_1", label: "Gallery image 1 (3D / photo)", type: "image" },
+        { key: "gallery_image_2", label: "Gallery image 2 (3D / photo)", type: "image" },
+        { key: "gallery_image_3", label: "Gallery image 3 (optional)", type: "image" },
+        { key: "gallery_image_4", label: "Gallery image 4 (optional)", type: "image" },
         {
           key: "is_published",
           label: "Published",
@@ -42,7 +46,17 @@ export default function ShapeEventsAdmin() {
           options: ["true", "false"],
         },
       ]}
-      emptyItem={{ title: "", slug: "", event_date: "", status: "planned", is_published: true }}
+      emptyItem={{
+        title: "",
+        slug: "",
+        event_date: "",
+        status: "planned",
+        is_published: true,
+        gallery_image_1: "",
+        gallery_image_2: "",
+        gallery_image_3: "",
+        gallery_image_4: "",
+      }}
     />
   );
 }

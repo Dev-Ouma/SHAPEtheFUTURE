@@ -18,7 +18,7 @@ const ADMIN_SIDEBAR_SECTIONS: AdminSidebarSection[] = [
     title: 'SHAPE Project',
     order: 0,
     items: [
-      { label: 'Homepage Content', href: '/admin/shape-home', icon: 'Layout', order: 0 },
+      { label: 'Portal Content', href: '/admin/shape-home', icon: 'Layout', order: 0 },
       { label: 'Partners', href: '/admin/shape-partners', icon: 'Handshake', order: 1 },
       { label: 'Work Packages', href: '/admin/shape-work-packages', icon: 'FolderKanban', order: 2 },
       { label: 'Events', href: '/admin/shape-events', icon: 'Calendar', order: 3 },

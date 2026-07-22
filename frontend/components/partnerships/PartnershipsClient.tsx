@@ -172,7 +172,7 @@ export default function PartnershipsClient({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <AnimatePresence mode="popLayout">
                   {filteredPartners.map(partner => (
-                    <PartnershipCard key={partner.id} partner={partner} />
+                    <PartnershipCard key={partner.id} partner={partner} highlightQuery={searchQuery} />
                   ))}
                 </AnimatePresence>
               </div>

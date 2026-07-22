@@ -30,6 +30,7 @@ import { toast } from "react-hot-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useRouter, useSearchParams } from "next/navigation";
 import PermissionGate from "@/components/admin/PermissionGate";
+import Highlight from "@/components/Highlight";
 import {
   normalizePublishStatus,
   publishStatusClass,
@@ -242,13 +243,13 @@ function NewsListingInner() {
              viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in duration-500">
                   {news.map((item) => (
-                    <GridCard key={item.id} item={item} canManage={canManage} onDelete={handleDelete} onStatusChange={handleStatusUpdate} />
+                    <GridCard key={item.id} item={item} canManage={canManage} onDelete={handleDelete} onStatusChange={handleStatusUpdate} query={search} />
                   ))}
                 </div>
              ) : (
                 <div className="bg-white border border-slate-200 divide-y divide-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-500 shadow-sm">
                    {news.map((item) => (
-                    <ListRow key={item.id} item={item} canManage={canManage} onDelete={handleDelete} onStatusChange={handleStatusUpdate} />
+                    <ListRow key={item.id} item={item} canManage={canManage} onDelete={handleDelete} onStatusChange={handleStatusUpdate} query={search} />
                   ))}
                 </div>
              )
@@ -294,7 +295,7 @@ function NewsListingInner() {
 }
 
 // Sub-components for cleaner code
-const GridCard = ({ item, canManage, onDelete, onStatusChange }: { item: any, canManage: boolean, onDelete: any, onStatusChange: any }) => (
+const GridCard = ({ item, canManage, onDelete, onStatusChange, query }: { item: any, canManage: boolean, onDelete: any, onStatusChange: any, query?: string }) => (
   <div className="bg-white group flex flex-col h-full overflow-hidden relative border border-slate-100 hover:border-primary/30 transition-all shadow-sm hover:shadow-xl">
     {/* Featured Badge */}
     {item.featured_menu && (
@@ -323,7 +324,7 @@ const GridCard = ({ item, canManage, onDelete, onStatusChange }: { item: any, ca
       </div>
       
       <h4 className="text-2xl font-black text-primary-darker leading-tight uppercase tracking-tighter group-hover:text-primary transition-colors font-serif ">
-          {item.title}
+          <Highlight text={item.title} query={query || ""} />
       </h4>
 
       <div className="flex items-center space-x-6 text-[10px] font-bold uppercase tracking-widest text-slate-400 border-t border-slate-50 pt-6">
@@ -392,7 +393,7 @@ const GridCard = ({ item, canManage, onDelete, onStatusChange }: { item: any, ca
   </div>
 );
 
-const ListRow = ({ item, canManage, onDelete, onStatusChange }: { item: any, canManage: boolean, onDelete: any, onStatusChange: any }) => (
+const ListRow = ({ item, canManage, onDelete, onStatusChange, query }: { item: any, canManage: boolean, onDelete: any, onStatusChange: any, query?: string }) => (
   <div className="group hover:bg-slate-50 transition-colors p-6 flex items-center gap-8">
      {/* Status Icon */}
      <div className={`w-12 h-12 shrink-0 flex items-center justify-center rounded-none border ${item.is_published ? 'bg-green-50 border-green-100 text-green-500' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>
@@ -402,7 +403,9 @@ const ListRow = ({ item, canManage, onDelete, onStatusChange }: { item: any, can
      {/* Primary Info */}
      <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3 mb-1">
-           <h4 className="text-lg font-black text-primary-darker uppercase tracking-tight truncate group-hover:text-primary transition-colors">{item.title}</h4>
+           <h4 className="text-lg font-black text-primary-darker uppercase tracking-tight truncate group-hover:text-primary transition-colors">
+             <Highlight text={item.title} query={query || ""} />
+           </h4>
            <div className="flex flex-col items-start">
              <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 border ${publishStatusClass(item.status)}`}>
                 {publishStatusLabel(item.status || (item.is_published ? 'PUBLISHED' : 'DRAFT'))}

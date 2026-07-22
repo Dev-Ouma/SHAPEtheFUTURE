@@ -8,6 +8,7 @@ import { useAlert } from "@/context/AlertContext";
 import { toast } from "react-hot-toast";
 import PermissionGate from "@/components/admin/PermissionGate";
 import { usePermission } from "@/hooks/useAdminPermissions";
+import Highlight from "@/components/Highlight";
 import {
   normalizePublishStatus,
   publishStatusClass,
@@ -159,7 +160,9 @@ function PagesListingInner() {
                             <FileText size={20} />
                           </div>
                           <div>
-                            <p className="font-black text-primary-darker uppercase tracking-widest text-sm mb-1">{page.title}</p>
+                            <p className="font-black text-primary-darker uppercase tracking-widest text-sm mb-1">
+                              <Highlight text={page.title || ""} query={search} quiet />
+                            </p>
                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center">
                               <span className="text-secondary mr-2">/</span>
                               {page.slug}

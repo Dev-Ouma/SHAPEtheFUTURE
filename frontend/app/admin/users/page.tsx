@@ -7,6 +7,7 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import PermissionGate from "@/components/admin/PermissionGate";
 import ProvisioningCredentialsModal, { type ProvisioningDetails } from "@/components/admin/ProvisioningCredentialsModal";
 import { usePermission } from "@/hooks/useAdminPermissions";
+import Highlight from "@/components/Highlight";
 
 // ── Icons ──────────────────────────────────────────────────────────────────
 const IEdit = () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>;
@@ -428,7 +429,9 @@ function UsersPageInner() {
                         {u.full_name?.charAt(0)?.toUpperCase() || "?"}
                       </div>
                       <div>
-                        <p className="font-bold text-slate-800 text-sm">{u.full_name}</p>
+                        <p className="font-bold text-slate-800 text-sm">
+                          <Highlight text={u.full_name || ""} query={search} quiet />
+                        </p>
                         <p className="text-xs text-slate-500">{u.email}</p>
                         {u.username && <p className="text-[10px] text-primary font-bold">@{u.username}</p>}
                       </div>

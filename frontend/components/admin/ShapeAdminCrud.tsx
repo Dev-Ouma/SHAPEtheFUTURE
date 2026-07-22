@@ -1,10 +1,13 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Edit2, Trash2, RefreshCw } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, RefreshCw, Copy } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { deleteApi, getApi, patchApi, postApi, resolveImageUrl } from "@/lib/api";
 import ImageUploader from "@/components/admin/ImageUploader";
+import Highlight from "@/components/Highlight";
+import { textMatchesQuery } from "@/lib/searchHighlight";
+import { useRelatedTerms } from "@/components/SearchHighlightProvider";
 
 export type ShapeAdminField = {
   key: string;
@@ -34,11 +37,41 @@ const STRIP_ON_SAVE = new Set([
   "host_partner",
   "work_package",
   "partner",
-  "gallery_urls",
   "partner_ids",
   "document_urls",
   "tags",
+  // Virtual CMS slots — folded into gallery_urls in sanitizePayload
+  "gallery_image_1",
+  "gallery_image_2",
+  "gallery_image_3",
+  "gallery_image_4",
 ]);
+
+const GALLERY_SLOT_KEYS = ["gallery_image_1", "gallery_image_2", "gallery_image_3", "gallery_image_4"] as const;
+
+function expandGallerySlots(item: Record<string, any>): Record<string, any> {
+  const urls = Array.isArray(item.gallery_urls)
+    ? item.gallery_urls.filter((u: unknown) => typeof u === "string" && u.trim())
+    : [];
+  const next = { ...item };
+  GALLERY_SLOT_KEYS.forEach((key, i) => {
+    if (next[key] == null || next[key] === "") {
+      next[key] = urls[i] || "";
+    }
+  });
+  return next;
+}
+
+function collectGalleryUrls(raw: Record<string, any>, fields: ShapeAdminField[]): string[] | undefined {
+  const hasSlots = fields.some((f) => GALLERY_SLOT_KEYS.includes(f.key as (typeof GALLERY_SLOT_KEYS)[number]));
+  if (!hasSlots) {
+    if (Array.isArray(raw.gallery_urls)) return raw.gallery_urls;
+    return undefined;
+  }
+  return GALLERY_SLOT_KEYS.map((k) => raw[k])
+    .filter((u): u is string => typeof u === "string" && u.trim().length > 0)
+    .map((u) => u.trim());
+}
 
 function asList(data: unknown): any[] {
   if (Array.isArray(data)) return data;
@@ -69,13 +102,52 @@ function sanitizePayload(raw: Record<string, any>, fields: ShapeAdminField[]) {
   const out: Record<string, any> = {};
   for (const [key, value] of Object.entries(raw)) {
     if (STRIP_ON_SAVE.has(key) && key !== "id") continue;
-    if (!allowed.has(key)) continue;
+    if (!allowed.has(key) && key !== "gallery_urls") continue;
     if (value === "" || value === undefined) continue;
     if (value === "true") out[key] = true;
     else if (value === "false") out[key] = false;
     else out[key] = value;
   }
+  const gallery = collectGalleryUrls(raw, fields);
+  if (gallery !== undefined) {
+    out.gallery_urls = gallery;
+  }
   return out;
+}
+
+/** Build a create-ready draft from an existing row (unique slug/code when present). */
+function buildDuplicateDraft(item: Record<string, any>, fields: ShapeAdminField[]) {
+  const stamp = Date.now().toString(36).slice(-4);
+  const draft: Record<string, any> = {};
+
+  for (const f of fields) {
+    let value = item[f.key];
+    if (value === undefined || value === null) continue;
+
+    if (typeof value === "boolean") {
+      draft[f.key] = value ? "true" : "false";
+      continue;
+    }
+
+    if (f.key === "slug" && typeof value === "string" && value.trim()) {
+      draft[f.key] = `${value.replace(/-copy(-[a-z0-9]+)?$/i, "")}-copy-${stamp}`;
+      continue;
+    }
+    if (f.key === "code" && typeof value === "string" && value.trim()) {
+      draft[f.key] = `${value}-COPY`;
+      continue;
+    }
+    if ((f.key === "title" || f.key === "name") && typeof value === "string" && value.trim()) {
+      draft[f.key] = value.replace(/\s*\(copy( \d+)?\)$/i, "").trim() + " (copy)";
+      continue;
+    }
+
+    draft[f.key] = value;
+  }
+
+  // Never carry identity / relation objects into create
+  delete draft.id;
+  return draft;
 }
 
 export default function ShapeAdminCrud({
@@ -93,6 +165,8 @@ export default function ShapeAdminCrud({
   const [showModal, setShowModal] = useState(false);
   const [current, setCurrent] = useState<Record<string, any>>(emptyItem);
   const [saving, setSaving] = useState(false);
+  const [modalMode, setModalMode] = useState<"create" | "edit" | "duplicate">("create");
+  const relatedMap = useRelatedTerms();
 
   const fetchItems = async () => {
     setLoading(true);
@@ -118,27 +192,36 @@ export default function ShapeAdminCrud({
   }, [resource]);
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return items;
+    if (!search.trim()) return items;
     return items.filter((item) =>
-      columns.some((c) => displayCell(item[c.key]).toLowerCase().includes(q)),
+      columns.some((c) => textMatchesQuery(displayCell(item[c.key]), search, relatedMap)),
     );
-  }, [items, search, columns]);
+  }, [items, search, columns, relatedMap]);
 
   const openCreate = () => {
+    setModalMode("create");
     setCurrent({ ...emptyItem });
     setShowModal(true);
   };
 
   const openEdit = (item: any) => {
-    const draft: Record<string, any> = { ...item };
+    const draft: Record<string, any> = expandGallerySlots({ ...item });
     for (const f of fields) {
       if (typeof draft[f.key] === "boolean") {
         draft[f.key] = draft[f.key] ? "true" : "false";
       }
     }
+    setModalMode("edit");
     setCurrent(draft);
     setShowModal(true);
+  };
+
+  const openDuplicate = (item: any) => {
+    const draft = buildDuplicateDraft(expandGallerySlots({ ...item }), fields);
+    setModalMode("duplicate");
+    setCurrent(draft);
+    setShowModal(true);
+    toast.success("Duplicated — review fields, then Save to create the copy");
   };
 
   const handleSave = async () => {
@@ -155,12 +238,18 @@ export default function ShapeAdminCrud({
         toast.success("Status updated");
       } else {
         const payload = sanitizePayload(current, fields);
-        if (current.id) {
+        // Duplicate / create never send an id
+        const isUpdate = Boolean(current.id) && modalMode === "edit";
+        if (isUpdate) {
           await patchApi(`/shape/${resource}/${current.id}`, payload);
           toast.success("Updated — public site will refresh on next load");
         } else {
           await postApi(`/shape/${resource}`, payload);
-          toast.success("Created — visible on public site when published");
+          toast.success(
+            modalMode === "duplicate"
+              ? "Duplicate created — visible on public site when published"
+              : "Created — visible on public site when published",
+          );
         }
       }
       setShowModal(false);
@@ -271,7 +360,7 @@ export default function ShapeAdminCrud({
                             className="h-8 w-auto max-w-[120px] object-contain"
                           />
                         ) : (
-                          displayCell(item[c.key])
+                          <Highlight text={displayCell(item[c.key])} query={search} quiet />
                         )}
                       </td>
                     ))}
@@ -281,15 +370,28 @@ export default function ShapeAdminCrud({
                         onClick={() => openEdit(item)}
                         className="inline-flex p-2 text-slate-400 hover:text-primary"
                         aria-label="Edit"
+                        title="Edit"
                       >
                         <Edit2 size={16} />
                       </button>
                       {item.id && !readOnlyCreate ? (
                         <button
                           type="button"
+                          onClick={() => openDuplicate(item)}
+                          className="inline-flex p-2 text-slate-400 hover:text-primary"
+                          aria-label="Duplicate"
+                          title="Duplicate"
+                        >
+                          <Copy size={16} />
+                        </button>
+                      ) : null}
+                      {item.id && !readOnlyCreate ? (
+                        <button
+                          type="button"
                           onClick={() => handleDelete(item.id)}
                           className="inline-flex p-2 text-slate-400 hover:text-red-600"
                           aria-label="Delete"
+                          title="Delete"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -308,7 +410,7 @@ export default function ShapeAdminCrud({
           <div className="bg-white w-full max-w-xl max-h-[90vh] overflow-y-auto border border-slate-200">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center">
               <h2 className="font-serif text-xl font-black uppercase text-primary-darker">
-                {current.id ? "Edit" : "Create"}
+                {modalMode === "edit" ? "Edit" : modalMode === "duplicate" ? "Duplicate" : "Create"}
               </h2>
               <button type="button" onClick={() => setShowModal(false)} className="text-slate-400 text-sm">
                 Close

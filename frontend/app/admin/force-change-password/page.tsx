@@ -141,7 +141,7 @@ export default function ForceChangePasswordPage() {
       </div>
 
       <p className="mt-12 text-[10px] text-white/30 uppercase font-black tracking-widest">
-        Property of the Open University of Kenya © 2024
+        Property of the Open University of Kenya © {new Date().getFullYear()}
       </p>
     </div>
   );

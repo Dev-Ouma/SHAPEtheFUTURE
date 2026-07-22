@@ -86,7 +86,7 @@ import { ShapeModule } from './shape/shape.module';
     AnalyticsModule,
     ChatModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
+      rootPath: join(process.cwd(), 'public'),
       serveRoot: '/',
     }),
     CacheModule.registerAsync({

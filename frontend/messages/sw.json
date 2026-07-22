@@ -2154,7 +2154,7 @@
     "aiAdvisorDesc": "Pata majibu ya haraka",
     "accessibility": "Ufikivu",
     "accessibilityDesc": "Zana za usomaji jumuishi",
-    "copyright": "Chuo Kikuu Huria cha Kenya © 2026",
+    "copyright": "Chuo Kikuu Huria cha Kenya © {year}",
     "closeHubAria": "Funga kituo cha msaada",
     "openHubAria": "Fungua kituo cha msaada na ufikivu",
     "botGreeting": "Habari! Mimi ni Mshauri wa Kidijitali wa OUK. Naweza kukusaidiaje leo?",

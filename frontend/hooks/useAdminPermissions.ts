@@ -140,6 +140,7 @@ export function useAdminAuthProviderValue() {
           } catch {
             setUser(null);
           }
+          setLoading(false);
           return;
         }
       }

@@ -166,6 +166,22 @@ export class SettingsService implements OnModuleInit {
     'shape_overview',
     'shape_overview_image',
     'site_tagline',
+    // News hub CMS (copy + 3D visuals)
+    'news_hub_eyebrow',
+    'news_hub_title',
+    'news_hub_title_accent',
+    'news_hub_subtitle',
+    'news_hub_search_hint',
+    'news_hub_ticker_label',
+    'news_hub_image_tablet',
+    'news_hub_image_orb',
+    'news_hub_image_cards',
+    // Search synonym / related-terms map (JSON object)
+    'search_related_terms_json',
+    // Work packages hub
+    'work_packages_eyebrow',
+    'work_packages_title',
+    'work_packages_subtitle',
   ];
 
   async findPublic(localeRaw?: string) {

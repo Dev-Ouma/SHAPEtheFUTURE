@@ -5,7 +5,7 @@ import DocumentsClient from "@/components/shape/DocumentsClient";
 import { getShapeDocuments } from "@/lib/shape-api";
 import { withLocaleSeo } from "@/lib/seo";
 
-export const revalidate = 120;
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,

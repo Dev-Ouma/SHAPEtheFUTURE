@@ -19,25 +19,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { getApiCached } from "@/lib/api";
+import Highlight from "@/components/Highlight";
 
 type FilterType = "all" | "programmes" | "news" | "pages" | "staff" | "research";
-
-function Highlight({ text, query }: { text: string; query: string }) {
-  if (!query || !text) return <>{text}</>;
-  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const parts = text.split(new RegExp(`(${escaped})`, "gi"));
-  return (
-    <>
-      {parts.map((part, i) =>
-        part.toLowerCase() === query.toLowerCase() ? (
-          <mark key={i} className="bg-primary/20 text-primary font-black not-italic px-0.5">{part}</mark>
-        ) : (
-          part
-        )
-      )}
-    </>
-  );
-}
 
 function SearchPage() {
   const t = useTranslations("SearchPage");

@@ -23,6 +23,7 @@ import { getAdminPrograms } from "@/lib/api";
 import { useAlert } from "@/context/AlertContext";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import Highlight from "@/components/Highlight";
 
 const STUDY_LEVELS = ["Certificate", "Diploma", "Undergraduate", "Postgraduate", "Short Course"];
 
@@ -214,7 +215,9 @@ export default function ProgramsListing() {
                           <GraduationCap size={20} />
                        </div>
                        <div>
-                          <h4 className="text-lg font-black text-primary-darker uppercase tracking-tight group-hover:text-primary transition-colors">{item.title}</h4>
+                          <h4 className="text-lg font-black text-primary-darker uppercase tracking-tight group-hover:text-primary transition-colors">
+                             <Highlight text={item.title || ""} query={search} quiet />
+                          </h4>
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{item.school?.name || "No School Assigned"}</p>
                        </div>
                     </div>

@@ -15,6 +15,7 @@ import RichTextEditor from "@/components/RichTextEditor";
 import ImageUploader from "@/components/admin/ImageUploader";
 import ProvisioningCredentialsModal, { type ProvisioningDetails } from "@/components/admin/ProvisioningCredentialsModal";
 import { getSchools } from "@/lib/api";
+import Highlight from "@/components/Highlight";
 
 // ─── Searchable Select Component with "Just-in-Time" Creation ────────────────
 function SearchableSelect({
@@ -933,7 +934,9 @@ export default function StaffDirectoryAdmin() {
                       />
                    </div>
                    <div>
-                      <p className="font-black text-primary-darker text-sm tracking-tight">{m.honorific_title} {m.full_name}</p>
+                      <p className="font-black text-primary-darker text-sm tracking-tight">
+                        <Highlight text={`${m.honorific_title || ""} ${m.full_name || ""}`.trim()} query={search} quiet />
+                      </p>
                       <p className="text-[10px] text-slate-400 uppercase tracking-widest">{m.email || m.profile_slug}</p>
                    </div>
                 </div>

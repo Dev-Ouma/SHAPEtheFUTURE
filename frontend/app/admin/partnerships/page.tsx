@@ -19,6 +19,7 @@ import {
 import { getApi, deleteApi, patchApi, resolveImageUrl } from "@/lib/api";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import Highlight from "@/components/Highlight";
 
 export default function PartnershipsAdmin() {
   const router = useRouter();
@@ -253,7 +254,7 @@ export default function PartnershipsAdmin() {
                           <div>
                             <div className="flex items-center gap-2">
                               <p className="text-xs font-black text-primary-darker uppercase tracking-tight">
-                                {p.name}
+                                <Highlight text={p.name || ""} query={search} quiet />
                               </p>
                               {p.is_featured && (
                                 <span className="text-[8px] bg-amber-50 text-amber-600 border border-amber-100 px-1.5 py-0.5 font-black tracking-widest uppercase">

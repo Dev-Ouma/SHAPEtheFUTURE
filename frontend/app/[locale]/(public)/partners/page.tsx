@@ -26,7 +26,7 @@ export default async function PartnersPage() {
       <ShapePageHero
         eyebrow="Partners"
         title="Full Partners"
-        subtitle="Nine universities across Kenya, Uganda, Somalia, Germany, Estonia, and Lithuania — coordinated by the Open University of Kenya."
+        subtitle="Nine universities across Kenya, Uganda, Somalia, Germany, Estonia, and Lithuania — each with a distinct role in the Erasmus+ consortium."
       />
       <section className="shape-section">
         <div className="container mx-auto px-6">

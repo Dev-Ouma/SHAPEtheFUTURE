@@ -66,25 +66,29 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
             <div>
               <p className="shape-eyebrow mb-4">Gallery</p>
               <div className="grid sm:grid-cols-2 gap-4">
-                {gallery.map((url, i) => (
-                  <div
-                    key={`${url}-${i}`}
-                    className="aspect-[4/3] bg-gradient-to-br from-primary-dark to-primary border border-slate-200 overflow-hidden relative flex items-center justify-center"
-                  >
-                    {url.startsWith("http") || url.startsWith("/uploads") ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={resolveImageUrl(url) || url}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white/70">
-                        Gallery placeholder {i + 1}
-                      </span>
-                    )}
-                  </div>
-                ))}
+                {gallery.map((url, i) => {
+                  const src = resolveImageUrl(url) || url;
+                  const hasImage = Boolean(src && !src.includes("placeholder-event"));
+                  return (
+                    <div
+                      key={`${url}-${i}`}
+                      className="aspect-[4/3] bg-gradient-to-br from-primary-dark to-primary border border-slate-200 overflow-hidden relative flex items-center justify-center"
+                    >
+                      {hasImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={src}
+                          alt={`${event.title} gallery ${i + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/70">
+                          Gallery placeholder {i + 1}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

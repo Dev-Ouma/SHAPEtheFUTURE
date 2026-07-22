@@ -1,7 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import ShapePageHero from "@/components/shape/ShapePageHero";
-import ProgressBar from "@/components/shape/ProgressBar";
+import SdlcDonutClient from "@/components/shape/SdlcDonutClient";
 import { getShapeSdlc } from "@/lib/shape-api";
 import { withLocaleSeo } from "@/lib/seo";
 
@@ -23,37 +22,29 @@ export default async function SdlcPage() {
 
   return (
     <div className="bg-white">
-      <ShapePageHero
-        eyebrow="Implementation"
-        title="Project development cycle"
-        subtitle="A vertical view of how SHAPE moves from planning through pilots to sustainability."
-      />
-      <section className="shape-section">
-        <div className="container mx-auto px-6 max-w-3xl">
-          <ol className="relative border-l-2 border-primary/30 ml-3 space-y-10">
-            {stages.map((stage, i) => (
-              <li key={stage.id} className="pl-10 relative">
-                <span className="absolute -left-[9px] top-1 w-4 h-4 bg-primary" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary mb-2">
-                  Stage {i + 1} · {stage.status || "planned"}
-                </p>
-                <h2 className="font-serif text-2xl font-black text-primary-darker uppercase tracking-tight mb-3">
-                  {stage.title}
-                </h2>
-                {stage.objectives ? (
-                  <p className="text-slate-600 mb-4 leading-relaxed">{stage.objectives}</p>
-                ) : null}
-                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                  <span>Progress</span>
-                  <span>{stage.progress ?? 0}%</span>
-                </div>
-                <ProgressBar value={stage.progress ?? 0} />
-                {stage.outputs ? (
-                  <p className="text-sm text-slate-500 mt-3">Outputs: {stage.outputs}</p>
-                ) : null}
-              </li>
-            ))}
-          </ol>
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#024955] via-[#037b90] to-white pt-16 pb-6 md:pt-20">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-40"
+          style={{
+            backgroundImage:
+              "radial-gradient(ellipse at 20% 10%, rgba(255,127,80,0.35), transparent 45%), radial-gradient(ellipse at 80% 0%, rgba(255,255,255,0.18), transparent 40%)",
+          }}
+        />
+        <div className="container mx-auto px-6 relative z-10 text-center mb-2 md:mb-4">
+          <p className="text-secondary text-[11px] font-black tracking-[0.4em] uppercase mb-4">
+            Implementation
+          </p>
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight uppercase leading-[1.05] mb-4">
+            Project development cycle
+          </h1>
+          <p className="text-base md:text-lg text-white/80 font-medium leading-relaxed max-w-2xl mx-auto">
+            A living 3D cycle — follow the arrows from planning through pilots to sustainability.
+          </p>
+        </div>
+
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <SdlcDonutClient stages={stages} tone="hero" />
         </div>
       </section>
     </div>

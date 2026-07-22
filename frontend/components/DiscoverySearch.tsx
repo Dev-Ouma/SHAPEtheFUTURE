@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, ArrowRight, X } from "lucide-react";
 import { getApiCached } from "@/lib/api";
 import { useLocale, useTranslations } from "next-intl";
+import Highlight from "@/components/Highlight";
 
 interface DiscoverySearchProps {
   theme?: 'glass' | 'light';
@@ -163,7 +164,9 @@ export default function DiscoverySearch({ theme = 'glass', animate = true, layou
                 {searchResults.programs.length > 0 ? (
                   searchResults.programs.map((p) => (
                     <Link key={p.id} href={`/programmes/${p.slug}`} className="block p-4 hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group">
-                      <h5 className="font-bold text-primary-darker group-hover:text-primary transition-colors text-base leading-tight">{p.title}</h5>
+                      <h5 className="font-bold text-primary-darker group-hover:text-primary transition-colors text-base leading-tight">
+                        <Highlight text={p.title} query={searchQuery} />
+                      </h5>
                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{p.level}</p>
                     </Link>
                   ))
@@ -184,11 +187,15 @@ export default function DiscoverySearch({ theme = 'glass', animate = true, layou
                   searchResults.others.map((item, idx) => (
                     <Link key={idx} href={item.kind === 'unit' ? `/units/${item.slug}` : `/academics/professional-development-courses/${item.slug}`} className="block p-4 bg-white border border-slate-100 hover:border-primary/20 transition-all group shadow-sm">
                       <div className="flex justify-between items-start mb-1">
-                        <h5 className="font-bold text-primary-darker text-sm leading-tight group-hover:text-primary">{item.title}</h5>
+                        <h5 className="font-bold text-primary-darker text-sm leading-tight group-hover:text-primary">
+                          <Highlight text={item.title} query={searchQuery} />
+                        </h5>
                         <span className="text-[7px] font-black px-1.5 py-0.5 bg-primary-darker text-white uppercase">{item.type}</span>
                       </div>
                       {item.parentProgram && (
-                        <p className="text-[9px] text-slate-400 mt-1 line-clamp-1">{item.parentProgram}</p>
+                        <p className="text-[9px] text-slate-400 mt-1 line-clamp-1">
+                          <Highlight text={item.parentProgram} query={searchQuery} />
+                        </p>
                       )}
                     </Link>
                   ))

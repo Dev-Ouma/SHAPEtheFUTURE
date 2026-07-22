@@ -6,6 +6,7 @@ import { Calendar, MapPin, RefreshCw, Clock, Filter, Search, ChevronRight, Users
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { API_URL, getSettings } from "@/lib/api";
+import Highlight from "@/components/Highlight";
 
 const STATUS_KEYS = ["Upcoming", "Past", "All"] as const;
 const TYPE_KEYS = ["All Events", "Webinars", "Reunions", "Conferences", "Networking"] as const;
@@ -201,7 +202,7 @@ export default function AlumniEventsPage() {
                                      </div>
                                      
                                      <h4 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-primary-dark leading-tight group-hover:text-primary transition-colors">
-                                        {event.title}
+                                        <Highlight text={event.title || ""} query={searchTerm} quiet />
                                      </h4>
                                      
                                      <p className="text-slate-500 text-sm font-medium leading-relaxed line-clamp-2">

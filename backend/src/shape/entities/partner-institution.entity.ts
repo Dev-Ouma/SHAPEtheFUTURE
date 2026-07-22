@@ -34,6 +34,14 @@ export class PartnerInstitution {
   @Column({ nullable: true })
   website_url: string;
 
+  /** Consortium role label, e.g. Project Coordinator / EU Partner */
+  @Column({ nullable: true })
+  consortium_role: string;
+
+  /** Institutional about text (distinct from SHAPE responsibilities). */
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
   @Column({ nullable: true })
   contact_person: string;
 

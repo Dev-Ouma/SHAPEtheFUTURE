@@ -4,24 +4,56 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Save, RefreshCw } from "lucide-react";
 import { getApi, postApi } from "@/lib/api";
+import ImageUploader from "@/components/admin/ImageUploader";
+import { DEFAULT_RELATED_TERMS } from "@/lib/searchHighlight";
+import { NEWS_HUB_DEFAULTS } from "@/lib/shape-api";
 
-const HOME_KEYS = [
-  { key: "site_name", label: "Site name", type: "text" },
-  { key: "shape_hero_eyebrow", label: "Hero eyebrow", type: "text" },
-  { key: "shape_hero_title", label: "Hero title (brand)", type: "text" },
-  { key: "shape_hero_text", label: "Hero supporting text", type: "textarea" },
-  { key: "shape_intro", label: "Intro paragraph (below hero)", type: "textarea" },
-  { key: "shape_acronym", label: "Project Information — Acronym", type: "textarea" },
-  { key: "shape_erasmus_call", label: "Project Information — Erasmus+ Call", type: "textarea" },
+const TEXT_KEYS = [
+  { key: "site_name", label: "Site name", type: "text" as const },
+  { key: "shape_hero_eyebrow", label: "Homepage — Hero eyebrow", type: "text" as const },
+  { key: "shape_hero_title", label: "Homepage — Hero title (brand)", type: "text" as const },
+  { key: "shape_hero_text", label: "Homepage — Hero supporting text", type: "textarea" as const },
+  { key: "shape_intro", label: "Homepage — Intro paragraph", type: "textarea" as const },
+  { key: "shape_acronym", label: "Project Information — Acronym", type: "textarea" as const },
+  { key: "shape_erasmus_call", label: "Project Information — Erasmus+ Call", type: "textarea" as const },
   {
     key: "shape_objectives_json",
     label: "Objectives JSON (array of {title, text})",
-    type: "textarea",
+    type: "textarea" as const,
   },
-  { key: "shape_overview", label: "Project Overview text", type: "textarea" },
-  { key: "shape_overview_image", label: "Overview image URL", type: "text" },
-  { key: "contact_email", label: "Contact email", type: "text" },
+  { key: "shape_overview", label: "Project Overview text", type: "textarea" as const },
+  { key: "contact_email", label: "Contact email", type: "text" as const },
+  { key: "news_hub_eyebrow", label: "News hub — Eyebrow", type: "text" as const },
+  { key: "news_hub_title", label: "News hub — Title", type: "text" as const },
+  { key: "news_hub_title_accent", label: "News hub — Title accent", type: "text" as const },
+  { key: "news_hub_subtitle", label: "News hub — Subtitle", type: "textarea" as const },
+  {
+    key: "news_hub_search_hint",
+    label: 'News hub — Search hint (use {query} placeholder)',
+    type: "text" as const,
+  },
+  { key: "news_hub_ticker_label", label: "News hub — Ticker label", type: "text" as const },
+  { key: "work_packages_eyebrow", label: "Work packages — Eyebrow", type: "text" as const },
+  { key: "work_packages_title", label: "Work packages — Title", type: "text" as const },
+  {
+    key: "work_packages_subtitle",
+    label: "Work packages — Subtitle",
+    type: "textarea" as const,
+  },
 ] as const;
+
+const IMAGE_KEYS = [
+  { key: "shape_overview_image", label: "Homepage — Overview image" },
+  { key: "news_hub_image_tablet", label: "News hub — 3D tablet visual" },
+  { key: "news_hub_image_orb", label: "News hub — 3D search orb" },
+  { key: "news_hub_image_cards", label: "News hub — 3D cards stack" },
+] as const;
+
+const ALL_KEYS = [
+  ...TEXT_KEYS.map((f) => f.key),
+  ...IMAGE_KEYS.map((f) => f.key),
+  "search_related_terms_json",
+];
 
 export default function ShapeHomeAdminPage() {
   const [values, setValues] = useState<Record<string, string>>({});
@@ -33,12 +65,42 @@ export default function ShapeHomeAdminPage() {
     try {
       const data = await getApi("/settings");
       const next: Record<string, string> = {};
-      for (const row of HOME_KEYS) {
-        next[row.key] = String((data && data[row.key]) ?? "");
+      for (const key of ALL_KEYS) {
+        let val = String((data && data[key]) ?? "");
+        if (!val && key in NEWS_HUB_DEFAULTS) {
+          val = String((NEWS_HUB_DEFAULTS as Record<string, string>)[key] || "");
+        }
+        if (!val && key === "search_related_terms_json") {
+          val = JSON.stringify(DEFAULT_RELATED_TERMS, null, 2);
+        }
+        next[key] = val;
+      }
+      // Pretty-print JSON fields for editors
+      if (next.shape_objectives_json) {
+        try {
+          next.shape_objectives_json = JSON.stringify(
+            JSON.parse(next.shape_objectives_json),
+            null,
+            2,
+          );
+        } catch {
+          /* keep raw */
+        }
+      }
+      if (next.search_related_terms_json) {
+        try {
+          next.search_related_terms_json = JSON.stringify(
+            JSON.parse(next.search_related_terms_json),
+            null,
+            2,
+          );
+        } catch {
+          /* keep raw */
+        }
       }
       setValues(next);
     } catch {
-      toast.error("Could not load homepage settings");
+      toast.error("Could not load portal content settings");
     } finally {
       setLoading(false);
     }
@@ -51,15 +113,31 @@ export default function ShapeHomeAdminPage() {
   const save = async () => {
     setSaving(true);
     try {
-      // Validate objectives JSON if present
       if (values.shape_objectives_json?.trim()) {
         const parsed = JSON.parse(values.shape_objectives_json);
         if (!Array.isArray(parsed)) throw new Error("Objectives must be a JSON array");
       }
-      await postApi("/settings/bulk", values);
-      toast.success("Homepage saved — public site will refresh within ~2 minutes");
+      if (values.search_related_terms_json?.trim()) {
+        const parsed = JSON.parse(values.search_related_terms_json);
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+          throw new Error("Related terms must be a JSON object");
+        }
+      }
+      // Persist compact JSON
+      const payload = {
+        ...values,
+        shape_objectives_json: values.shape_objectives_json?.trim()
+          ? JSON.stringify(JSON.parse(values.shape_objectives_json))
+          : "",
+        search_related_terms_json: values.search_related_terms_json?.trim()
+          ? JSON.stringify(JSON.parse(values.search_related_terms_json))
+          : "",
+      };
+      await postApi("/settings/bulk", payload);
+      toast.success("Saved — public site refreshes within ~2 minutes (or hard-refresh)");
+      load();
     } catch (err: any) {
-      toast.error(err?.message || "Save failed — check objectives JSON");
+      toast.error(err?.message || "Save failed — check JSON fields");
     } finally {
       setSaving(false);
     }
@@ -73,10 +151,10 @@ export default function ShapeHomeAdminPage() {
             SHAPE CMS
           </p>
           <h1 className="text-3xl md:text-4xl font-serif font-black text-primary-darker tracking-tight uppercase">
-            Homepage Content
+            Portal Content
           </h1>
           <p className="text-slate-500 text-sm mt-2 normal-case tracking-normal">
-            Edits here drive the public SHAPE Grant Portal homepage
+            Homepage, news hub visuals, and search related-terms — all stored in the database
           </p>
         </div>
         <div className="flex gap-3">
@@ -102,31 +180,71 @@ export default function ShapeHomeAdminPage() {
       {loading ? (
         <p className="text-slate-400 text-sm">Loading…</p>
       ) : (
-        <div className="bg-white border border-slate-200 p-6 space-y-5">
-          {HOME_KEYS.map((field) => (
-            <label key={field.key} className="block space-y-1.5">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                {field.label}
-              </span>
-              {field.type === "textarea" ? (
-                <textarea
-                  className="w-full border border-slate-200 px-3 py-2 text-sm min-h-[110px] outline-none focus:border-primary font-mono"
-                  value={values[field.key] || ""}
-                  onChange={(e) =>
-                    setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
-                  }
-                />
-              ) : (
-                <input
-                  className="w-full border border-slate-200 px-3 py-2 text-sm outline-none focus:border-primary"
-                  value={values[field.key] || ""}
-                  onChange={(e) =>
-                    setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
-                  }
-                />
-              )}
-            </label>
-          ))}
+        <div className="space-y-8">
+          <div className="bg-white border border-slate-200 p-6 space-y-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary">
+              Copy &amp; text
+            </p>
+            {TEXT_KEYS.map((field) => (
+              <label key={field.key} className="block space-y-1.5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  {field.label}
+                </span>
+                {field.type === "textarea" ? (
+                  <textarea
+                    className="w-full border border-slate-200 px-3 py-2 text-sm min-h-[110px] outline-none focus:border-primary font-mono"
+                    value={values[field.key] || ""}
+                    onChange={(e) =>
+                      setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                    }
+                  />
+                ) : (
+                  <input
+                    className="w-full border border-slate-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                    value={values[field.key] || ""}
+                    onChange={(e) =>
+                      setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                    }
+                  />
+                )}
+              </label>
+            ))}
+          </div>
+
+          <div className="bg-white border border-slate-200 p-6 space-y-6">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary">
+              Images (upload or URL — stored in DB)
+            </p>
+            {IMAGE_KEYS.map((field) => (
+              <ImageUploader
+                key={field.key}
+                label={field.label}
+                value={values[field.key] || ""}
+                onChange={(val) => setValues((prev) => ({ ...prev, [field.key]: val }))}
+              />
+            ))}
+          </div>
+
+          <div className="bg-white border border-slate-200 p-6 space-y-3">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary">
+              Search related terms (JSON)
+            </p>
+            <p className="text-xs text-slate-500 normal-case tracking-normal">
+              Map each search token to related phrases highlighted across the site and PMIS. Example:
+              searching <code className="font-mono text-primary">ouk</code> also marks “Open
+              University of Kenya”.
+            </p>
+            <textarea
+              className="w-full border border-slate-200 px-3 py-2 text-sm min-h-[280px] outline-none focus:border-primary font-mono"
+              value={values.search_related_terms_json || ""}
+              onChange={(e) =>
+                setValues((prev) => ({
+                  ...prev,
+                  search_related_terms_json: e.target.value,
+                }))
+              }
+            />
+          </div>
         </div>
       )}
     </div>

@@ -9,6 +9,7 @@ import { stripHtml } from "@/lib/utils";
 import SafeImage from "@/components/ui/SafeImage";
 import NavLanguageControls from "@/components/NavLanguageControls";
 import { LocalizedText, I18nProtect } from "@/components/LocalizedCms";
+import Highlight from "@/components/Highlight";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 
 // --- Recursive Desktop Dropdown Component ---
@@ -424,7 +425,9 @@ const Navbar = ({
                         href={s.href}
                         className="flex flex-col px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-none"
                       >
-                        <span className="text-xs font-bold text-slate-800 line-clamp-1">{s.label}</span>
+                        <span className="text-xs font-bold text-slate-800 line-clamp-1">
+                          <Highlight text={s.label} query={searchQuery} quiet />
+                        </span>
                         <span className="text-[9px] font-black uppercase tracking-widest text-primary mt-1">
                           {({
                             programme: t("typeProgramme"),

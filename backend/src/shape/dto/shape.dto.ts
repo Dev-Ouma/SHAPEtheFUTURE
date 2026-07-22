@@ -39,6 +39,14 @@ export class CreatePartnerDto {
 
   @IsString()
   @IsOptional()
+  consortium_role?: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsOptional()
   contact_person?: string;
 
   @IsEmail()

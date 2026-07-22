@@ -1,21 +1,26 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useRouter } from "@/i18n/routing";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Search, 
-  Calendar, 
-  Tag, 
+import {
+  Search,
+  Calendar,
   ChevronRight,
-  Filter,
   ArrowLeft,
+  ArrowUpRight,
+  Newspaper,
 } from "lucide-react";
 import { resolveImageUrl } from "@/lib/api";
 import { stripHtml } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import SafeImage from "@/components/ui/SafeImage";
 import SocialFeed from "./SocialFeed";
+import Highlight from "@/components/Highlight";
+import NewsSearchVisuals from "@/components/NewsSearchVisuals";
+import { matchSnippet } from "@/lib/searchHighlight";
+import { useRelatedTerms } from "@/components/SearchHighlightProvider";
+import { NEWS_HUB_DEFAULTS } from "@/lib/shape-api";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
@@ -24,10 +29,23 @@ interface NewsItem {
   title: string;
   slug: string;
   content: string;
+  summary?: string;
   category: string;
   created_at: string;
   image_url?: string;
 }
+
+export type NewsHubCms = {
+  eyebrow: string;
+  title: string;
+  titleAccent: string;
+  subtitle: string;
+  searchHint: string;
+  tickerLabel: string;
+  imageTablet: string;
+  imageOrb: string;
+  imageCards: string;
+};
 
 interface NewsHubClientProps {
   initialNews: NewsItem[];
@@ -35,37 +53,76 @@ interface NewsHubClientProps {
   currentPage: number;
   total: number;
   categories: string[];
+  cms?: Partial<NewsHubCms>;
 }
 
-const NewsHubClient: React.FC<NewsHubClientProps> = ({ 
-  initialNews, 
-  totalPages, 
-  currentPage, 
+const ease = [0.22, 1, 0.36, 1] as const;
+
+function excerpt(
+  item: NewsItem,
+  query = "",
+  len = 180,
+  relatedMap?: Parameters<typeof matchSnippet>[3],
+) {
+  const raw = item.summary || stripHtml(item.content || "");
+  if (query.trim()) return matchSnippet(raw, query, Math.floor(len / 2), relatedMap);
+  return raw.length > len ? `${raw.slice(0, len).trim()}…` : raw;
+}
+
+function formatDate(value?: string) {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+const NewsHubClient: React.FC<NewsHubClientProps> = ({
+  initialNews,
+  totalPages,
+  currentPage,
   total,
-  categories: availableCategories
+  categories: availableCategories,
+  cms = {},
 }) => {
   const t = useTranslations("News");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const relatedMap = useRelatedTerms();
   const allUpdatesLabel = t("allUpdates");
-  
+
+  const hub = {
+    eyebrow: cms.eyebrow || NEWS_HUB_DEFAULTS.news_hub_eyebrow,
+    title: cms.title || NEWS_HUB_DEFAULTS.news_hub_title,
+    titleAccent: cms.titleAccent || NEWS_HUB_DEFAULTS.news_hub_title_accent,
+    subtitle: cms.subtitle || NEWS_HUB_DEFAULTS.news_hub_subtitle,
+    searchHint: cms.searchHint || NEWS_HUB_DEFAULTS.news_hub_search_hint,
+    tickerLabel: cms.tickerLabel || NEWS_HUB_DEFAULTS.news_hub_ticker_label,
+    imageTablet: cms.imageTablet || NEWS_HUB_DEFAULTS.news_hub_image_tablet,
+    imageOrb: cms.imageOrb || NEWS_HUB_DEFAULTS.news_hub_image_orb,
+    imageCards: cms.imageCards || NEWS_HUB_DEFAULTS.news_hub_image_cards,
+  };
+
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const activeCategory = searchParams.get("category") || allUpdatesLabel;
-
   const categories = [allUpdatesLabel, ...availableCategories];
 
-  const updateFilters = (newFilters: any) => {
+  const updateFilters = (newFilters: Record<string, any>) => {
     const params = new URLSearchParams(searchParams.toString());
-    Object.keys(newFilters).forEach(key => {
-      if (newFilters[key] === null || newFilters[key] === allUpdatesLabel || newFilters[key] === "All Updates" || newFilters[key] === "") {
+    Object.keys(newFilters).forEach((key) => {
+      if (
+        newFilters[key] === null ||
+        newFilters[key] === allUpdatesLabel ||
+        newFilters[key] === "All Updates" ||
+        newFilters[key] === ""
+      ) {
         params.delete(key);
       } else {
         params.set(key, newFilters[key]);
       }
     });
-    // Always reset to page 1 on filter change
     if (!newFilters.page) params.set("page", "1");
-    
     router.push(`/news?${params.toString()}`);
   };
 
@@ -73,240 +130,422 @@ const NewsHubClient: React.FC<NewsHubClientProps> = ({
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
-    if (debouncedSearch) {
-      params.set("q", debouncedSearch);
-    } else {
-      params.delete("q");
-    }
+    if (debouncedSearch) params.set("q", debouncedSearch);
+    else params.delete("q");
     params.set("page", "1");
-    
     if (params.get("q") !== searchParams.get("q")) {
       router.push(`/news?${params.toString()}`);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
+  const featured = initialNews[0];
+  const rest = initialNews.slice(1);
+  const activeQuery = (searchParams.get("q") || searchQuery || "").trim();
+  const isSearching = activeQuery.length > 0;
+  const tickerItems = useMemo(
+    () => (initialNews.length ? initialNews : []).slice(0, 8),
+    [initialNews],
+  );
+
   return (
-    <div className="bg-slate-50 min-h-screen font-sans">
-      {/* Search & Header Section */}
-      <header className="bg-primary-darker pt-48 pb-32 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[140px] -mr-80 -mt-80" />
-          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] -ml-40 -mb-40" />
-          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+    <div className="bg-white min-h-screen">
+      {/* Hero */}
+      <header className="relative overflow-hidden bg-gradient-to-br from-[#013d48] via-[#025a69] to-[#037b90] pt-40 pb-24 md:pt-48 md:pb-28">
+        <div className="absolute inset-0 pointer-events-none">
+          <motion.div
+            className="absolute -top-24 -right-24 w-[28rem] h-[28rem] rounded-full bg-secondary/25 blur-3xl"
+            animate={{ opacity: [0.35, 0.55, 0.35], scale: [1, 1.08, 1] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <div
+            className="absolute inset-0 opacity-[0.12]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
+              backgroundSize: "48px 48px",
+            }}
+          />
+          <NewsSearchVisuals
+            searching={isSearching}
+            assets={{
+              tablet: hub.imageTablet,
+              orb: hub.imageOrb,
+              cards: hub.imageCards,
+            }}
+          />
         </div>
 
-        <div className="container mx-auto max-w-7xl relative z-10">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
             <div className="max-w-3xl">
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center space-x-4 mb-8"
-              >
-                <div className="w-12 h-[2px] bg-secondary" />
-                <span className="text-secondary font-black text-[10px] uppercase tracking-[0.4em]">{t("eyebrow")}</span>
-              </motion.div>
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-5xl md:text-7xl font-black text-white leading-tight tracking-tight uppercase mb-0"
+                transition={{ duration: 0.5, ease }}
+                className="text-secondary text-[11px] font-black tracking-[0.45em] uppercase mb-5"
               >
-                {t("hubTitle")} <span className="text-primary">{t("hubTitleAccent")}</span>
+                {hub.eyebrow}
+              </motion.p>
+              <motion.h1
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease }}
+                className="font-serif text-5xl md:text-7xl font-black text-white uppercase tracking-tight leading-[0.9]"
+              >
+                {hub.title}{" "}
+                <span className="text-secondary">{hub.titleAccent}</span>
               </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.12, ease }}
+                className="mt-5 text-white/70 max-w-xl leading-relaxed"
+              >
+                {isSearching
+                  ? hub.searchHint.replace(/\{query\}/gi, activeQuery)
+                  : hub.subtitle}
+              </motion.p>
             </div>
 
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full md:w-96 relative group"
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.15, ease }}
+              className="w-full lg:w-[24rem] relative z-20"
             >
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors" size={20} />
-              <input 
+              <Search
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40"
+                size={18}
+              />
+              <input
                 type="text"
                 placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 pl-16 pr-8 py-6 outline-none focus:bg-white/10 focus:border-primary/50 transition-all font-bold tracking-widest text-xs uppercase shadow-2xl backdrop-blur-md"
+                className="w-full bg-white/10 border border-white/15 text-white placeholder-white/40 pl-14 pr-5 py-4 outline-none focus:bg-white/15 focus:border-secondary/60 transition-all text-sm backdrop-blur-sm"
               />
             </motion.div>
           </div>
         </div>
       </header>
 
-      {/* Social Feed Component */}
-      <SocialFeed />
-
-      <main className="container mx-auto max-w-7xl px-6 py-24">
-        <div className="flex flex-col lg:flex-row gap-16">
-          {/* Main Content: News Feed */}
-          <div className="lg:w-2/3">
-            <div className="flex items-center justify-between mb-16 pb-8 border-b border-slate-200">
-               <div>
-                  <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-2">{t("liveStream")}</h2>
-                  <p className="text-2xl font-black text-primary-darker uppercase tracking-tighter">{t("scholarlyUpdates")}</p>
-               </div>
-               <div className="flex items-center space-x-2">
-                 <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
-                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t("institutionalPulse")}</span>
-               </div>
-            </div>
-
-            <div className="space-y-20">
-              <AnimatePresence mode="popLayout">
-                {initialNews.length > 0 ? (
-                  initialNews.map((item, index) => (
-                    <motion.article 
-                      key={item.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="group flex flex-col md:flex-row gap-10 items-start"
-                    >
-                      <div className="w-full md:w-1/3 relative aspect-institutional-card overflow-hidden bg-slate-200 shadow-2xl group-hover:-translate-y-2 transition-transform duration-500">
-                        {item.image_url ? (
-                          <SafeImage
-                            src={resolveImageUrl(item.image_url)}
-                            alt={item.title}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 33vw"
-                            className="standard-image object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-primary-darker">
-                             <Tag size={40} className="text-white/10" />
-                          </div>
-                        )}
-                        <div className="absolute top-4 left-4 bg-primary text-white text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 shadow-xl">
-                          {item.category}
-                        </div>
-                      </div>
-
-                      <div className="flex-1 space-y-6">
-                        <div className="flex items-center space-x-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                           <Calendar size={12} className="text-secondary" />
-                           <span>{new Date(item.created_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                        </div>
-                        <h3 className="text-3xl md:text-4xl font-black text-primary-darker uppercase tracking-tighter leading-[0.9] group-hover:text-primary transition-colors">
-                          <Link href={`/news/${item.slug}`}>
-                            {item.title}
-                          </Link>
-                        </h3>
-                        <p className="text-slate-500 text-sm leading-relaxed line-clamp-3 font-medium">
-                          {stripHtml(item.content).substring(0, 240)}...
-                        </p>
-                        <Link 
-                          href={`/news/${item.slug}`}
-                          className="inline-flex items-center space-x-3 text-[10px] font-black uppercase tracking-[0.2em] text-primary border-b-2 border-primary/20 hover:border-primary pb-1 group-hover:translate-x-2 transition-all"
-                        >
-                          <span>{t("inDepth")}</span>
-                          <ChevronRight size={14} />
-                        </Link>
-                      </div>
-                    </motion.article>
-                  ))
-                ) : (
-                  <div className="py-24 text-center">
-                    <p className="text-slate-400 font-bold uppercase tracking-widest">{t("empty")}</p>
-                    <button 
-                      onClick={() => { setSearchQuery(""); updateFilters({ category: allUpdatesLabel, q: "" }); }}
-                      className="mt-4 text-primary font-black uppercase tracking-widest text-xs"
-                    >
-                      {t("clearSelection")}
-                    </button>
-                  </div>
-                )}
-              </AnimatePresence>
-
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-12 border-t border-slate-200">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                      {t("showingOf", { shown: initialNews.length, total })}
-                   </p>
-                   <div className="flex items-center space-x-4">
-                      <button 
-                        onClick={() => updateFilters({ page: Math.max(1, currentPage - 1) })}
-                        disabled={currentPage === 1}
-                        className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary disabled:opacity-30 transition-colors"
-                      >
-                        <ArrowLeft size={16} />
-                        <span>{t("previous")}</span>
-                      </button>
-                      <div className="flex items-center space-x-2">
-                         <span className="text-xs font-black text-primary-darker">{t("pageOf", { page: currentPage, total: totalPages })}</span>
-                      </div>
-                      <button 
-                        onClick={() => updateFilters({ page: Math.min(totalPages, currentPage + 1) })}
-                        disabled={currentPage === totalPages}
-                        className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary disabled:opacity-30 transition-colors"
-                      >
-                        <span>{t("next")}</span>
-                        <ChevronRight size={16} />
-                      </button>
-                   </div>
-                </div>
-              )}
+      {/* Noticeboard ticker */}
+      {tickerItems.length > 0 ? (
+        <div className="border-b border-slate-200 bg-slate-50 overflow-hidden">
+          <div className="container mx-auto px-6 py-3 flex items-center gap-4">
+            <span className="shrink-0 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-secondary">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
+              {hub.tickerLabel}
+            </span>
+            <div className="relative flex-1 overflow-hidden">
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-slate-50 to-transparent z-10" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-slate-50 to-transparent z-10" />
+              <motion.div
+                className="flex gap-10 whitespace-nowrap"
+                animate={{ x: ["0%", "-50%"] }}
+                transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+              >
+                {[...tickerItems, ...tickerItems].map((item, i) => (
+                  <Link
+                    key={`${item.id}-${i}`}
+                    href={`/news/${item.slug}`}
+                    className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 hover:text-primary transition-colors"
+                  >
+                    <span className="text-primary mr-2">{item.category || "News"}</span>
+                    {item.title}
+                  </Link>
+                ))}
+              </motion.div>
             </div>
           </div>
+        </div>
+      ) : null}
 
-          {/* Sticky Sidebar */}
-          <aside className="lg:w-1/3 lg:sticky lg:top-32 self-start space-y-12 z-20">
-            {/* Category Navigation */}
-            <div className="bg-white border border-slate-100 p-10 shadow-xl relative overflow-hidden group/sidebar">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 group-hover/sidebar:bg-primary/10 transition-all" />
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary-darker mb-10 pb-4 border-b border-slate-100 flex items-center justify-between">
-                <span>{t("disciplines")}</span>
-                <Filter size={12} className="text-primary" />
-              </h4>
-              <div className="flex flex-col space-y-2">
-                {categories.map(category => (
+      <SocialFeed />
+
+      <main className="container mx-auto px-6 py-16 md:py-20">
+        {/* Category chips */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.45, ease }}
+          className="flex flex-wrap gap-2 mb-12"
+        >
+          {categories.map((category) => {
+            const active = activeCategory === category;
+            return (
+              <button
+                key={category}
+                type="button"
+                onClick={() => updateFilters({ category })}
+                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                  active
+                    ? "bg-primary text-white"
+                    : "bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-primary-darker"
+                }`}
+              >
+                {category}
+              </button>
+            );
+          })}
+        </motion.div>
+
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-14">
+          <div className="lg:col-span-8 space-y-10">
+            <AnimatePresence mode="wait">
+              {initialNews.length === 0 ? (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="py-24 text-center border border-dashed border-slate-200"
+                >
+                  <Newspaper className="mx-auto text-slate-300 mb-4" size={40} />
+                  <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">
+                    {t("empty")}
+                  </p>
                   <button
-                    key={category}
-                    onClick={() => updateFilters({ category })}
-                    className={`text-[11px] font-black uppercase tracking-widest py-3 px-6 text-left transition-all relative ${
-                      activeCategory === category 
-                      ? "text-primary bg-primary/5 translate-x-2" 
-                      : "text-slate-400 hover:text-primary-darker hover:translate-x-1"
-                    }`}
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      updateFilters({ category: allUpdatesLabel, q: "" });
+                    }}
+                    className="mt-4 text-primary font-black uppercase tracking-widest text-xs"
                   >
-                    {activeCategory === category && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />}
-                    {category}
+                    {t("clearSelection")}
                   </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={`${activeCategory}-${currentPage}-${searchQuery}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-10"
+                >
+                  {/* Featured lead */}
+                  {featured ? (
+                    <motion.article
+                      initial={{ opacity: 0, y: 28 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.65, ease }}
+                      className="group relative overflow-hidden border border-slate-200 bg-slate-50"
+                    >
+                      <div className="grid md:grid-cols-2">
+                        <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[320px] bg-primary-darker overflow-hidden">
+                          {featured.image_url ? (
+                            <SafeImage
+                              src={resolveImageUrl(featured.image_url)}
+                              alt={featured.title}
+                              fill
+                              sizes="(max-width: 768px) 100vw, 50vw"
+                              className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary-darker via-primary to-secondary/40">
+                              <motion.div
+                                className="absolute inset-0 flex items-center justify-center p-8"
+                                style={{ perspective: "900px" }}
+                                animate={{ rotateY: [-6, 6, -6], y: [0, -8, 0] }}
+                                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={
+                                    isSearching
+                                      ? resolveImageUrl(hub.imageOrb) || hub.imageOrb
+                                      : resolveImageUrl(hub.imageTablet) || hub.imageTablet
+                                  }
+                                  alt=""
+                                  className="w-[78%] max-w-sm drop-shadow-2xl object-contain"
+                                />
+                              </motion.div>
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                          <span className="absolute top-5 left-5 bg-secondary text-white text-[9px] font-black uppercase tracking-[0.25em] px-3 py-1.5">
+                            {featured.category || "Featured"}
+                          </span>
+                        </div>
+                        <div className="p-8 md:p-10 flex flex-col justify-center">
+                          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">
+                            <Calendar size={12} className="text-secondary" />
+                            {formatDate(featured.created_at)}
+                          </div>
+                          <h2 className="font-serif text-3xl md:text-4xl font-black text-primary-darker uppercase tracking-tight leading-[0.95] group-hover:text-primary transition-colors">
+                            <Link href={`/news/${featured.slug}`}>
+                              <Highlight text={featured.title} query={activeQuery} />
+                            </Link>
+                          </h2>
+                          <p className="mt-4 text-slate-600 leading-relaxed normal-case tracking-normal">
+                            <Highlight text={excerpt(featured, activeQuery, 220, relatedMap)} query={activeQuery} />
+                          </p>
+                          <Link
+                            href={`/news/${featured.slug}`}
+                            className="mt-8 inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-primary"
+                          >
+                            {t("inDepth")}
+                            <ArrowUpRight
+                              size={16}
+                              className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                            />
+                          </Link>
+                        </div>
+                      </div>
+                    </motion.article>
+                  ) : null}
+
+                  {/* Story list */}
+                  <div className="space-y-0">
+                    {rest.map((item, index) => (
+                      <motion.article
+                        key={item.id}
+                        initial={{ opacity: 0, x: -18 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, amount: 0.35 }}
+                        transition={{
+                          duration: 0.5,
+                          delay: Math.min(index * 0.07, 0.35),
+                          ease,
+                        }}
+                        className="group grid grid-cols-[3.5rem_1fr] md:grid-cols-[4.5rem_1fr] gap-4 md:gap-6 py-7 border-t border-slate-200 last:border-b"
+                      >
+                        <div className="pt-1">
+                          <span className="font-serif text-2xl md:text-3xl font-black text-primary/70 tabular-nums leading-none group-hover:text-secondary transition-colors">
+                            {String(index + 2).padStart(2, "0")}
+                          </span>
+                        </div>
+                        <div className="relative pl-4 md:pl-5">
+                          <span className="absolute left-0 top-1 bottom-1 w-0.5 bg-primary scale-y-0 origin-top transition-transform duration-500 group-hover:scale-y-100" />
+                          <div className="flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                            <span className="text-secondary">{item.category || "News"}</span>
+                            <span className="w-1 h-1 rounded-full bg-slate-300" />
+                            <span className="inline-flex items-center gap-1.5">
+                              <Calendar size={11} />
+                              {formatDate(item.created_at)}
+                            </span>
+                          </div>
+                          <h3 className="font-serif text-xl md:text-2xl font-black text-primary-darker uppercase tracking-tight leading-tight group-hover:text-primary transition-colors">
+                            <Link href={`/news/${item.slug}`}>
+                              <Highlight text={item.title} query={activeQuery} />
+                            </Link>
+                          </h3>
+                          <p className="mt-2 text-sm text-slate-500 leading-relaxed line-clamp-2 normal-case tracking-normal">
+                            <Highlight text={excerpt(item, activeQuery, 180, relatedMap)} query={activeQuery} />
+                          </p>
+                          <Link
+                            href={`/news/${item.slug}`}
+                            className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary opacity-80 group-hover:opacity-100"
+                          >
+                            {t("inDepth")}
+                            <ChevronRight size={13} />
+                          </Link>
+                        </div>
+                      </motion.article>
+                    ))}
+                  </div>
+
+                  {totalPages > 1 ? (
+                    <div className="flex items-center justify-between pt-8 border-t border-slate-200">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        {t("showingOf", { shown: initialNews.length, total })}
+                      </p>
+                      <div className="flex items-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() => updateFilters({ page: Math.max(1, currentPage - 1) })}
+                          disabled={currentPage === 1}
+                          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary disabled:opacity-30"
+                        >
+                          <ArrowLeft size={16} />
+                          {t("previous")}
+                        </button>
+                        <span className="text-xs font-black text-primary-darker">
+                          {t("pageOf", { page: currentPage, total: totalPages })}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateFilters({ page: Math.min(totalPages, currentPage + 1) })
+                          }
+                          disabled={currentPage === totalPages}
+                          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary disabled:opacity-30"
+                        >
+                          {t("next")}
+                          <ChevronRight size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Sidebar */}
+          <aside className="lg:col-span-4 space-y-8 lg:sticky lg:top-28 self-start">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, ease }}
+              className="border border-slate-200 p-7 bg-gradient-to-br from-slate-50 to-white"
+            >
+              <p className="text-[10px] font-black uppercase tracking-[0.35em] text-primary mb-6">
+                {t("insights")}
+              </p>
+              <div className="space-y-4">
+                {initialNews.slice(0, 4).map((item, i) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: 12 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.06, duration: 0.4, ease }}
+                  >
+                    <Link
+                      href={`/news/${item.slug}`}
+                      className="block group border-l-2 border-transparent hover:border-secondary pl-4 transition-colors"
+                    >
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        {formatDate(item.created_at)}
+                      </span>
+                      <h4 className="mt-1 font-serif font-black text-primary-darker uppercase tracking-tight leading-snug group-hover:text-primary transition-colors">
+                        <Highlight text={item.title} query={activeQuery} />
+                      </h4>
+                    </Link>
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
-            {/* Featured Insights Spotlights */}
-            <div className="space-y-6">
-               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 px-4">{t("insights")}</h4>
-               <div className="space-y-4">
-                  {initialNews.slice(0, 3).map(item => (
-                    <Link key={item.id} href={`/news/${item.slug}`} className="block group/side">
-                        <div className="bg-primary-darker p-8 hover:bg-primary transition-all duration-500 shadow-xl group/card">
-                           <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em] mb-4 block group-hover/card:text-white/60">
-                              {new Date(item.created_at).getFullYear()} Update
-                           </span>
-                           <h5 className="text-white font-black text-lg leading-tight uppercase tracking-tighter group-hover/card:text-white transition-colors">
-                              {item.title}
-                           </h5>
-                        </div>
-                    </Link>
-                  ))}
-               </div>
-            </div>
-
-            {/* Quick Links / Newsletter Card */}
-            <div className="bg-primary p-12 text-white shadow-2xl relative overflow-hidden group/cta">
-              <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "radial-gradient(#fff 2px, transparent 2px)", backgroundSize: "20px 20px" }} />
-              <h4 className="text-2xl font-black uppercase tracking-tighter mb-6 relative z-10">{t("institutionalSubmissions")}</h4>
-              <p className="text-sm font-medium text-white/80 mb-10 leading-relaxed relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, delay: 0.1, ease }}
+              className="relative overflow-hidden bg-primary p-8 text-white"
+            >
+              <motion.div
+                className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-secondary/30"
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <h4 className="relative z-10 font-serif text-2xl font-black uppercase tracking-tight mb-4">
+                {t("institutionalSubmissions")}
+              </h4>
+              <p className="relative z-10 text-sm text-white/80 leading-relaxed mb-8">
                 {t("submissionsBody")}
               </p>
-              <button className="w-full bg-white text-primary py-4 text-[10px] font-black uppercase tracking-widest hover:bg-primary-darker hover:text-white transition-all relative z-10 shadow-xl">
+              <Link
+                href="/contact"
+                className="relative z-10 inline-flex w-full items-center justify-center bg-white text-primary py-3.5 text-[10px] font-black uppercase tracking-widest hover:bg-primary-darker hover:text-white transition-colors"
+              >
                 {t("submitSpotlight")}
-              </button>
-            </div>
+              </Link>
+            </motion.div>
           </aside>
         </div>
       </main>

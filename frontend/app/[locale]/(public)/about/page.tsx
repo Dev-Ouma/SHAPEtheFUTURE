@@ -1,6 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import ShapePageHero from "@/components/shape/ShapePageHero";
+import AboutGoalsSection from "@/components/shape/AboutGoalsSection";
 import { withLocaleSeo } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -67,30 +68,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="shape-section bg-slate-50">
-        <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12">
-          <div>
-            <p className="shape-eyebrow mb-4">Objectives</p>
-            <ul className="space-y-4">
-              {OBJECTIVES.map((item) => (
-                <li key={item} className="border-l-2 border-primary pl-4 text-slate-700 leading-relaxed">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <p className="shape-eyebrow mb-4">Expected outcomes</p>
-            <ul className="space-y-4">
-              {OUTCOMES.map((item) => (
-                <li key={item} className="border-l-2 border-secondary pl-4 text-slate-700 leading-relaxed">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
+      <AboutGoalsSection objectives={OBJECTIVES} outcomes={OUTCOMES} />
 
       <section className="shape-section">
         <div className="container mx-auto px-6 grid lg:grid-cols-3 gap-10">

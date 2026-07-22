@@ -667,7 +667,7 @@ export default function InstitutionalSupport() {
           )}
           <div className={activeTab === 'access' ? 'block' : 'hidden'}><AccessibilityPanel /></div>
         </div>
-        <div className="p-4 bg-primary-darker text-center border-t border-white/5"><p className="text-[8px] font-black uppercase tracking-[2px] text-slate-400 ">{t("copyright")}</p></div>
+        <div className="p-4 bg-primary-darker text-center border-t border-white/5"><p className="text-[8px] font-black uppercase tracking-[2px] text-slate-400 " suppressHydrationWarning>{t("copyright", { year: new Date().getFullYear() })}</p></div>
       </div>
       <div className="relative">
         {!isOpen && <span className="absolute inset-0 rounded-full animate-ping bg-primary/40 pointer-events-none" />}

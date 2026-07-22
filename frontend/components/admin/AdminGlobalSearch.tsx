@@ -6,6 +6,7 @@ import { Search, Loader2, X, Command, User, FileText, GraduationCap, Building2, 
 import { getApi } from '@/lib/api';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAdminMenu } from '@/context/AdminMenuContext';
+import Highlight from '@/components/Highlight';
 
 interface SearchResult {
   id: string;
@@ -187,10 +188,10 @@ export default function AdminGlobalSearch() {
                 </div>
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black text-primary-darker truncate uppercase tracking-tight">{result.title}</span>
+                    <span className="text-[10px] font-black text-primary-darker truncate uppercase tracking-tight"><Highlight text={result.title} query={query} /></span>
                     <span className="text-[9px] font-bold text-[#037b90] bg-[#037b90]/5 px-2 py-0.5 rounded-full uppercase tracking-tighter shrink-0">{result.type}</span>
                   </div>
-                  <span className="text-[10px] font-medium text-slate-400 truncate mt-0.5">{result.subtitle}</span>
+                  <span className="text-[10px] font-medium text-slate-400 truncate mt-0.5"><Highlight text={result.subtitle} query={query} /></span>
                 </div>
               </button>
             ))}

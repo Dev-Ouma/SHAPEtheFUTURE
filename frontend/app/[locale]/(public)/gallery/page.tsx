@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import ShapePageHero from "@/components/shape/ShapePageHero";
 import { getShapeEvents } from "@/lib/shape-api";
+import { resolveImageUrl } from "@/lib/api";
 import { withLocaleSeo } from "@/lib/seo";
 
 export const revalidate = 120;
@@ -71,7 +72,11 @@ export default async function GalleryPage() {
                     >
                       {item.url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={item.url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                        <img
+                          src={resolveImageUrl(item.url) || item.url}
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
                       ) : null}
                       <div className="relative z-10 w-full p-4 bg-gradient-to-t from-black/60 to-transparent">
                         <p className="text-white text-sm font-semibold">{item.title}</p>

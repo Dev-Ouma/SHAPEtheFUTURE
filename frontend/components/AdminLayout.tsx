@@ -16,7 +16,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import AdminGlobalSearch from "@/components/admin/AdminGlobalSearch";
 import { useAdminMenu } from "@/context/AdminMenuContext";
 import { cn } from "@/lib/utils";
-import { API_URL, clearAdminSession, getAdminAuthHeaders } from "@/lib/api";
+import { API_URL, clearAdminSession, getAdminAuthHeaders, getApi } from "@/lib/api";
+import { SearchHighlightProvider } from "@/components/SearchHighlightProvider";
+import { DEFAULT_RELATED_TERMS } from "@/lib/searchHighlight";
 
 /**
  * AdminLayout provides a premium, flat UI wrapper for the OUK management console.
@@ -34,6 +36,26 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const accountMenuRef = React.useRef<HTMLDivElement>(null);
 
   const { user: authUser, refresh: refreshAuthUser, clearLocalUser } = useAdminUser();
+  const [relatedTermsJson, setRelatedTermsJson] = React.useState<string>(
+    JSON.stringify(DEFAULT_RELATED_TERMS),
+  );
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getApi("/settings/public");
+        if (!cancelled && data?.search_related_terms_json) {
+          setRelatedTermsJson(String(data.search_related_terms_json));
+        }
+      } catch {
+        /* keep defaults */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const userRole = React.useMemo(() => {
     if (!authUser) return "User";
@@ -209,7 +231,13 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     sidebarLinks.find((l: any) => l.href && pathname.startsWith(l.href + "/"))?.label ||
     "Management";
 
-  if (!authorized && pathname !== "/admin/login") {
+  const isAuthEntryPage =
+    pathname === "/admin/login" ||
+    pathname === "/admin/force-change-password" ||
+    pathname.startsWith("/admin/forgot-password") ||
+    pathname.startsWith("/admin/reset-password");
+
+  if (!authorized && !isAuthEntryPage) {
     return (
       <div className="min-h-screen bg-primary-darker flex items-center justify-center">
         <div className="flex flex-col items-center space-y-6">
@@ -220,11 +248,12 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (pathname === "/admin/login" || pathname === "/admin/force-change-password") {
+  if (isAuthEntryPage) {
     return <>{children}</>;
   }
 
   return (
+    <SearchHighlightProvider relatedTermsJson={relatedTermsJson}>
     <div className="flex min-h-screen bg-slate-50 font-sans relative overflow-x-hidden">
       <AnimatePresence>
         {loggingOut && (
@@ -367,6 +396,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </main>
     </div>
+    </SearchHighlightProvider>
   );
 };
 

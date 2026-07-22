@@ -5,7 +5,19 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Link } from "@/i18n/routing";
 
-export default function ShapeHomeHero() {
+type ShapeHomeHeroProps = {
+  eyebrow?: string;
+  title?: string;
+  text?: string;
+  tagline?: string;
+};
+
+export default function ShapeHomeHero({
+  eyebrow = "East Africa • Higher Education • Smart Cities",
+  title = "SHAPE",
+  text = "Co-funded by the Erasmus+ programme of the European Union, SHAPE strengthens higher education for smart cities across East Africa and Europe — building curricula, digital learning, and institutional capacity with nine partner universities.",
+  tagline = "Strengthening Higher Education for Smart Cities",
+}: ShapeHomeHeroProps) {
   return (
     <section className="relative min-h-[100svh] flex items-end overflow-hidden shape-hero-pattern">
       <div className="absolute inset-0 bg-gradient-to-br from-[#013d48] via-[#025a69] to-[#037b90]" />
@@ -27,17 +39,16 @@ export default function ShapeHomeHero() {
           className="max-w-4xl"
         >
           <p className="text-[11px] font-black uppercase tracking-[0.45em] text-secondary mb-6">
-            Erasmus+ · Co-funded by the European Union
+            {eyebrow}
           </p>
           <h1 className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter uppercase leading-[0.85] mb-6">
-            SHAPE
+            {title}
           </h1>
           <p className="font-serif text-xl md:text-3xl text-white/90 font-semibold tracking-tight max-w-2xl mb-4 leading-snug">
-            Strengthening Higher Education for Smart Cities
+            {tagline}
           </p>
           <p className="text-base md:text-lg text-white/70 max-w-xl mb-10 leading-relaxed">
-            A three-year partnership of nine universities across six countries, building capacity for
-            smart-city education in East Africa and Europe.
+            {text}
           </p>
           <div className="flex flex-wrap gap-3">
             <Link

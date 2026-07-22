@@ -2154,7 +2154,7 @@
     "aiAdvisorDesc": "Get instant answers",
     "accessibility": "Accessibility",
     "accessibilityDesc": "Inclusive reading tools",
-    "copyright": "Open University of Kenya © 2026",
+    "copyright": "Open University of Kenya © {year}",
     "closeHubAria": "Close support hub",
     "openHubAria": "Open support and accessibility hub",
     "botGreeting": "Hello! I am the OUK Digital Advisor. How can I help you today?",

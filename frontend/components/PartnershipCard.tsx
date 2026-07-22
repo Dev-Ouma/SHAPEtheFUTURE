@@ -7,12 +7,14 @@ import SafeImage from "@/components/ui/SafeImage";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Highlight from "@/components/Highlight";
 
 interface PartnershipCardProps {
   partner: any;
+  highlightQuery?: string;
 }
 
-export default function PartnershipCard({ partner }: PartnershipCardProps) {
+export default function PartnershipCard({ partner, highlightQuery }: PartnershipCardProps) {
   const t = useTranslations("Partnerships");
 
   return (
@@ -39,7 +41,7 @@ export default function PartnershipCard({ partner }: PartnershipCardProps) {
         </div>
 
         <h3 className="text-xl font-black text-primary-darker mb-4 group-hover:text-primary transition-colors">
-          {partner.name}
+          <Highlight text={partner.name || ""} query={highlightQuery || ""} quiet />
         </h3>
         
         <p className="text-slate-500 text-sm leading-relaxed mb-6 line-clamp-3">

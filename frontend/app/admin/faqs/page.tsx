@@ -10,6 +10,7 @@ import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAlert } from "@/context/AlertContext";
 import RichTextEditor from "@/components/RichTextEditor";
+import Highlight from "@/components/Highlight";
 
 const CATEGORIES = ["General", "Admissions", "Academic", "Students", "Technical", "Staff"];
 
@@ -369,7 +370,7 @@ export default function FAQManagerAdmin() {
                       </span>
                    </div>
                    <h3 className="text-xl font-black text-primary-darker uppercase tracking-tighter leading-tight group-hover:text-primary transition-colors">
-                      {faq.question}
+                      <Highlight text={faq.question || ""} query={search} quiet />
                    </h3>
                 </div>
                 <div className="flex items-center space-x-2">

@@ -31,8 +31,8 @@ export default function ShapeWorkPackagesAdmin() {
           type: "select",
           options: ["not_started", "in_progress", "completed", "at_risk"],
         },
-        { key: "milestones", label: "Milestones", type: "textarea" },
-        { key: "deliverables", label: "Deliverables", type: "textarea" },
+        { key: "milestones", label: "Milestones (JSON array or lines: Title | due | status)", type: "textarea" },
+        { key: "deliverables", label: "Deliverables (lines: Title | status  OR  semicolon list)", type: "textarea" },
         { key: "sort_order", label: "Sort order", type: "number" },
         {
           key: "is_published",

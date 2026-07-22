@@ -3,24 +3,29 @@
 import React, { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import type { ShapeDocument } from "@/lib/shape-api";
-import { SHAPE_DOCUMENT_CATEGORIES } from "@/lib/shape-api";
+import { SHAPE_DOCUMENT_CATEGORY_META } from "@/lib/shape-api";
+import Highlight from "@/components/Highlight";
+import { textMatchesQuery } from "@/lib/searchHighlight";
+import { useRelatedTerms } from "@/components/SearchHighlightProvider";
 
 export default function DocumentsClient({ documents }: { documents: ShapeDocument[] }) {
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState("all");
   const [q, setQ] = useState("");
+  const relatedMap = useRelatedTerms();
 
   const filtered = useMemo(() => {
     return documents.filter((d) => {
-      const catOk = category === "All" || d.category === category;
-      const query = q.trim().toLowerCase();
+      const catOk = category === "all" || d.category === category;
       const qOk =
-        !query ||
-        d.title?.toLowerCase().includes(query) ||
-        d.description?.toLowerCase().includes(query) ||
-        d.category?.toLowerCase().includes(query);
+        !q.trim() ||
+        textMatchesQuery(d.title || "", q, relatedMap) ||
+        textMatchesQuery(d.description || "", q, relatedMap) ||
+        textMatchesQuery(d.category_label || d.category || "", q, relatedMap);
       return catOk && qOk;
     });
-  }, [documents, category, q]);
+  }, [documents, category, q, relatedMap]);
+
+  const menus = [{ key: "all", label: "All" }, ...SHAPE_DOCUMENT_CATEGORY_META];
 
   return (
     <div className="space-y-8">
@@ -35,18 +40,18 @@ export default function DocumentsClient({ documents }: { documents: ShapeDocumen
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {["All", ...SHAPE_DOCUMENT_CATEGORIES].map((c) => (
+          {menus.map((c) => (
             <button
-              key={c}
+              key={c.key}
               type="button"
-              onClick={() => setCategory(c)}
+              onClick={() => setCategory(c.key)}
               className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest border transition-colors ${
-                category === c
+                category === c.key
                   ? "bg-primary text-white border-primary"
                   : "border-slate-200 text-slate-500 hover:border-primary"
               }`}
             >
-              {c}
+              {c.label}
             </button>
           ))}
         </div>
@@ -57,13 +62,15 @@ export default function DocumentsClient({ documents }: { documents: ShapeDocumen
           <div key={doc.id} className="p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-1">
-                {[doc.category, doc.work_package].filter(Boolean).join(" · ")}
+                {[doc.category_label || doc.category, doc.work_package].filter(Boolean).join(" · ")}
               </p>
               <h3 className="font-serif text-lg font-black text-primary-darker uppercase tracking-tight">
-                {doc.title}
+                <Highlight text={doc.title} query={q} />
               </h3>
               {doc.description ? (
-                <p className="text-sm text-slate-500 mt-1 max-w-2xl">{doc.description}</p>
+                <p className="text-sm text-slate-500 mt-1 max-w-2xl">
+                  <Highlight text={doc.description} query={q} />
+                </p>
               ) : null}
             </div>
             {doc.file_url ? (

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronDown, BookOpen, DollarSign, ShieldCheck, Globe, HelpCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { sanitizeHtml } from '@/lib/sanitize';
+import Highlight from '@/components/Highlight';
 
 interface FAQ {
   id: string;
@@ -120,7 +121,7 @@ export default function FAQClient({ faqs }: { faqs: FAQCategory[] }) {
                             className={`w-full text-left p-10 flex items-start justify-between gap-8 transition-all border ${expandedId === q.id ? 'bg-white border-primary/20 shadow-2xl' : 'bg-white border-slate-100 hover:border-slate-200 shadow-sm'}`}
                           >
                              <span className={`text-lg md:text-xl font-black tracking-tight leading-tight uppercase font-serif italic transition-all ${expandedId === q.id ? 'text-primary' : 'text-primary-darker group-hover:text-primary'}`}>
-                                {q.question}
+                                <Highlight text={q.question} query={search} />
                              </span>
                              <div className={`shrink-0 w-10 h-10 flex items-center justify-center transition-all ${expandedId === q.id ? 'bg-primary text-white rotate-180' : 'bg-slate-50 text-slate-400 group-hover:bg-primary group-hover:text-white'}`}>
                                 <ChevronDown size={20} />

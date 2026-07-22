@@ -12,15 +12,21 @@ export type ShapePartner = {
   country: string;
   city?: string;
   role?: string;
+  consortium_role?: string;
   logo_url?: string;
   website?: string;
+  website_url?: string;
   contact_name?: string;
+  contact_person?: string;
   contact_email?: string;
   responsibilities?: string;
   deliverables?: string;
   description?: string;
+  region?: string;
   lat?: number;
   lng?: number;
+  latitude?: number;
+  longitude?: number;
   order?: number;
 };
 
@@ -30,18 +36,146 @@ export type ShapeWorkPackage = {
   code: string;
   title: string;
   summary?: string;
+  description?: string;
   objectives?: string;
   leader?: string;
   leader_partner_slug?: string;
+  leader_partner_id?: string;
   partners?: string[];
+  partner_ids?: string[];
   timeline_start?: string;
   timeline_end?: string;
+  start_date?: string;
+  end_date?: string;
   milestones?: { title: string; due?: string; status?: string }[];
   deliverables?: { title: string; status?: string }[];
   documents?: { title: string; url: string }[];
   progress?: number;
+  progress_percent?: number;
+  status?: string;
   order?: number;
+  sort_order?: number;
 };
+
+function parseMilestoneList(raw: unknown): { title: string; due?: string; status?: string }[] {
+  if (Array.isArray(raw)) {
+    return raw
+      .map((m: any) => ({
+        title: String(m?.title || m?.name || "").trim(),
+        due: m?.due || m?.date || undefined,
+        status: m?.status || undefined,
+      }))
+      .filter((m) => m.title);
+  }
+  if (typeof raw !== "string" || !raw.trim()) return [];
+  const text = raw.trim();
+  if (text.startsWith("[")) {
+    try {
+      return parseMilestoneList(JSON.parse(text));
+    } catch {
+      /* fall through */
+    }
+  }
+  return text
+    .split(/\n|;/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [title, due, status] = line.split("|").map((p) => p.trim());
+      return { title, due: due || undefined, status: status || undefined };
+    });
+}
+
+function parseDeliverableList(raw: unknown): { title: string; status?: string }[] {
+  if (Array.isArray(raw)) {
+    return raw
+      .map((d: any) => ({
+        title: String(typeof d === "string" ? d : d?.title || d?.name || "").trim(),
+        status: typeof d === "object" && d ? d.status : undefined,
+      }))
+      .filter((d) => d.title);
+  }
+  if (typeof raw !== "string" || !raw.trim()) return [];
+  const text = raw.trim();
+  if (text.startsWith("[")) {
+    try {
+      return parseDeliverableList(JSON.parse(text));
+    } catch {
+      /* fall through */
+    }
+  }
+  return text
+    .split(/\n|;/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [title, status] = line.split("|").map((p) => p.trim());
+      return { title, status: status || undefined };
+    });
+}
+
+/** Map Nest entity fields → public ShapeWorkPackage shape used by the UI. */
+export function normalizeWorkPackage(raw: any, partnersById?: Map<string, ShapePartner>): ShapeWorkPackage {
+  if (!raw) return raw;
+  const leaderPartner = raw.leader_partner;
+  const leader =
+    raw.leader ||
+    leaderPartner?.name ||
+    leaderPartner?.short_name ||
+    undefined;
+
+  const partnerIds: string[] = Array.isArray(raw.partner_ids) ? raw.partner_ids : [];
+  let partners: string[] | undefined = Array.isArray(raw.partners)
+    ? raw.partners.map(String)
+    : undefined;
+  if ((!partners || !partners.length) && partnersById && partnerIds.length) {
+    partners = partnerIds
+      .map((id) => partnersById.get(String(id))?.short_name || partnersById.get(String(id))?.name)
+      .filter(Boolean) as string[];
+  }
+
+  // Always re-parse — never trust that deliverables/milestones are already arrays
+  // (API returns text columns; RSC payloads may still carry raw strings).
+  const milestones = parseMilestoneList(raw.milestones);
+  const deliverables = parseDeliverableList(raw.deliverables);
+
+  return {
+    id: String(raw.id || raw.slug || raw.code),
+    slug: String(raw.slug || ""),
+    code: String(raw.code || ""),
+    title: String(raw.title || ""),
+    summary: raw.summary || raw.description || "",
+    description: raw.description || raw.summary || "",
+    objectives: raw.objectives || "",
+    leader,
+    leader_partner_slug: raw.leader_partner_slug || leaderPartner?.slug,
+    leader_partner_id: raw.leader_partner_id || leaderPartner?.id,
+    partners,
+    partner_ids: partnerIds,
+    timeline_start: raw.timeline_start || raw.start_date || undefined,
+    timeline_end: raw.timeline_end || raw.end_date || undefined,
+    start_date: raw.start_date || raw.timeline_start,
+    end_date: raw.end_date || raw.timeline_end,
+    milestones: Array.isArray(milestones) ? milestones : [],
+    deliverables: Array.isArray(deliverables) ? deliverables : [],
+    documents: Array.isArray(raw.documents) ? raw.documents : [],
+    progress: Number(raw.progress ?? raw.progress_percent ?? 0),
+    progress_percent: Number(raw.progress_percent ?? raw.progress ?? 0),
+    status: raw.status || "not_started",
+    order: Number(raw.order ?? raw.sort_order ?? 0),
+    sort_order: Number(raw.sort_order ?? raw.order ?? 0),
+  };
+}
+
+export function normalizeWorkPackages(
+  list: any[],
+  partners: ShapePartner[] = [],
+): ShapeWorkPackage[] {
+  const byId = new Map(partners.map((p) => [p.id, p]));
+  return list
+    .map((w) => normalizeWorkPackage(w, byId))
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+}
 
 export type ShapeEvent = {
   id: string;
@@ -65,7 +199,10 @@ export type ShapeEvent = {
 export type ShapeDocument = {
   id: string;
   title: string;
+  /** Canonical category key from CMS (e.g. financial, policy_briefs). */
   category: string;
+  /** Display label for the category filter menu. */
+  category_label?: string;
   description?: string;
   file_url?: string;
   work_package?: string;
@@ -305,9 +442,71 @@ export const SHAPE_ACTIVITIES_FALLBACK: ShapeActivity[] = [
 ];
 
 export const SHAPE_DOCUMENTS_FALLBACK: ShapeDocument[] = [
-  { id: "1", title: "SHAPE Project Brief", category: "Reports", description: "Public overview of objectives and partners.", published_at: "2026-06-01" },
-  { id: "2", title: "Kick-off Agenda", category: "Minutes", description: "Agenda for the June 2026 kick-off.", work_package: "WP1", published_at: "2026-06-10" },
-  { id: "3", title: "Dissemination Template", category: "Templates", description: "Partner communication template.", published_at: "2026-06-15" },
+  {
+    id: "ph-deliverables",
+    title: "Work Package Deliverables Pack",
+    category: "deliverables",
+    category_label: "Deliverables",
+    description: "Placeholder — formal deliverables will appear here as WPs publish outputs.",
+    work_package: "WP1",
+  },
+  {
+    id: "1",
+    title: "SHAPE Project Brief",
+    category: "reports",
+    category_label: "Reports",
+    description: "Public overview of objectives and partners.",
+    published_at: "2026-06-01",
+  },
+  {
+    id: "2",
+    title: "Kick-off Agenda",
+    category: "minutes",
+    category_label: "Minutes",
+    description: "Agenda for the June 2026 kick-off.",
+    work_package: "WP1",
+    published_at: "2026-06-10",
+  },
+  {
+    id: "ph-financial",
+    title: "Interim Financial Statement",
+    category: "financial",
+    category_label: "Financial Reports",
+    description: "Placeholder — partner financial summaries will be published after reporting cycles.",
+    work_package: "WP1",
+  },
+  {
+    id: "ph-presentations",
+    title: "Consortium Kick-off Slide Deck",
+    category: "presentations",
+    category_label: "Presentations",
+    description: "Placeholder — meeting and workshop presentations will be uploaded here.",
+    work_package: "WP1",
+  },
+  {
+    id: "ph-policy",
+    title: "Smart Cities Higher Education Policy Brief",
+    category: "policy_briefs",
+    category_label: "Policy Briefs",
+    description: "Placeholder — policy briefs for ministries and city partners.",
+    work_package: "WP7",
+  },
+  {
+    id: "ph-publications",
+    title: "SHAPE Research Note (forthcoming)",
+    category: "publications",
+    category_label: "Publications",
+    description: "Placeholder — peer-reviewed and open publications from the consortium.",
+    work_package: "WP7",
+  },
+  {
+    id: "3",
+    title: "Dissemination Template",
+    category: "templates",
+    category_label: "Templates",
+    description: "Partner communication template.",
+    published_at: "2026-06-15",
+  },
 ];
 
 export const SHAPE_KPIS_FALLBACK: ShapeKpi[] = [
@@ -371,16 +570,60 @@ export const SHAPE_DASHBOARD_FALLBACK: ShapeDashboard = {
   events_held: 1,
 };
 
-export const SHAPE_DOCUMENT_CATEGORIES = [
-  "Deliverables",
-  "Reports",
-  "Minutes",
-  "Financial Reports",
-  "Presentations",
-  "Policy Briefs",
-  "Publications",
-  "Templates",
+export const SHAPE_DOCUMENT_CATEGORY_META = [
+  { key: "deliverables", label: "Deliverables" },
+  { key: "reports", label: "Reports" },
+  { key: "minutes", label: "Minutes" },
+  { key: "financial", label: "Financial Reports" },
+  { key: "presentations", label: "Presentations" },
+  { key: "policy_briefs", label: "Policy Briefs" },
+  { key: "publications", label: "Publications" },
+  { key: "templates", label: "Templates" },
 ] as const;
+
+/** @deprecated Prefer SHAPE_DOCUMENT_CATEGORY_META — kept as display labels for the 8 menus. */
+export const SHAPE_DOCUMENT_CATEGORIES = SHAPE_DOCUMENT_CATEGORY_META.map((c) => c.label);
+
+const DOC_CATEGORY_BY_KEY = new Map(
+  SHAPE_DOCUMENT_CATEGORY_META.map((c) => [c.key, c.label] as const),
+);
+const DOC_CATEGORY_BY_LABEL = new Map(
+  SHAPE_DOCUMENT_CATEGORY_META.map((c) => [c.label.toLowerCase(), c.key] as const),
+);
+
+export function documentCategoryKey(raw?: string | null): string {
+  if (!raw) return "other";
+  const lowered = raw.trim().toLowerCase().replace(/\s+/g, "_");
+  if (DOC_CATEGORY_BY_KEY.has(lowered as any)) return lowered;
+  // Accept display labels from older data / UI
+  const fromLabel = DOC_CATEGORY_BY_LABEL.get(raw.trim().toLowerCase());
+  if (fromLabel) return fromLabel;
+  if (lowered === "financial_reports") return "financial";
+  return lowered;
+}
+
+export function documentCategoryLabel(raw?: string | null): string {
+  const key = documentCategoryKey(raw);
+  return DOC_CATEGORY_BY_KEY.get(key as any) || raw || "Other";
+}
+
+export function normalizeShapeDocument(raw: any): ShapeDocument {
+  const category = documentCategoryKey(raw?.category);
+  const wp =
+    typeof raw?.work_package === "string"
+      ? raw.work_package
+      : raw?.work_package?.code || raw?.work_package?.title || undefined;
+  return {
+    id: String(raw?.id || raw?.slug || ""),
+    title: raw?.title || "Untitled document",
+    category,
+    category_label: documentCategoryLabel(category),
+    description: raw?.description || undefined,
+    file_url: raw?.file_url || undefined,
+    work_package: wp,
+    published_at: raw?.published_at || undefined,
+  };
+}
 
 /* ── Public getters ── */
 
@@ -394,32 +637,21 @@ export async function getShapePartner(slug: string): Promise<ShapePartner | null
 }
 
 export async function getShapeWorkPackages(): Promise<ShapeWorkPackage[]> {
-  return cachedList("/shape/work-packages", SHAPE_WORK_PACKAGES_FALLBACK);
+  const [raw, partners] = await Promise.all([
+    cachedList<any>("/shape/work-packages", SHAPE_WORK_PACKAGES_FALLBACK),
+    getShapePartners().catch(() => [] as ShapePartner[]),
+  ]);
+  return normalizeWorkPackages(raw, partners);
 }
 
 export async function getShapeWorkPackage(slug: string): Promise<ShapeWorkPackage | null> {
   const fallback = SHAPE_WORK_PACKAGES_FALLBACK.find((w) => w.slug === slug) || null;
-  const data = await cachedOne<ShapeWorkPackage>(
-    `/shape/work-packages/${encodeURIComponent(slug)}`,
-    fallback,
-  );
-  if (data && !data.milestones && fallback) {
-    return {
-      ...fallback,
-      ...data,
-      milestones: data.milestones || [
-        { title: "Kick-off aligned", due: "2026-06", status: "done" },
-        { title: "Mid-term review", due: "2027-06", status: "planned" },
-      ],
-      deliverables: data.deliverables || [
-        { title: `${data.code || fallback.code} inception report`, status: "in_progress" },
-      ],
-      objectives:
-        data.objectives ||
-        `Deliver the ${data.title || fallback.title} outcomes for the SHAPE consortium.`,
-    };
-  }
-  return data;
+  const [data, partners] = await Promise.all([
+    cachedOne<any>(`/shape/work-packages/${encodeURIComponent(slug)}`, fallback),
+    getShapePartners().catch(() => [] as ShapePartner[]),
+  ]);
+  if (!data) return null;
+  return normalizeWorkPackage(data, new Map(partners.map((p) => [p.id, p])));
 }
 
 export async function getShapeEvents(): Promise<ShapeEvent[]> {
@@ -436,12 +668,24 @@ export async function getShapeDocuments(params?: {
   search?: string;
 }): Promise<ShapeDocument[]> {
   const qs = new URLSearchParams();
-  if (params?.category) qs.set("category", params.category);
+  if (params?.category) qs.set("category", documentCategoryKey(params.category));
   if (params?.search) qs.set("q", params.search);
   const suffix = qs.toString() ? `?${qs}` : "";
-  let docs = await cachedList(`/shape/documents${suffix}`, SHAPE_DOCUMENTS_FALLBACK);
+  let raw: any[] = [];
+  try {
+    // Prefer fresh CMS data so newly published placeholders appear immediately
+    const data = await getApi(`/shape/documents${suffix}`);
+    raw = asList<any>(data);
+  } catch {
+    raw = [];
+  }
+  if (!raw.length) {
+    raw = SHAPE_DOCUMENTS_FALLBACK as any[];
+  }
+  let docs = raw.map(normalizeShapeDocument);
   if (params?.category) {
-    docs = docs.filter((d) => d.category?.toLowerCase() === params.category!.toLowerCase());
+    const key = documentCategoryKey(params.category);
+    docs = docs.filter((d) => d.category === key);
   }
   if (params?.search) {
     const q = params.search.toLowerCase();
@@ -449,6 +693,7 @@ export async function getShapeDocuments(params?: {
       (d) =>
         d.title?.toLowerCase().includes(q) ||
         d.description?.toLowerCase().includes(q) ||
+        d.category_label?.toLowerCase().includes(q) ||
         d.category?.toLowerCase().includes(q),
     );
   }
@@ -485,7 +730,17 @@ export async function getShapeRisks(): Promise<ShapeRisk[]> {
 }
 
 export async function getShapeSdlc(): Promise<ShapeSdlcStage[]> {
-  const stages = await cachedList("/shape/sdlc", SHAPE_SDLC_FALLBACK);
+  const raw = await cachedList<any>("/shape/sdlc", SHAPE_SDLC_FALLBACK);
+  const stages = raw.map((s: any, i: number): ShapeSdlcStage => ({
+    id: String(s.id || s.slug || i),
+    title: s.title || `Stage ${i + 1}`,
+    order: Number(s.order ?? s.sort_order ?? i + 1),
+    objectives: s.objectives || s.description || undefined,
+    progress: Number(s.progress ?? s.progress_percent ?? 0),
+    outputs: s.outputs || undefined,
+    evidence: s.evidence || undefined,
+    status: s.status || "planned",
+  }));
   return [...stages].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
@@ -606,6 +861,35 @@ export const SHAPE_HOME_DEFAULTS = {
   site_name: "SHAPE | Strengthening Higher Education for Smart Cities",
   contact_email: "shape@ouk.ac.ke",
 } as const;
+
+export const NEWS_HUB_DEFAULTS = {
+  news_hub_eyebrow: "Institutional intelligence",
+  news_hub_title: "Institutional",
+  news_hub_title_accent: "News Hub",
+  news_hub_subtitle:
+    "Project launches, partner milestones, and consortium updates from across SHAPE.",
+  news_hub_search_hint:
+    'Showing matches for "{query}" — related wording highlighted below.',
+  news_hub_ticker_label: "Latest",
+  news_hub_image_tablet: "/uploads/shape/news/news-3d-tablet.png",
+  news_hub_image_orb: "/uploads/shape/news/news-3d-search-orb.png",
+  news_hub_image_cards: "/uploads/shape/news/news-3d-cards.png",
+} as const;
+
+export function resolveNewsHubSettings(settings: Record<string, any> = {}) {
+  return {
+    eyebrow: settings.news_hub_eyebrow || NEWS_HUB_DEFAULTS.news_hub_eyebrow,
+    title: settings.news_hub_title || NEWS_HUB_DEFAULTS.news_hub_title,
+    titleAccent: settings.news_hub_title_accent || NEWS_HUB_DEFAULTS.news_hub_title_accent,
+    subtitle: settings.news_hub_subtitle || NEWS_HUB_DEFAULTS.news_hub_subtitle,
+    searchHint: settings.news_hub_search_hint || NEWS_HUB_DEFAULTS.news_hub_search_hint,
+    tickerLabel: settings.news_hub_ticker_label || NEWS_HUB_DEFAULTS.news_hub_ticker_label,
+    imageTablet: settings.news_hub_image_tablet || NEWS_HUB_DEFAULTS.news_hub_image_tablet,
+    imageOrb: settings.news_hub_image_orb || NEWS_HUB_DEFAULTS.news_hub_image_orb,
+    imageCards: settings.news_hub_image_cards || NEWS_HUB_DEFAULTS.news_hub_image_cards,
+    relatedTermsJson: settings.search_related_terms_json || "",
+  };
+}
 
 export function parseShapeObjectives(raw: unknown): ShapeObjective[] {
   if (Array.isArray(raw) && raw.length) {
