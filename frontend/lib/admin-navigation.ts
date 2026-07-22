@@ -59,9 +59,10 @@ const ADMIN_SIDEBAR_SECTIONS: AdminSidebarSection[] = [
     order: 8,
     items: [
       { label: 'Portal Settings', href: '/admin/settings', icon: 'Settings', order: 1 },
-      { label: 'Maintenance Engine', href: '/admin/settings/maintenance', icon: 'Wrench', order: 2 },
-      { label: 'Audit Logs', href: '/admin/logs', icon: 'History', order: 3 },
-      { label: 'Institutional Trash', href: '/admin/recycle-bin', icon: 'Trash2', order: 4 },
+      { label: 'Accessibility', href: '/admin/accessibility', icon: 'Accessibility', order: 2 },
+      { label: 'Maintenance Engine', href: '/admin/settings/maintenance', icon: 'Wrench', order: 3 },
+      { label: 'Audit Logs', href: '/admin/logs', icon: 'History', order: 4 },
+      { label: 'Institutional Trash', href: '/admin/recycle-bin', icon: 'Trash2', order: 5 },
     ],
   },
 ];

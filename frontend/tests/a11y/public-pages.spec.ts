@@ -14,6 +14,7 @@ const PAGES = [
   "/partners",
   "/news",
   "/contact",
+  "/accessibility",
 ] as const;
 
 for (const path of PAGES) {
@@ -40,3 +41,12 @@ for (const path of PAGES) {
     }
   });
 }
+
+test("accessibility panel opens with Alt+A and skip link targets exist", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('a[href="#main-content"]')).toBeAttached();
+  await expect(page.locator("#main-content")).toBeAttached();
+  await expect(page.locator("#a11y-launcher")).toBeAttached();
+  await page.keyboard.press("Alt+a");
+  await expect(page.locator("#a11y-settings-panel")).toBeVisible({ timeout: 5000 });
+});

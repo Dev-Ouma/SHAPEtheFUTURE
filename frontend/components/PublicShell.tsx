@@ -8,6 +8,7 @@ import ShapeFooter from "@/components/shape/ShapeFooter";
 import CookieConsent from "@/components/CookieConsent";
 import PublicGoogleTranslate from "@/components/PublicGoogleTranslate";
 import { SearchHighlightProvider } from "@/components/SearchHighlightProvider";
+import AccessibilityWidget from "@/components/accessibility/AccessibilityWidget";
 
 type PublicShellProps = {
   children: React.ReactNode;
@@ -41,8 +42,11 @@ export default function PublicShell({
     <SearchHighlightProvider relatedTermsJson={settings?.search_related_terms_json}>
       <div className="flex flex-col min-h-screen">
         {maintenance && (
-          <div className="bg-yellow-500 text-yellow-950 px-4 py-3 text-center text-[10px] font-black uppercase tracking-[0.2em] fixed top-0 w-full z-[70] flex items-center justify-center space-x-3 shadow-lg">
-            <span className="flex h-2.5 w-2.5 relative">
+          <div
+            role="status"
+            className="bg-yellow-500 text-yellow-950 px-4 py-3 text-center text-[10px] font-black uppercase tracking-[0.2em] fixed top-0 w-full z-[70] flex items-center justify-center space-x-3 shadow-lg"
+          >
+            <span className="flex h-2.5 w-2.5 relative" aria-hidden>
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-900 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-900"></span>
             </span>
@@ -51,16 +55,19 @@ export default function PublicShell({
             </I18nProtect>
           </div>
         )}
+
+        <nav className="a11y-skip-group" aria-label="Skip links">
+          <a href="#main-content">{t("skipToContent")}</a>
+          <a href="#main-navbar">Skip to navigation</a>
+          <a href="#main-footer">Skip to footer</a>
+          <a href="#a11y-launcher">Skip to accessibility settings</a>
+        </nav>
+
         <ShapeSiteHeader isMaintenanceActive={!!maintenance} />
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-white focus:text-primary font-bold"
-        >
-          {t("skipToContent")}
-        </a>
         <main
           id="main-content"
-          className={`flex-grow transition-all duration-500 ${maintenance ? "pt-[42px]" : ""}`}
+          tabIndex={-1}
+          className={`flex-grow transition-all duration-500 outline-none ${maintenance ? "pt-[42px]" : ""}`}
         >
           {children}
         </main>
@@ -72,6 +79,9 @@ export default function PublicShell({
               : undefined
           }
         />
+        <div id="a11y-launcher">
+          <AccessibilityWidget />
+        </div>
         <CookieConsent />
         <PublicGoogleTranslate />
       </div>

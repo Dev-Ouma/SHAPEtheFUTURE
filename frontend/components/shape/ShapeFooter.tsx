@@ -111,6 +111,9 @@ export default function ShapeFooter({
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-4 text-xs text-slate-500">
           <p>© {year} Open University of Kenya | SHAPE Erasmus+. All rights reserved.</p>
           <div className="flex flex-wrap gap-x-5 gap-y-2 uppercase tracking-widest font-bold text-[10px]">
+            <Link href="/accessibility" className="hover:text-secondary transition-colors">
+              Accessibility
+            </Link>
             <Link href="/privacy" className="hover:text-secondary transition-colors">
               Privacy
             </Link>

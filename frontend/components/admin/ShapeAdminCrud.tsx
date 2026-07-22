@@ -15,6 +15,8 @@ export type ShapeAdminField = {
   type?: "text" | "textarea" | "number" | "select" | "image";
   options?: string[];
   required?: boolean;
+  /** Optional authoring hint (shown under the control). */
+  hint?: string;
 };
 
 type Props = {
@@ -286,6 +288,14 @@ export default function ShapeAdminCrud({
           <p className="text-[11px] text-slate-400 mt-1">
             Changes sync to the public portal via <code className="font-mono">/shape/{resource}</code>
           </p>
+          <p className="text-[11px] text-primary mt-2 max-w-xl">
+            Accessibility default: write meaningful titles/descriptions, provide alt context for images
+            (logos use the partner name), and ensure documents are readable. See{" "}
+            <a href="/admin/accessibility" className="underline font-bold">
+              Accessibility report
+            </a>
+            .
+          </p>
         </div>
         <div className="flex gap-3">
           <button
@@ -319,18 +329,25 @@ export default function ShapeAdminCrud({
           />
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left" role="table">
+            <caption className="sr-only">
+              {title} records
+            </caption>
             <thead>
               <tr className="bg-slate-50/80">
                 {columns.map((c) => (
                   <th
                     key={c.key}
+                    scope="col"
                     className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400"
                   >
                     {c.label}
                   </th>
                 ))}
-                <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">
+                <th
+                  scope="col"
+                  className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right"
+                >
                   Actions
                 </th>
               </tr>
@@ -406,13 +423,32 @@ export default function ShapeAdminCrud({
       </div>
 
       {showModal ? (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-xl max-h-[90vh] overflow-y-auto border border-slate-200">
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          role="presentation"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setShowModal(false);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="shape-crud-dialog-title"
+            className="bg-white w-full max-w-xl max-h-[90vh] overflow-y-auto border border-slate-200"
+          >
             <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h2 className="font-serif text-xl font-black uppercase text-primary-darker">
+              <h2
+                id="shape-crud-dialog-title"
+                className="font-serif text-xl font-black uppercase text-primary-darker"
+              >
                 {modalMode === "edit" ? "Edit" : modalMode === "duplicate" ? "Duplicate" : "Create"}
               </h2>
-              <button type="button" onClick={() => setShowModal(false)} className="text-slate-400 text-sm">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="text-slate-400 text-sm"
+                aria-label="Close dialog"
+              >
                 Close
               </button>
             </div>
@@ -420,11 +456,17 @@ export default function ShapeAdminCrud({
               {fields.map((f) => (
                 <label key={f.key} className="block space-y-1.5">
                   {f.type === "image" ? (
-                    <ImageUploader
-                      label={`${f.label}${f.required ? " *" : ""}`}
-                      value={current[f.key] ?? ""}
-                      onChange={(val) => setCurrent((p) => ({ ...p, [f.key]: val }))}
-                    />
+                    <>
+                      <ImageUploader
+                        label={`${f.label}${f.required ? " *" : ""}`}
+                        value={current[f.key] ?? ""}
+                        onChange={(val) => setCurrent((p) => ({ ...p, [f.key]: val }))}
+                      />
+                      <p className="text-[11px] text-slate-500">
+                        {f.hint ||
+                          "Public pages use the record name/title as image alternative text. Prefer clear photos; avoid text baked into images."}
+                      </p>
+                    </>
                   ) : (
                     <>
                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -463,6 +505,7 @@ export default function ShapeAdminCrud({
                           }
                         />
                       )}
+                      {f.hint ? <p className="text-[11px] text-slate-500">{f.hint}</p> : null}
                     </>
                   )}
                 </label>

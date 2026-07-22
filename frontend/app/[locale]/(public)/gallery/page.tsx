@@ -74,7 +74,7 @@ export default async function GalleryPage() {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={resolveImageUrl(item.url) || item.url}
-                          alt=""
+                          alt={`${item.title} — ${item.category}`}
                           className="absolute inset-0 w-full h-full object-cover"
                         />
                       ) : null}

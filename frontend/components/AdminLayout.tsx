@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { API_URL, clearAdminSession, getAdminAuthHeaders, getApi } from "@/lib/api";
 import { SearchHighlightProvider } from "@/components/SearchHighlightProvider";
 import { DEFAULT_RELATED_TERMS } from "@/lib/searchHighlight";
+import AccessibilityWidget from "@/components/accessibility/AccessibilityWidget";
 
 /**
  * AdminLayout provides a premium, flat UI wrapper for the OUK management console.
@@ -255,6 +256,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SearchHighlightProvider relatedTermsJson={relatedTermsJson}>
     <div className="flex min-h-screen bg-slate-50 font-sans relative overflow-x-hidden">
+      <nav className="a11y-skip-group" aria-label="Skip links">
+        <a href="#admin-main">Skip to main content</a>
+        <a href="#a11y-launcher">Skip to accessibility settings</a>
+      </nav>
       <AnimatePresence>
         {loggingOut && (
           <motion.div
@@ -387,7 +392,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 custom-scrollbar bg-slate-50/50">
+        <div id="admin-main" tabIndex={-1} className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 custom-scrollbar bg-slate-50/50 outline-none">
           <div className="max-w-[1600px] mx-auto">
             <AlertProvider>
               {children}
@@ -395,6 +400,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
       </main>
+      <div id="a11y-launcher">
+        <AccessibilityWidget variant="admin" />
+      </div>
     </div>
     </SearchHighlightProvider>
   );

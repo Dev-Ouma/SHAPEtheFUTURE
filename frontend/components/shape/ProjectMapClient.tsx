@@ -161,8 +161,15 @@ export default function ProjectMapClient({ partners }: { partners: ShapePartner[
 
   return (
     <div className="grid lg:grid-cols-12 gap-8">
-      <div className="lg:col-span-8 relative min-h-[420px] md:min-h-[560px] aspect-[4/3] md:aspect-auto border border-slate-200 overflow-hidden bg-slate-100">
-        <div ref={mapEl} className="absolute inset-0 z-0" />
+      <div
+        className="lg:col-span-8 relative min-h-[420px] md:min-h-[560px] aspect-[4/3] md:aspect-auto border border-slate-200 overflow-hidden bg-slate-100"
+        role="region"
+        aria-label={`Interactive map of ${located.length} SHAPE partner locations. Use the partner list to select an institution.`}
+      >
+        <div ref={mapEl} className="absolute inset-0 z-0" aria-hidden={!ready} />
+        <p className="sr-only">
+          Partner locations are also listed beside the map with names, countries, and links.
+        </p>
         {!ready && !error ? (
           <div className="absolute inset-0 z-10 flex items-center justify-center text-[11px] font-black uppercase tracking-widest text-slate-400 bg-slate-100/80">
             Loading map…
@@ -186,7 +193,7 @@ export default function ProjectMapClient({ partners }: { partners: ShapePartner[
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={resolveImageUrl(active.logo_url) || active.logo_url}
-                  alt=""
+                  alt={`${active.name} logo`}
                   className="h-12 w-12 object-contain border border-slate-100 bg-white p-1"
                 />
               ) : (

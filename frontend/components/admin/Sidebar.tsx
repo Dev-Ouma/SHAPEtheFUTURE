@@ -88,6 +88,7 @@ const ROUTE_PERMISSION_MAP: Record<string, string | string[]> = {
 
   '/admin/settings': ['settings.view', 'settings.manage'],
   '/admin/settings/maintenance': ['settings.view', 'settings.manage'],
+  '/admin/accessibility': ['settings.view', 'settings.manage', 'dashboard.view', 'shape.view'],
   '/admin/content-approvals': 'governance.manage',
   '/admin/system-health': 'dashboard.view',
   '/admin/analytics': 'reports.view',

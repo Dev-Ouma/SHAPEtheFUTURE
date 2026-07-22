@@ -60,7 +60,11 @@ export default function DashboardClient({
       <div className="grid lg:grid-cols-2 gap-10">
         <div className="border border-slate-200 p-6">
           <p className="shape-eyebrow mb-6">Completion mix</p>
-          <div className="max-w-xs mx-auto">
+          <div
+            className="max-w-xs mx-auto"
+            role="img"
+            aria-label={`Overall completion ${dashboard.overall_completion} percent, remaining ${100 - dashboard.overall_completion} percent`}
+          >
             <Doughnut
               data={{
                 labels: ["Complete", "Remaining"],
@@ -75,26 +79,44 @@ export default function DashboardClient({
               options={{ plugins: { legend: { position: "bottom" } } }}
             />
           </div>
+          <p className="sr-only">
+            Overall completion is {dashboard.overall_completion}%. Remaining is{" "}
+            {100 - dashboard.overall_completion}%.
+          </p>
         </div>
         <div className="border border-slate-200 p-6">
           <p className="shape-eyebrow mb-6">Reach indicators</p>
-          <Bar
-            data={{
-              labels: barLabels,
-              datasets: [
-                {
-                  label: "Count",
-                  data: barValues,
-                  backgroundColor: "#ff7f50",
-                },
-              ],
-            }}
-            options={{
-              responsive: true,
-              plugins: { legend: { display: false } },
-              scales: { y: { beginAtZero: true } },
-            }}
-          />
+          <div
+            role="img"
+            aria-label={`Reach indicators: ${barLabels
+              .map((l, i) => `${l} ${barValues[i]}`)
+              .join(", ")}`}
+          >
+            <Bar
+              data={{
+                labels: barLabels,
+                datasets: [
+                  {
+                    label: "Count",
+                    data: barValues,
+                    backgroundColor: "#ff7f50",
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } },
+              }}
+            />
+          </div>
+          <ul className="sr-only">
+            {barLabels.map((label, i) => (
+              <li key={label}>
+                {label}: {barValues[i]}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
