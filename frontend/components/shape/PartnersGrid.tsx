@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, MapPin } from "lucide-react";
+import { useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
 import type { ShapePartner } from "@/lib/shape-api";
 import { resolveImageUrl } from "@/lib/api";
@@ -25,8 +26,14 @@ function normalize(p: ShapePartner & Record<string, any>): ShapePartner & {
 }
 
 export default function PartnersGrid({ partners }: { partners: ShapePartner[] }) {
+  const locale = useLocale();
   const items = useMemo(() => partners.map((p) => normalize(p as any)), [partners]);
   const [filter, setFilter] = useState<"all" | "east_africa" | "europe">("all");
+
+  const displayName = (p: ShapePartner) =>
+    locale === "sw" && p.name_sw ? p.name_sw : p.name;
+  const displayDesc = (p: ShapePartner) =>
+    locale === "sw" && p.description_sw ? p.description_sw : p.description;
 
   const filtered = items.filter((p: any) => {
     if (filter === "all") return true;
@@ -92,7 +99,7 @@ export default function PartnersGrid({ partners }: { partners: ShapePartner[] })
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={resolveImageUrl(p.logo_url)}
-                        alt={`${p.name} logo`}
+                        alt={`${displayName(p)} logo`}
                         className="h-10 w-auto max-w-[160px] object-contain"
                       />
                     ) : (
@@ -114,14 +121,17 @@ export default function PartnersGrid({ partners }: { partners: ShapePartner[] })
 
                 <div className="px-6 pt-5 pb-6 flex-1 flex flex-col">
                   <h2 className="font-serif text-xl md:text-2xl font-black text-primary-darker uppercase tracking-tight leading-tight group-hover:text-primary transition-colors">
-                    {p.name}
+                    {displayName(p)}
                   </h2>
                   <p className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     <MapPin size={12} className="text-secondary" />
                     {[p.city, p.country].filter(Boolean).join(" · ")}
                   </p>
                   <p className="mt-4 text-sm text-slate-600 leading-relaxed line-clamp-4 normal-case tracking-normal flex-1">
-                    {p.description || p.responsibilities}
+                    {displayDesc(p) ||
+                      (locale === "sw" && p.responsibilities_sw
+                        ? p.responsibilities_sw
+                        : p.responsibilities)}
                   </p>
                   <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">

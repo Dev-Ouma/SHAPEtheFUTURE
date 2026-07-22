@@ -38,13 +38,13 @@ export default function ShapeDocumentsAdmin() {
         },
         { key: "description", label: "Description", type: "textarea", hint: "Describe the document for screen readers and search; prefer HTML summaries over image-only PDFs." },
         { key: "description_sw", label: "Description (Kiswahili)", type: "textarea" },
-        { key: "file_url", label: "File / media URL", hint: "Upload tagged/accessible PDFs (PDF/UA) or Word files with proper headings when possible. For video/audio, also add captions and transcript below." },
+        { key: "file_url", label: "File / media", type: "file", hint: "Upload a tagged PDF/Word file or paste a URL. For video/audio, also add captions and transcript below." },
         { key: "file_type", label: "File type (pdf, mp4, …)" },
         { key: "captions_url", label: "Captions URL (.vtt)", hint: "Closed captions track for video/audio (WCAG 1.2.2)." },
         { key: "transcript", label: "Transcript", type: "textarea", hint: "Full text alternative for media or complex documents." },
         { key: "sign_language_url", label: "Sign language URL", hint: "Optional sign-language interpretation video or page." },
-        { key: "work_package_id", label: "Work package ID (UUID)" },
-        { key: "partner_id", label: "Partner ID (UUID)" },
+        { key: "work_package_id", label: "Work package", type: "work_package" },
+        { key: "partner_id", label: "Partner", type: "partner" },
         {
           key: "is_public",
           label: "Public",
@@ -63,7 +63,7 @@ export default function ShapeDocumentsAdmin() {
         slug: "",
         category: "reports",
         is_public: true,
-        is_published: true,
+        is_published: false,
       }}
     />
   );

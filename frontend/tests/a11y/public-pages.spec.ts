@@ -3,10 +3,8 @@ import AxeBuilder from "@axe-core/playwright";
 
 /**
  * Critical/serious axe violations fail the job.
- *
- * Known non-blocking (excluded):
- * - color-contrast: many decorative/overlay text pairs on the public chrome;
- *   tracked for a later a11y pass, not a Phase 1 hard gate.
+ * color-contrast remains excluded for decorative overlay chrome;
+ * WCAG 2.2 tags are included for newer success criteria coverage.
  */
 const PAGES = [
   "/",
@@ -15,6 +13,13 @@ const PAGES = [
   "/news",
   "/contact",
   "/accessibility",
+  "/documents",
+  "/events",
+  "/media",
+  "/gallery",
+  "/search",
+  "/map",
+  "/dashboard",
 ] as const;
 
 for (const path of PAGES) {
@@ -22,7 +27,7 @@ for (const path of PAGES) {
     test.setTimeout(120_000);
     await page.goto(path, { waitUntil: "domcontentloaded" });
     const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
       .disableRules(["color-contrast"])
       .analyze();
 

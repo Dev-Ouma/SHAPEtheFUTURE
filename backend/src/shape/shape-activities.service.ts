@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ShapeActivity } from './entities/shape-activity.entity';
 import { CreateShapeActivityDto } from './dto/shape.dto';
+import { applyPartnerWorkPackageScope } from './shape-partner-scope.util';
 
 @Injectable()
 export class ShapeActivitiesService {
@@ -11,7 +12,11 @@ export class ShapeActivitiesService {
     private readonly repo: Repository<ShapeActivity>,
   ) {}
 
-  async findAll(admin = false, workPackageId?: string) {
+  async findAll(
+    admin = false,
+    workPackageId?: string,
+    partnerScopeId?: string,
+  ) {
     const qb = this.repo
       .createQueryBuilder('a')
       .leftJoinAndSelect('a.work_package', 'wp')
@@ -22,6 +27,9 @@ export class ShapeActivitiesService {
     }
     if (workPackageId) {
       qb.andWhere('a.work_package_id = :wpId', { wpId: workPackageId });
+    }
+    if (admin && partnerScopeId) {
+      applyPartnerWorkPackageScope(qb as any, 'wp', partnerScopeId);
     }
     return qb.getMany();
   }

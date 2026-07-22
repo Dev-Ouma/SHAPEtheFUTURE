@@ -107,6 +107,39 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Fence leftover OUK public routes → SHAPE project hub
+  const pathNoLocale = stripLocalePrefix(pathname);
+  const legacyRoots = new Set([
+    "academics",
+    "academic-affairs",
+    "admissions",
+    "alumni",
+    "careers",
+    "library",
+    "programmes",
+    "research",
+    "students",
+    "tenders",
+    "units",
+    "virtual-tour",
+    "partnerships",
+    "service-charter",
+    "about-us",
+    "faqs",
+    "social",
+    "support",
+    "outputs",
+  ]);
+  const top = pathNoLocale.split("/").filter(Boolean)[0];
+  if (top && legacyRoots.has(top)) {
+    const url = request.nextUrl.clone();
+    const first = pathname.split("/")[1];
+    const hasLocale =
+      first && routing.locales.includes(first as "en" | "sw");
+    url.pathname = hasLocale ? `/${first}/the-project` : "/the-project";
+    return NextResponse.redirect(url, 308);
+  }
+
   // Standalone maintenance page (app/maintenance) — not under [locale]
   if (pathname === "/maintenance" || pathname.startsWith("/maintenance/")) {
     const res = NextResponse.next();

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WorkPackage } from './entities/work-package.entity';
 import { CreateWorkPackageDto, isUuid } from './dto/shape.dto';
+import { applyPartnerWorkPackageScope } from './shape-partner-scope.util';
 
 @Injectable()
 export class ShapeWorkPackagesService {
@@ -11,7 +12,7 @@ export class ShapeWorkPackagesService {
     private readonly repo: Repository<WorkPackage>,
   ) {}
 
-  async findAll(admin = false) {
+  async findAll(admin = false, partnerScopeId?: string) {
     const qb = this.repo
       .createQueryBuilder('wp')
       .leftJoinAndSelect('wp.leader_partner', 'leader')
@@ -19,6 +20,9 @@ export class ShapeWorkPackagesService {
       .addOrderBy('wp.code', 'ASC');
     if (!admin) {
       qb.andWhere('wp.is_published = :pub', { pub: true });
+    }
+    if (admin && partnerScopeId) {
+      applyPartnerWorkPackageScope(qb, 'wp', partnerScopeId);
     }
     return qb.getMany();
   }

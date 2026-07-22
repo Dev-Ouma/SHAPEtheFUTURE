@@ -42,7 +42,7 @@ export default function ShapeSdlcAdmin() {
         sort_order: 0,
         status: "not_started",
         progress_percent: 0,
-        is_published: true,
+        is_published: false,
       }}
     />
   );

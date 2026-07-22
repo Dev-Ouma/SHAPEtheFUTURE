@@ -8,6 +8,7 @@ export type ShapePartner = {
   id: string;
   slug: string;
   name: string;
+  name_sw?: string;
   short_name?: string;
   country: string;
   city?: string;
@@ -20,8 +21,10 @@ export type ShapePartner = {
   contact_person?: string;
   contact_email?: string;
   responsibilities?: string;
+  responsibilities_sw?: string;
   deliverables?: string;
   description?: string;
+  description_sw?: string;
   region?: string;
   lat?: number;
   lng?: number;
@@ -743,6 +746,7 @@ export function normalizeShapePartner(raw: any): ShapePartner {
     id: String(raw?.id || raw?.slug || ""),
     slug: raw?.slug || "",
     name: raw?.name || "Partner",
+    name_sw: raw?.name_sw || undefined,
     short_name: raw?.short_name || undefined,
     country: raw?.country || "",
     city: raw?.city || undefined,
@@ -755,8 +759,10 @@ export function normalizeShapePartner(raw: any): ShapePartner {
     contact_person: raw?.contact_person || undefined,
     contact_email: raw?.contact_email || undefined,
     responsibilities: raw?.responsibilities || undefined,
+    responsibilities_sw: raw?.responsibilities_sw || undefined,
     deliverables: raw?.deliverables || undefined,
     description: raw?.description || undefined,
+    description_sw: raw?.description_sw || undefined,
     region: raw?.region || undefined,
     lat: Number.isFinite(lat) ? lat : undefined,
     lng: Number.isFinite(lng) ? lng : undefined,

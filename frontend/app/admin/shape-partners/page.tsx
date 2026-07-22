@@ -18,6 +18,7 @@ export default function ShapePartnersAdmin() {
       ]}
       fields={[
         { key: "name", label: "Name", required: true },
+        { key: "name_sw", label: "Name (Kiswahili)" },
         { key: "slug", label: "Slug", required: true },
         { key: "short_name", label: "Short name" },
         { key: "country", label: "Country", required: true },
@@ -32,10 +33,12 @@ export default function ShapePartnersAdmin() {
         { key: "website_url", label: "Website URL" },
         { key: "consortium_role", label: "Consortium role" },
         { key: "description", label: "Institution description", type: "textarea" },
+        { key: "description_sw", label: "Description (Kiswahili)", type: "textarea" },
         { key: "contact_person", label: "Contact person" },
         { key: "contact_email", label: "Contact email" },
         { key: "contact_role", label: "Contact role" },
         { key: "responsibilities", label: "SHAPE responsibilities", type: "textarea" },
+        { key: "responsibilities_sw", label: "Responsibilities (Kiswahili)", type: "textarea" },
         { key: "deliverables", label: "Deliverables", type: "textarea" },
         { key: "latitude", label: "Latitude", type: "number" },
         { key: "longitude", label: "Longitude", type: "number" },
@@ -53,7 +56,7 @@ export default function ShapePartnersAdmin() {
         country: "",
         region: "east_africa",
         sort_order: 0,
-        is_published: true,
+        is_published: false,
       }}
     />
   );

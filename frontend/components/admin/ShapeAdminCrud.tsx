@@ -12,7 +12,7 @@ import { useRelatedTerms } from "@/components/SearchHighlightProvider";
 export type ShapeAdminField = {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "number" | "select" | "image";
+  type?: "text" | "textarea" | "number" | "select" | "image" | "file" | "partner" | "work_package";
   options?: string[];
   required?: boolean;
   /** Optional authoring hint (shown under the control). */
@@ -169,6 +169,49 @@ export default function ShapeAdminCrud({
   const [saving, setSaving] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit" | "duplicate">("create");
   const relatedMap = useRelatedTerms();
+  const [partnerOptions, setPartnerOptions] = useState<{ id: string; label: string }[]>([]);
+  const [wpOptions, setWpOptions] = useState<{ id: string; label: string }[]>([]);
+
+  useEffect(() => {
+    const needsPartners = fields.some(
+      (f) => f.type === "partner" || f.key.includes("partner"),
+    );
+    const needsWps = fields.some(
+      (f) => f.type === "work_package" || f.key === "work_package_id",
+    );
+    let cancelled = false;
+    (async () => {
+      try {
+        if (needsPartners) {
+          const data = await getApi("/shape/partners/admin");
+          if (!cancelled) {
+            setPartnerOptions(
+              asList(data).map((p: any) => ({
+                id: String(p.id),
+                label: p.short_name ? `${p.short_name} — ${p.name}` : p.name,
+              })),
+            );
+          }
+        }
+        if (needsWps) {
+          const data = await getApi("/shape/work-packages/admin");
+          if (!cancelled) {
+            setWpOptions(
+              asList(data).map((w: any) => ({
+                id: String(w.id),
+                label: `${w.code || ""} · ${w.title || w.slug}`.trim(),
+              })),
+            );
+          }
+        }
+      } catch {
+        /* pickers optional offline */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fields]);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -453,19 +496,48 @@ export default function ShapeAdminCrud({
               </button>
             </div>
             <div className="p-6 space-y-4">
+              {modalMode === "create" || current.is_published === false || current.is_published === "false" ? (
+                <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-100 px-3 py-2">
+                  Draft by default — set <strong>Published</strong> to true when ready for the public site.
+                </p>
+              ) : null}
               {fields.map((f) => (
                 <label key={f.key} className="block space-y-1.5">
-                  {f.type === "image" ? (
+                  {f.type === "image" || f.type === "file" ? (
                     <>
                       <ImageUploader
                         label={`${f.label}${f.required ? " *" : ""}`}
                         value={current[f.key] ?? ""}
                         onChange={(val) => setCurrent((p) => ({ ...p, [f.key]: val }))}
+                        accept={f.type === "file" ? "*/*" : "image/*"}
+                        type={f.type === "file" ? "image" : "image"}
                       />
                       <p className="text-[11px] text-slate-500">
                         {f.hint ||
-                          "Public pages use the record name/title as image alternative text. Prefer clear photos; avoid text baked into images."}
+                          (f.type === "file"
+                            ? "Upload a file or paste a URL. Prefer accessible PDFs for documents."
+                            : "Public pages use the record name/title as image alternative text.")}
                       </p>
+                    </>
+                  ) : f.type === "partner" || f.type === "work_package" ? (
+                    <>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        {f.label}
+                        {f.required ? " *" : ""}
+                      </span>
+                      <select
+                        className="w-full border border-slate-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                        value={current[f.key] ?? ""}
+                        onChange={(e) => setCurrent((p) => ({ ...p, [f.key]: e.target.value }))}
+                      >
+                        <option value="">Select…</option>
+                        {(f.type === "partner" ? partnerOptions : wpOptions).map((o) => (
+                          <option key={o.id} value={o.id}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </select>
+                      {f.hint ? <p className="text-[11px] text-slate-500">{f.hint}</p> : null}
                     </>
                   ) : (
                     <>

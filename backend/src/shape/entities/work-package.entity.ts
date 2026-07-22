@@ -26,6 +26,9 @@ export class WorkPackage {
   @Column()
   title: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  title_sw: string | null;
+
   @Column({ unique: true })
   slug: string;
 
@@ -33,7 +36,13 @@ export class WorkPackage {
   description: string;
 
   @Column({ type: 'text', nullable: true })
+  description_sw: string | null;
+
+  @Column({ type: 'text', nullable: true })
   objectives: string;
+
+  @Column({ type: 'text', nullable: true })
+  objectives_sw: string | null;
 
   @Column({ nullable: true })
   leader_partner_id: string | null;

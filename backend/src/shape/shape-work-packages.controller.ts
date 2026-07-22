@@ -7,10 +7,13 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Public } from '../common/decorators/public.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { PartnerScopeGuard } from '../auth/guards/partner-scope.guard';
 import { RequirePermission } from '../auth/decorators/permissions.decorator';
 import { ShapeWorkPackagesService } from './shape-work-packages.service';
 import {
@@ -18,6 +21,7 @@ import {
   SHAPE_MANAGE_PERMS,
   SHAPE_VIEW_PERMS,
 } from './dto/shape.dto';
+import { partnerOwnsWorkPackage } from './shape-partner-scope.util';
 
 @Controller('shape/work-packages')
 export class ShapeWorkPackagesController {
@@ -29,11 +33,11 @@ export class ShapeWorkPackagesController {
     return this.service.findAll(false);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard, PartnerScopeGuard)
   @RequirePermission([...SHAPE_VIEW_PERMS])
   @Get('admin')
-  findAllAdmin() {
-    return this.service.findAll(true);
+  findAllAdmin(@Req() req: any) {
+    return this.service.findAll(true, req.partnerScopeId || undefined);
   }
 
   @Public()
@@ -42,24 +46,46 @@ export class ShapeWorkPackagesController {
     return this.service.findOne(identifier, false);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard, PartnerScopeGuard)
   @RequirePermission([...SHAPE_MANAGE_PERMS])
   @Post()
-  create(@Body() dto: CreateWorkPackageDto) {
+  create(@Req() req: any, @Body() dto: CreateWorkPackageDto) {
+    if (req.partnerScopeId) {
+      dto.leader_partner_id = req.partnerScopeId;
+    }
     return this.service.create(dto);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard, PartnerScopeGuard)
   @RequirePermission([...SHAPE_MANAGE_PERMS])
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: Partial<CreateWorkPackageDto>) {
+  async update(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() dto: Partial<CreateWorkPackageDto>,
+  ) {
+    await this.assertOwnsWp(req, id);
+    if (req.partnerScopeId) {
+      dto.leader_partner_id = req.partnerScopeId;
+    }
     return this.service.update(id, dto);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard, PartnerScopeGuard)
   @RequirePermission([...SHAPE_MANAGE_PERMS])
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Req() req: any, @Param('id') id: string) {
+    await this.assertOwnsWp(req, id);
     return this.service.remove(id);
+  }
+
+  private async assertOwnsWp(req: any, id: string) {
+    if (!req.partnerScopeId) return;
+    const wp = await this.service.findOne(id, true);
+    if (!partnerOwnsWorkPackage(wp, req.partnerScopeId)) {
+      throw new ForbiddenException(
+        'You can only manage work packages led by or assigned to your institution.',
+      );
+    }
   }
 }

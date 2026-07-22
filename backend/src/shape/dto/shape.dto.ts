@@ -15,6 +15,10 @@ export class CreatePartnerDto {
   name: string;
 
   @IsString()
+  @IsOptional()
+  name_sw?: string;
+
+  @IsString()
   slug: string;
 
   @IsString()
@@ -47,6 +51,10 @@ export class CreatePartnerDto {
 
   @IsString()
   @IsOptional()
+  description_sw?: string;
+
+  @IsString()
+  @IsOptional()
   contact_person?: string;
 
   @IsEmail()
@@ -60,6 +68,10 @@ export class CreatePartnerDto {
   @IsString()
   @IsOptional()
   responsibilities?: string;
+
+  @IsString()
+  @IsOptional()
+  responsibilities_sw?: string;
 
   @IsString()
   @IsOptional()
@@ -97,6 +109,10 @@ export class CreateWorkPackageDto {
   title: string;
 
   @IsString()
+  @IsOptional()
+  title_sw?: string;
+
+  @IsString()
   slug: string;
 
   @IsString()
@@ -105,7 +121,15 @@ export class CreateWorkPackageDto {
 
   @IsString()
   @IsOptional()
+  description_sw?: string;
+
+  @IsString()
+  @IsOptional()
   objectives?: string;
+
+  @IsString()
+  @IsOptional()
+  objectives_sw?: string;
 
   @IsString()
   @IsOptional()
@@ -155,11 +179,19 @@ export class CreateShapeEventDto {
   title: string;
 
   @IsString()
+  @IsOptional()
+  title_sw?: string;
+
+  @IsString()
   slug: string;
 
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsString()
+  @IsOptional()
+  description_sw?: string;
 
   @IsDateString()
   event_date: string;
@@ -357,7 +389,15 @@ export class CreateShapeActivityDto {
 
   @IsString()
   @IsOptional()
+  title_sw?: string;
+
+  @IsString()
+  @IsOptional()
   description?: string;
+
+  @IsString()
+  @IsOptional()
+  description_sw?: string;
 
   @IsDateString()
   start_date: string;

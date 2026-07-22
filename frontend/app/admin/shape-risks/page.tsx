@@ -53,7 +53,7 @@ export default function ShapeRisksAdmin() {
         likelihood: "medium",
         impact: "medium",
         sort_order: 0,
-        is_published: true,
+        is_published: false,
       }}
     />
   );

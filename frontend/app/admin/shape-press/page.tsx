@@ -34,7 +34,7 @@ export default function ShapePressAdmin() {
         source: "",
         url: "",
         sort_order: 0,
-        is_published: true,
+        is_published: false,
       }}
     />
   );

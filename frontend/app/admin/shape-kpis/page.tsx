@@ -42,7 +42,7 @@ export default function ShapeKpisAdmin() {
         value: "",
         category: "overview",
         sort_order: 0,
-        is_published: true,
+        is_published: false,
       }}
     />
   );

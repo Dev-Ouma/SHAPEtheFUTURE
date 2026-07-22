@@ -16,6 +16,9 @@ export class PartnerInstitution {
   @Column()
   name: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  name_sw: string | null;
+
   @Column({ unique: true })
   slug: string;
 
@@ -42,6 +45,9 @@ export class PartnerInstitution {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Column({ type: 'text', nullable: true })
+  description_sw: string | null;
+
   @Column({ nullable: true })
   contact_person: string;
 
@@ -53,6 +59,9 @@ export class PartnerInstitution {
 
   @Column({ type: 'text', nullable: true })
   responsibilities: string;
+
+  @Column({ type: 'text', nullable: true })
+  responsibilities_sw: string | null;
 
   @Column({ type: 'text', nullable: true })
   deliverables: string;

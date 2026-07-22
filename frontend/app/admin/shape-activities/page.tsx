@@ -17,8 +17,10 @@ export default function ShapeActivitiesAdmin() {
       ]}
       fields={[
         { key: "title", label: "Title", required: true },
+        { key: "title_sw", label: "Title (Kiswahili)" },
         { key: "description", label: "Description", type: "textarea" },
-        { key: "work_package_id", label: "Work package ID (UUID)" },
+        { key: "description_sw", label: "Description (Kiswahili)", type: "textarea" },
+        { key: "work_package_id", label: "Work package", type: "work_package" },
         { key: "start_date", label: "Start date (YYYY-MM-DD)", required: true },
         { key: "end_date", label: "End date (YYYY-MM-DD)", required: true },
         {
@@ -43,7 +45,7 @@ export default function ShapeActivitiesAdmin() {
         status: "planned",
         progress_percent: 0,
         sort_order: 0,
-        is_published: true,
+        is_published: false,
       }}
     />
   );

@@ -24,11 +24,17 @@ export class ShapeEvent {
   @Column()
   title: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  title_sw: string | null;
+
   @Column({ unique: true })
   slug: string;
 
   @Column({ type: 'text', nullable: true })
   description: string;
+
+  @Column({ type: 'text', nullable: true })
+  description_sw: string | null;
 
   @Column({ type: 'date' })
   event_date: string;

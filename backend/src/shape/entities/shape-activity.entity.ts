@@ -23,8 +23,14 @@ export class ShapeActivity {
   @Column()
   title: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  title_sw: string | null;
+
   @Column({ type: 'text', nullable: true })
   description: string;
+
+  @Column({ type: 'text', nullable: true })
+  description_sw: string | null;
 
   @Column({ type: 'date' })
   start_date: string;

@@ -19,9 +19,12 @@ export default function ShapeWorkPackagesAdmin() {
         { key: "code", label: "Code", required: true },
         { key: "slug", label: "Slug", required: true },
         { key: "title", label: "Title", required: true },
+        { key: "title_sw", label: "Title (Kiswahili)" },
         { key: "description", label: "Description", type: "textarea" },
         { key: "objectives", label: "Objectives", type: "textarea" },
-        { key: "leader_partner_id", label: "Leader partner ID (UUID)" },
+        { key: "description_sw", label: "Description (Kiswahili)", type: "textarea" },
+        { key: "objectives_sw", label: "Objectives (Kiswahili)", type: "textarea" },
+        { key: "leader_partner_id", label: "Leader partner", type: "partner" },
         { key: "start_date", label: "Start date (YYYY-MM-DD)" },
         { key: "end_date", label: "End date (YYYY-MM-DD)" },
         { key: "progress_percent", label: "Progress %", type: "number" },
@@ -48,7 +51,7 @@ export default function ShapeWorkPackagesAdmin() {
         progress_percent: 0,
         status: "not_started",
         sort_order: 0,
-        is_published: true,
+        is_published: false,
       }}
     />
   );
