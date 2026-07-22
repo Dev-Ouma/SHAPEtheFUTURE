@@ -22,7 +22,7 @@ export default async function SdlcPage() {
 
   return (
     <div className="bg-white">
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#024955] via-[#037b90] to-white pt-16 pb-6 md:pt-20">
+      <section className="relative overflow-x-hidden bg-gradient-to-b from-[#024955] via-[#037b90] to-white pt-16 pb-10 md:pt-20 md:pb-14">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-40"

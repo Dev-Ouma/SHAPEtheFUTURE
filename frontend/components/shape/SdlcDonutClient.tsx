@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { ShapeSdlcStage } from "@/lib/shape-api";
 import ProgressBar from "@/components/shape/ProgressBar";
@@ -56,6 +57,12 @@ export default function SdlcDonutClient({
     [stages],
   );
   const [activeId, setActiveId] = useState(() => pickInitialStage(ordered)?.id || "");
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!ordered.length) return;
@@ -65,7 +72,27 @@ export default function SdlcDonutClient({
     });
   }, [ordered]);
 
+  useEffect(() => {
+    if (!popupOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPopupOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [popupOpen]);
+
+  const openStage = (id: string) => {
+    setActiveId(id);
+    setPopupOpen(true);
+  };
+
   const active = ordered.find((s) => s.id === activeId) || ordered[0];
+  const activeIndex = ordered.findIndex((s) => s.id === active?.id);
   const n = Math.max(ordered.length, 1);
   const overall = Math.round(
     ordered.reduce((sum, s) => sum + (s.progress ?? 0), 0) / n,
@@ -360,7 +387,7 @@ export default function SdlcDonutClient({
                       strokeWidth={4}
                       filter={isActive ? "url(#sdlcGlow)" : undefined}
                       className="cursor-pointer"
-                      onClick={() => setActiveId(node.stage.id)}
+                      onClick={() => openStage(node.stage.id)}
                       whileHover={reduceMotion ? undefined : { scale: 1.12 }}
                       animate={
                         reduceMotion || !/progress/i.test(node.stage.status || "")
@@ -400,7 +427,7 @@ export default function SdlcDonutClient({
                 <button
                   key={`label-${node.stage.id}`}
                   type="button"
-                  onClick={() => setActiveId(node.stage.id)}
+                  onClick={() => openStage(node.stage.id)}
                   className={`pointer-events-auto absolute w-[7.25rem] sm:w-[8.25rem] rounded px-2 py-1.5 text-center text-[11px] sm:text-[12px] font-black uppercase leading-snug tracking-wide shadow-md transition-colors ${
                     isActive
                       ? "bg-secondary text-white ring-2 ring-white/70"
@@ -448,63 +475,144 @@ export default function SdlcDonutClient({
         </div>
       </div>
 
-      {/* Active stage detail */}
-      <AnimatePresence mode="wait">
-        {active ? (
-          <motion.div
-            key={active.id}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-auto max-w-3xl border border-white/20 bg-white p-6 md:p-8 shadow-[0_24px_60px_rgba(2,40,50,0.25)]"
-          >
-            <div className="flex flex-wrap items-end justify-between gap-4 mb-5">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary mb-2">
-                  Stage {active.order ?? ordered.findIndex((s) => s.id === active.id) + 1} ·{" "}
-                  {statusLabel(active.status)}
-                </p>
-                <h2 className="font-serif text-2xl md:text-3xl font-black text-primary-darker uppercase tracking-tight">
-                  {active.title}
-                </h2>
-              </div>
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                {active.progress ?? 0}% complete
+      {/* Stage picker cards — click to open info popup */}
+      <div className="mx-auto max-w-4xl grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
+        {ordered.map((s, i) => {
+          const isActive = s.id === activeId && popupOpen;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => openStage(s.id)}
+              className={`text-left border px-3 py-3 transition-colors ${
+                isActive
+                  ? "bg-secondary text-white border-secondary"
+                  : "bg-white text-primary-darker border-white/40 hover:border-secondary"
+              }`}
+            >
+              <p
+                className={`text-[9px] font-black uppercase tracking-widest mb-1 ${
+                  isActive ? "text-white/80" : "text-secondary"
+                }`}
+              >
+                Stage {i + 1}
               </p>
-            </div>
-            {active.objectives ? (
-              <p className="text-slate-600 leading-relaxed mb-5">{active.objectives}</p>
-            ) : null}
-            <ProgressBar value={active.progress ?? 0} />
-            {active.outputs ? (
-              <p className="text-sm text-slate-500 mt-4">
-                <span className="font-black uppercase tracking-widest text-[10px] text-primary mr-2">
-                  Outputs
-                </span>
-                {active.outputs}
+              <p className="text-[11px] font-black uppercase leading-snug tracking-wide">
+                {s.title}
               </p>
-            ) : null}
+            </button>
+          );
+        })}
+      </div>
 
-            <div className="mt-6 flex flex-wrap gap-2">
-              {ordered.map((s, i) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setActiveId(s.id)}
-                  className={`px-3 py-2 text-[10px] font-black uppercase tracking-widest border transition-colors ${
-                    s.id === active.id
-                      ? "bg-primary text-white border-primary"
-                      : "border-slate-200 text-slate-500 hover:border-primary"
-                  }`}
+      {/* Stage detail popup (portaled so overflow parents can't clip it) */}
+      {mounted
+        ? createPortal(
+            <AnimatePresence>
+              {popupOpen && active ? (
+                <motion.div
+                  className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                 >
-                  {i + 1}. {s.title}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+                  <button
+                    type="button"
+                    aria-label="Close stage details"
+                    className="absolute inset-0 bg-black/60"
+                    onClick={() => setPopupOpen(false)}
+                  />
+                  <motion.div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="sdlc-stage-title"
+                    initial={{ opacity: 0, y: 24, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 16, scale: 0.98 }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative z-10 w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white border border-slate-200 shadow-2xl p-6 md:p-8"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setPopupOpen(false)}
+                      className="absolute right-4 top-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary"
+                    >
+                      Close
+                    </button>
+
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary mb-2 pr-16">
+                      Stage {active.order ?? activeIndex + 1} · {statusLabel(active.status)}
+                    </p>
+                    <h2
+                      id="sdlc-stage-title"
+                      className="font-serif text-2xl md:text-3xl font-black text-primary-darker uppercase tracking-tight mb-2"
+                    >
+                      {active.title}
+                    </h2>
+                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-5">
+                      {active.progress ?? 0}% complete
+                    </p>
+
+                    {active.description ? (
+                      <p className="text-slate-600 leading-relaxed mb-4">{active.description}</p>
+                    ) : null}
+
+                    {active.objectives && active.objectives !== active.description ? (
+                      <div className="mb-4">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">
+                          Objectives
+                        </p>
+                        <p className="text-slate-600 leading-relaxed">{active.objectives}</p>
+                      </div>
+                    ) : null}
+
+                    <div className="mb-2 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      <span>Progress</span>
+                      <span>{active.progress ?? 0}%</span>
+                    </div>
+                    <ProgressBar value={active.progress ?? 0} />
+
+                    {active.outputs ? (
+                      <p className="text-sm text-slate-600 mt-5">
+                        <span className="font-black uppercase tracking-widest text-[10px] text-primary mr-2">
+                          Outputs
+                        </span>
+                        {active.outputs}
+                      </p>
+                    ) : null}
+
+                    {active.evidence ? (
+                      <p className="text-sm text-slate-500 mt-3">
+                        <span className="font-black uppercase tracking-widest text-[10px] text-primary mr-2">
+                          Evidence
+                        </span>
+                        {active.evidence}
+                      </p>
+                    ) : null}
+
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      {ordered.map((s, i) => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => openStage(s.id)}
+                          className={`px-3 py-2 text-[10px] font-black uppercase tracking-widest border transition-colors ${
+                            s.id === active.id
+                              ? "bg-primary text-white border-primary"
+                              : "border-slate-200 text-slate-500 hover:border-primary"
+                          }`}
+                        >
+                          {i + 1}. {s.title}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

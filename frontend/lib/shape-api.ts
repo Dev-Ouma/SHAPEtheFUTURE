@@ -243,6 +243,7 @@ export type ShapeSdlcStage = {
   id: string;
   title: string;
   order: number;
+  description?: string;
   objectives?: string;
   progress?: number;
   outputs?: string;
@@ -542,16 +543,107 @@ export const SHAPE_RISKS_FALLBACK: ShapeRisk[] = [
 ];
 
 export const SHAPE_SDLC_FALLBACK: ShapeSdlcStage[] = [
-  { id: "1", title: "Planning", order: 1, progress: 80, status: "completed", objectives: "Define scope, roles, and governance." },
-  { id: "2", title: "Needs Assessment", order: 2, progress: 55, status: "in_progress", objectives: "Map skills gaps for smart-city HE." },
-  { id: "3", title: "Stakeholder Engagement", order: 3, progress: 40, status: "in_progress", objectives: "Align cities, ministries, and industry." },
-  { id: "4", title: "Curriculum Design", order: 4, progress: 20, status: "planned", objectives: "Co-create modular smart-city programmes." },
-  { id: "5", title: "Platform Development", order: 5, progress: 15, status: "planned", objectives: "Build shared digital learning services." },
-  { id: "6", title: "Testing", order: 6, progress: 5, status: "planned", objectives: "Validate content and platform UX." },
-  { id: "7", title: "Pilot Implementation", order: 7, progress: 0, status: "planned", objectives: "Run first learner cohorts." },
-  { id: "8", title: "Monitoring", order: 8, progress: 25, status: "in_progress", objectives: "Track KPIs and risks." },
-  { id: "9", title: "Evaluation", order: 9, progress: 0, status: "planned", objectives: "Assess impact and quality." },
-  { id: "10", title: "Sustainability", order: 10, progress: 10, status: "planned", objectives: "Institutionalise results beyond the grant." },
+  {
+    id: "1",
+    title: "Planning",
+    order: 1,
+    progress: 90,
+    status: "completed",
+    description: "Grant inception, consortium agreements, and work planning.",
+    objectives:
+      "Finalize consortium agreements, confirm WP leads, and lock Year-1 workplan and reporting calendar.",
+    outputs: "Project handbook · Kick-off minutes · Year-1 workplan",
+  },
+  {
+    id: "2",
+    title: "Needs Assessment",
+    order: 2,
+    progress: 45,
+    status: "in_progress",
+    description: "Baseline studies and stakeholder mapping.",
+    objectives: "Map skills gaps for smart-city higher education across partner cities.",
+    outputs: "Needs assessment report · Country briefs · Stakeholder map",
+  },
+  {
+    id: "3",
+    title: "Stakeholder Engagement",
+    order: 3,
+    progress: 40,
+    status: "in_progress",
+    description: "Partner and community engagement activities.",
+    objectives: "Align universities, cities, ministries, and industry around SHAPE priorities.",
+    outputs: "Engagement workshops · MoUs · Stakeholder feedback logs",
+  },
+  {
+    id: "4",
+    title: "Curriculum Design",
+    order: 4,
+    progress: 25,
+    status: "in_progress",
+    description: "Co-creation of modular learning pathways.",
+    objectives: "Co-create modular smart-city programmes and micro-credentials.",
+    outputs: "Module outlines · Learning outcomes · Assessment frameworks",
+  },
+  {
+    id: "5",
+    title: "Platform Development",
+    order: 5,
+    progress: 20,
+    status: "in_progress",
+    description: "Digital learning environment build-out.",
+    objectives: "Build shared digital learning services for partner institutions.",
+    outputs: "Platform MVP · Content upload workflow · Access roles",
+  },
+  {
+    id: "6",
+    title: "Testing",
+    order: 6,
+    progress: 5,
+    status: "not_started",
+    description: "QA and usability testing of curriculum and platform.",
+    objectives: "Validate content quality, accessibility, and platform UX before pilots.",
+    outputs: "Test plans · Bug logs · Usability findings",
+  },
+  {
+    id: "7",
+    title: "Pilot Implementation",
+    order: 7,
+    progress: 0,
+    status: "not_started",
+    description: "Live pilot cohorts across partner institutions.",
+    objectives: "Run first learner and trainer cohorts in East African partner universities.",
+    outputs: "Pilot cohorts · Trainer packs · Learner feedback",
+  },
+  {
+    id: "8",
+    title: "Monitoring",
+    order: 8,
+    progress: 35,
+    status: "in_progress",
+    description: "Continuous M&E of activities and outputs.",
+    objectives: "Track KPIs, risks, and delivery milestones across all work packages.",
+    outputs: "KPI dashboards · Risk register · Progress briefs",
+  },
+  {
+    id: "9",
+    title: "Evaluation",
+    order: 9,
+    progress: 0,
+    status: "not_started",
+    description: "Mid-term and final evaluation of project impact.",
+    objectives: "Assess quality, learning impact, and consortium performance.",
+    outputs: "Mid-term evaluation · Final impact report",
+  },
+  {
+    id: "10",
+    title: "Sustainability",
+    order: 10,
+    progress: 5,
+    status: "not_started",
+    description: "Institutionalization and post-grant continuity.",
+    objectives: "Institutionalise curricula, platform, and partnerships beyond the grant.",
+    outputs: "Sustainability plan · Institutional adoption roadmap",
+  },
 ];
 
 export const SHAPE_DASHBOARD_FALLBACK: ShapeDashboard = {
@@ -627,13 +719,45 @@ export function normalizeShapeDocument(raw: any): ShapeDocument {
 
 /* ── Public getters ── */
 
+export function normalizeShapePartner(raw: any): ShapePartner {
+  const lat = Number(raw?.lat ?? raw?.latitude);
+  const lng = Number(raw?.lng ?? raw?.longitude);
+  return {
+    id: String(raw?.id || raw?.slug || ""),
+    slug: raw?.slug || "",
+    name: raw?.name || "Partner",
+    short_name: raw?.short_name || undefined,
+    country: raw?.country || "",
+    city: raw?.city || undefined,
+    role: raw?.consortium_role || raw?.role || undefined,
+    consortium_role: raw?.consortium_role || undefined,
+    logo_url: raw?.logo_url || undefined,
+    website: raw?.website_url || raw?.website || undefined,
+    website_url: raw?.website_url || undefined,
+    contact_name: raw?.contact_person || raw?.contact_name || undefined,
+    contact_person: raw?.contact_person || undefined,
+    contact_email: raw?.contact_email || undefined,
+    responsibilities: raw?.responsibilities || undefined,
+    deliverables: raw?.deliverables || undefined,
+    description: raw?.description || undefined,
+    region: raw?.region || undefined,
+    lat: Number.isFinite(lat) ? lat : undefined,
+    lng: Number.isFinite(lng) ? lng : undefined,
+    latitude: Number.isFinite(lat) ? lat : undefined,
+    longitude: Number.isFinite(lng) ? lng : undefined,
+    order: Number(raw?.sort_order ?? raw?.order ?? 0) || undefined,
+  };
+}
+
 export async function getShapePartners(): Promise<ShapePartner[]> {
-  return cachedList("/shape/partners", SHAPE_PARTNERS_FALLBACK);
+  const raw = await cachedList<any>("/shape/partners", SHAPE_PARTNERS_FALLBACK);
+  return raw.map(normalizeShapePartner);
 }
 
 export async function getShapePartner(slug: string): Promise<ShapePartner | null> {
   const fallback = SHAPE_PARTNERS_FALLBACK.find((p) => p.slug === slug) || null;
-  return cachedOne(`/shape/partners/${encodeURIComponent(slug)}`, fallback);
+  const data = await cachedOne<any>(`/shape/partners/${encodeURIComponent(slug)}`, fallback);
+  return data ? normalizeShapePartner(data) : null;
 }
 
 export async function getShapeWorkPackages(): Promise<ShapeWorkPackage[]> {
@@ -730,17 +854,34 @@ export async function getShapeRisks(): Promise<ShapeRisk[]> {
 }
 
 export async function getShapeSdlc(): Promise<ShapeSdlcStage[]> {
-  const raw = await cachedList<any>("/shape/sdlc", SHAPE_SDLC_FALLBACK);
-  const stages = raw.map((s: any, i: number): ShapeSdlcStage => ({
-    id: String(s.id || s.slug || i),
-    title: s.title || `Stage ${i + 1}`,
-    order: Number(s.order ?? s.sort_order ?? i + 1),
-    objectives: s.objectives || s.description || undefined,
-    progress: Number(s.progress ?? s.progress_percent ?? 0),
-    outputs: s.outputs || undefined,
-    evidence: s.evidence || undefined,
-    status: s.status || "planned",
-  }));
+  let raw: any[] = [];
+  try {
+    const data = await getApi("/shape/sdlc");
+    raw = asList<any>(data);
+  } catch {
+    raw = [];
+  }
+  if (!raw.length) raw = SHAPE_SDLC_FALLBACK as any[];
+
+  const stages = raw.map((s: any, i: number): ShapeSdlcStage => {
+    const fallback = SHAPE_SDLC_FALLBACK.find(
+      (f) => f.title.toLowerCase() === String(s.title || "").toLowerCase(),
+    );
+    const description = s.description || fallback?.description || undefined;
+    const objectives =
+      s.objectives || fallback?.objectives || description || undefined;
+    return {
+      id: String(s.id || s.slug || i),
+      title: s.title || fallback?.title || `Stage ${i + 1}`,
+      order: Number(s.order ?? s.sort_order ?? fallback?.order ?? i + 1),
+      description,
+      objectives,
+      progress: Number(s.progress ?? s.progress_percent ?? fallback?.progress ?? 0),
+      outputs: s.outputs || fallback?.outputs || undefined,
+      evidence: s.evidence || fallback?.evidence || undefined,
+      status: s.status || fallback?.status || "planned",
+    };
+  });
   return [...stages].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 

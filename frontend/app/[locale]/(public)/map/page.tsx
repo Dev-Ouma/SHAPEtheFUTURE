@@ -26,7 +26,7 @@ export default async function MapPage() {
       <ShapePageHero
         eyebrow="Geography"
         title="Project map"
-        subtitle="Click a pin or partner to explore institutions across Kenya, Uganda, Somalia, Germany, Estonia, and Lithuania."
+        subtitle="Real OpenStreetMap pins for every SHAPE partner — click a pin or list item to fly across East Africa and Europe."
       />
       <section className="shape-section">
         <div className="container mx-auto px-6">
