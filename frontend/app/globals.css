@@ -184,6 +184,20 @@
   --foreground: #ffffff !important;
 }
 
+/* Hero: force an opaque veil so slideshow plates cannot wash out copy */
+.theme-high-contrast .shape-hero-copy {
+  text-shadow: none !important;
+}
+.theme-high-contrast section:has(.shape-hero-copy)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: #000 !important;
+  opacity: 0.85;
+}
+
 .theme-high-contrast body {
   background-color: #000000 !important;
   color: #ffffff !important;

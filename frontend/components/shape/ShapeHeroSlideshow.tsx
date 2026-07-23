@@ -260,7 +260,7 @@ export default function ShapeHeroSlideshow({
             className="absolute top-0 bottom-0 w-12 md:w-20 pointer-events-none -translate-x-1/2"
             style={{
               background:
-                "linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent)",
+                "linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent)",
             }}
           />
         </div>
