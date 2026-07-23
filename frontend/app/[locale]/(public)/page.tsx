@@ -20,6 +20,7 @@ import { getNews, getSettings, resolveImageUrl } from "@/lib/api";
 import { withLocaleSeo } from "@/lib/seo";
 import SafeImage from "@/components/ui/SafeImage";
 
+
 export const revalidate = 120;
 
 export async function generateMetadata({

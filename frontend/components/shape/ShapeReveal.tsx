@@ -2,8 +2,7 @@
 
 import React from "react";
 import { motion, useReducedMotion } from "framer-motion";
-
-const ease = [0.22, 1, 0.36, 1] as const;
+import { SHAPE_EASE, SECTION_REVEAL } from "@/lib/shape-motion";
 
 type Props = {
   children: React.ReactNode;
@@ -15,7 +14,7 @@ type Props = {
 
 /**
  * Scroll-triggered reveal for SHAPE sections — calm fade + lift.
- * Honours prefers-reduced-motion.
+ * Honours prefers-reduced-motion. Tokens from `lib/shape-motion.ts`.
  */
 export default function ShapeReveal({
   children,
@@ -33,10 +32,10 @@ export default function ShapeReveal({
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y }}
+      initial={{ ...SECTION_REVEAL.hidden, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once, amount: 0.2, margin: "0px 0px -8% 0px" }}
-      transition={{ duration: 0.7, delay, ease }}
+      transition={{ duration: 0.7, delay, ease: SHAPE_EASE.editorial }}
     >
       {children}
     </motion.div>

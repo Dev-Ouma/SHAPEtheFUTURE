@@ -169,7 +169,7 @@ Primary navigation is **complete** (Home → Contact). Capability status vs a fu
 | `/the-project` | Objectives, outcomes, funding, Erasmus+ |
 | `/partners` | Nine partner institutions |
 | `/work-packages` | WP1–WP8 with progress |
-| `/workplan` | Activity timeline |
+| `/work-packages` | Outputs — work packages + activity workplan (`#workplan`) |
 | `/events` | Event tracker |
 | `/dashboard` | Grant progress KPIs |
 | `/documents` | Document repository |

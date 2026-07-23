@@ -98,8 +98,10 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
 
   return (
     <header
-      className={`fixed w-full z-50 transition-all duration-500 ${
-        solid ? "bg-white shadow-lg" : "bg-transparent"
+      className={`fixed w-full z-[100] transition-all duration-500 ${
+        solid
+          ? "bg-white/95 shadow-lg backdrop-blur-md border-b border-slate-200/80"
+          : "bg-gradient-to-b from-black/55 via-black/30 to-transparent backdrop-blur-[6px] border-b border-white/10"
       }`}
       style={{ top: isMaintenanceActive ? 42 : 0 }}
       id="main-navbar"
@@ -162,7 +164,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 6 }}
-                  className="absolute right-0 mt-2 min-w-[200px] bg-white border border-slate-100 shadow-xl py-2 z-50"
+                  className="absolute right-0 mt-2 min-w-[200px] bg-white border border-slate-100 shadow-xl py-2 z-[110]"
                 >
                   {MORE.map((link) => (
                     <Link
@@ -217,7 +219,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-primary-darker/95 text-white lg:hidden"
+            className="fixed inset-0 z-[120] bg-primary-darker/95 text-white lg:hidden"
           >
             <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
               <span className="font-serif text-2xl font-black">SHAPE</span>

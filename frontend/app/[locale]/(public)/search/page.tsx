@@ -200,7 +200,7 @@ function ShapeSearchInner() {
         id: a.id,
         title: a.title,
         subtitle: a.status || "Activity",
-        href: `/workplan`,
+        href: `/work-packages#workplan`,
         type: "activities" as Filter,
       })),
       ...(data.sdlcStages || []).map((s: any) => ({

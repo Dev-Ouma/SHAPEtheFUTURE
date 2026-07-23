@@ -2,7 +2,11 @@ import React from "react";
 import type { Metadata } from "next";
 import ShapePageHero from "@/components/shape/ShapePageHero";
 import WorkPackagesHubClient from "@/components/shape/WorkPackagesHubClient";
-import { getShapeWorkPackages } from "@/lib/shape-api";
+import WorkplanSection from "@/components/shape/WorkplanSection";
+import {
+  getShapeActivities,
+  getShapeWorkPackages,
+} from "@/lib/shape-api";
 import { getSettings } from "@/lib/api";
 import { withLocaleSeo } from "@/lib/seo";
 
@@ -14,24 +18,25 @@ export async function generateMetadata({
   params: { locale: string };
 }): Promise<Metadata> {
   return withLocaleSeo("/work-packages", params.locale, {
-    title: "Work Packages",
+    title: "Outputs",
     description:
-      "SHAPE Erasmus+ work packages — management, curriculum, platforms, training, quality, dissemination, and sustainability.",
+      "SHAPE Erasmus+ outputs — work packages and activity workplan spanning management, curriculum, platforms, training, quality, dissemination, and sustainability.",
   });
 }
 
 export default async function WorkPackagesPage() {
-  const [packages, settings] = await Promise.all([
+  const [packages, activities, settings] = await Promise.all([
     getShapeWorkPackages(),
+    getShapeActivities(),
     getSettings().catch(() => ({})),
   ]);
 
   const eyebrow =
-    settings?.work_packages_eyebrow || "Delivery architecture";
-  const title = settings?.work_packages_title || "Work packages";
+    settings?.work_packages_eyebrow || "Consortium outputs";
+  const title = settings?.work_packages_title || "Outputs";
   const subtitle =
     settings?.work_packages_subtitle ||
-    "Eight coordinated workstreams spanning management, curriculum, platforms, training, quality, dissemination, and sustainability — each led by a consortium partner with clear milestones and deliverables.";
+    "Eight coordinated work packages with the consortium activity workplan — mandates, leads, milestones, and live status from the SHAPE CMS.";
 
   return (
     <div className="bg-white">
@@ -41,12 +46,13 @@ export default async function WorkPackagesPage() {
         <div className="container mx-auto px-6 relative">
           <WorkPackagesHubClient
             packages={packages}
-            eyebrow="Consortium delivery"
+            eyebrow="Consortium outputs"
             title="Eight work packages · one roadmap"
             subtitle="Explore each workstream’s mandate, lead institution, timeline, and progress — all managed in the SHAPE CMS and live from the database."
           />
         </div>
       </section>
+      <WorkplanSection activities={activities} />
     </div>
   );
 }

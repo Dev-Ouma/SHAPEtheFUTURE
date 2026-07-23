@@ -4,30 +4,17 @@ import React from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { Link } from "@/i18n/routing";
+import ShapeHeroSlideshow, {
+  type HeroSlide,
+} from "@/components/shape/ShapeHeroSlideshow";
+import { HERO_COPY } from "@/lib/shape-motion";
 
 type ShapeHomeHeroProps = {
   eyebrow?: string;
   title?: string;
   text?: string;
   tagline?: string;
-};
-
-const ease = [0.22, 1, 0.36, 1] as const;
-
-const container = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.12, delayChildren: 0.08 },
-  },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 28 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.85, ease },
-  },
+  slides?: HeroSlide[];
 };
 
 export default function ShapeHomeHero({
@@ -35,32 +22,44 @@ export default function ShapeHomeHero({
   title = "SHAPE",
   text = "Co-funded by the Erasmus+ programme of the European Union, SHAPE strengthens higher education for smart cities across East Africa and Europe — building curricula, digital learning, and institutional capacity with nine partner universities.",
   tagline = "Strengthening Higher Education for Smart Cities",
+  slides,
 }: ShapeHomeHeroProps) {
   const reduce = useReducedMotion();
 
   return (
-    <section className="relative min-h-[100svh] flex items-end overflow-hidden shape-hero-pattern">
-      {/* Base wash */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#013d48] via-[#025a69] to-[#037b90]" />
+    <section className="relative min-h-[100svh] flex items-end overflow-hidden isolate">
+      {/* Imagery stays behind chrome */}
+      <div className="absolute inset-0 z-0">
+        <ShapeHeroSlideshow slides={slides} motionType="page" />
+      </div>
 
-      {/* Slow drifting coral bloom */}
+      {/* Nav clearance scrim — keeps menus readable over bright plates */}
       <div
-        className={`absolute -top-1/4 -right-1/4 h-[70vmax] w-[70vmax] rounded-full bg-[radial-gradient(circle,rgba(255,127,80,0.32)_0%,transparent_68%)] blur-2xl ${
+        className="absolute inset-x-0 top-0 z-[1] h-28 md:h-36 pointer-events-none bg-gradient-to-b from-black/65 via-black/35 to-transparent"
+        aria-hidden
+      />
+
+      {/* Brand wash — keeps SHAPE readable over the plates */}
+      <div
+        className="absolute inset-0 z-[1] bg-gradient-to-br from-[#013d48]/78 via-[#025a69]/62 to-[#037b90]/45 pointer-events-none"
+        aria-hidden
+      />
+
+      <div
+        className={`absolute -top-1/4 -right-1/4 z-[1] h-[70vmax] w-[70vmax] rounded-full bg-[radial-gradient(circle,rgba(255,127,80,0.22)_0%,transparent_68%)] blur-2xl pointer-events-none ${
           reduce ? "" : "shape-hero-bloom"
         }`}
         aria-hidden
       />
-      {/* Soft teal counter-light */}
       <div
-        className={`absolute -bottom-1/3 -left-1/4 h-[55vmax] w-[55vmax] rounded-full bg-[radial-gradient(circle,rgba(3,123,144,0.55)_0%,transparent_70%)] blur-3xl ${
+        className={`absolute -bottom-1/3 -left-1/4 z-[1] h-[55vmax] w-[55vmax] rounded-full bg-[radial-gradient(circle,rgba(3,123,144,0.35)_0%,transparent_70%)] blur-3xl pointer-events-none ${
           reduce ? "" : "shape-hero-bloom-alt"
         }`}
         aria-hidden
       />
 
-      {/* Drifting grid */}
       <div
-        className={`absolute inset-0 opacity-[0.11] ${reduce ? "" : "shape-hero-grid"}`}
+        className={`absolute inset-0 z-[1] opacity-[0.07] pointer-events-none ${reduce ? "" : "shape-hero-grid"}`}
         style={{
           backgroundImage:
             "linear-gradient(rgba(255,255,255,0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.09) 1px, transparent 1px)",
@@ -69,49 +68,48 @@ export default function ShapeHomeHero({
         aria-hidden
       />
 
-      {/* Bottom fade into page */}
       <div
-        className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/25 to-transparent pointer-events-none"
+        className="absolute inset-x-0 bottom-0 z-[1] h-36 bg-gradient-to-t from-black/35 to-transparent pointer-events-none"
         aria-hidden
       />
 
-      <div className="container mx-auto px-6 relative z-10 pb-20 md:pb-28 pt-40">
+      <div className="container mx-auto px-6 relative z-10 pb-20 md:pb-28 pt-44 md:pt-48">
         <motion.div
           className="max-w-4xl"
-          variants={reduce ? undefined : container}
+          variants={reduce ? undefined : HERO_COPY.container}
           initial={reduce ? false : "hidden"}
           animate={reduce ? undefined : "show"}
         >
           <motion.p
-            variants={reduce ? undefined : item}
+            variants={reduce ? undefined : HERO_COPY.item}
             className="text-[11px] font-black uppercase tracking-[0.45em] text-secondary mb-6"
           >
             {eyebrow}
           </motion.p>
 
           <motion.h1
-            variants={reduce ? undefined : item}
+            variants={reduce ? undefined : HERO_COPY.item}
             className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter uppercase leading-[0.85] mb-6"
           >
             {title}
           </motion.h1>
 
           <motion.p
-            variants={reduce ? undefined : item}
+            variants={reduce ? undefined : HERO_COPY.item}
             className="font-serif text-xl md:text-3xl text-white/90 font-semibold tracking-tight max-w-2xl mb-4 leading-snug"
           >
             {tagline}
           </motion.p>
 
           <motion.p
-            variants={reduce ? undefined : item}
+            variants={reduce ? undefined : HERO_COPY.item}
             className="text-base md:text-lg text-white/70 max-w-xl mb-10 leading-relaxed"
           >
             {text}
           </motion.p>
 
           <motion.div
-            variants={reduce ? undefined : item}
+            variants={reduce ? undefined : HERO_COPY.item}
             className="flex flex-wrap gap-3"
           >
             <Link
@@ -146,7 +144,7 @@ export default function ShapeHomeHero({
           className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 text-white/50 hover:text-white/90 transition-colors"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.4, duration: 0.6 }}
+          transition={{ delay: 1.2, duration: 0.6 }}
           aria-label="Scroll to project statistics"
         >
           <span className="text-[9px] font-black uppercase tracking-[0.35em]">

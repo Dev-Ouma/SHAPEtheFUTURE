@@ -27,8 +27,7 @@ Primary nav is **full and locked** — do not add or remove items without an exp
 | Home | `/` |
 | The Project | `/the-project` |
 | Partners | `/partners` |
-| Work Packages | `/work-packages` |
-| Workplan | `/workplan` |
+| Outputs | `/work-packages` (workplan `#workplan`) |
 | Events | `/events` |
 | Dashboard | `/dashboard` |
 | Documents | `/documents` |
@@ -91,7 +90,7 @@ Calls, concept notes, proposals, internal review, awards, agreements, amendments
 
 *Ideal:* WBS, Gantt, milestones, activities, dependencies, resources, critical path, baselines.
 
-*SHAPE:* Activity workplan table (`/workplan`, `/admin/shape-activities`). No interactive Gantt, WBS, or critical path.
+*SHAPE:* Activity workplan table on the same screen as work packages (`/work-packages#workplan`, `/admin/shape-activities`). No interactive Gantt, WBS, or critical path.
 
 ---
 

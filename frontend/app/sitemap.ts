@@ -19,7 +19,6 @@ const STATIC_PATHS: {
   { path: "/news", changeFrequency: "daily", priority: 0.9 },
   { path: "/partners", changeFrequency: "weekly", priority: 0.8 },
   { path: "/work-packages", changeFrequency: "weekly", priority: 0.8 },
-  { path: "/workplan", changeFrequency: "weekly", priority: 0.7 },
   { path: "/media", changeFrequency: "weekly", priority: 0.7 },
   { path: "/gallery", changeFrequency: "weekly", priority: 0.7 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.7 },

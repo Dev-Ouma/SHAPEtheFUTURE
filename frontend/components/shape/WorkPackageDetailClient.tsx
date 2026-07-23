@@ -319,7 +319,7 @@ export default function WorkPackageDetailClient({
             </motion.div>
 
             <Link
-              href="/workplan"
+              href="/work-packages#workplan"
               className="block w-full text-center bg-primary text-white py-4 text-[11px] font-black uppercase tracking-widest hover:bg-secondary transition-colors"
             >
               View full workplan
