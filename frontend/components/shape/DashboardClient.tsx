@@ -12,6 +12,7 @@ import {
 } from "chart.js";
 import { Doughnut, Bar } from "react-chartjs-2";
 import { ProgressRing } from "@/components/shape/ProgressBar";
+import CountUp from "@/components/shape/CountUp";
 import type { ShapeDashboard, ShapeKpi } from "@/lib/shape-api";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
@@ -125,9 +126,13 @@ export default function DashboardClient({
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {kpis.map((kpi) => (
             <div key={kpi.id || kpi.key} className="shape-stat border border-slate-100 p-5">
-              <span className="shape-stat-value text-2xl">
-                {kpi.value}
-                {kpi.unit && typeof kpi.value === "number" ? kpi.unit : ""}
+              <span className="shape-stat-value text-2xl inline-flex items-baseline gap-1">
+                <CountUp value={kpi.value} />
+                {kpi.unit ? (
+                  <span className="text-[0.5em] font-bold text-slate-400 tracking-normal normal-case">
+                    {kpi.unit}
+                  </span>
+                ) : null}
               </span>
               <span className="shape-stat-label">{kpi.label}</span>
             </div>

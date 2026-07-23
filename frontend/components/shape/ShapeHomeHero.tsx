@@ -1,13 +1,32 @@
 "use client";
 
-import React from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import React, { useRef } from "react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import ShapeHeroSlideshow, {
   type HeroSlide,
 } from "@/components/shape/ShapeHeroSlideshow";
-import { HERO_COPY } from "@/lib/shape-motion";
+import { HERO_COPY, SHAPE_EASE } from "@/lib/shape-motion";
+
+/** Per-letter mask reveal for the wordmark — each glyph rises from behind a clip. */
+const HEADLINE_CONTAINER = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.055, delayChildren: 0.18 } },
+} as const;
+
+const HEADLINE_LETTER = {
+  hidden: { y: "115%" },
+  show: {
+    y: "0%",
+    transition: { duration: 0.95, ease: SHAPE_EASE.editorial },
+  },
+} as const;
 
 type ShapeHomeHeroProps = {
   eyebrow?: string;
@@ -25,13 +44,32 @@ export default function ShapeHomeHero({
   slides,
 }: ShapeHomeHeroProps) {
   const reduce = useReducedMotion();
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Scroll-linked parallax: imagery drifts slower than the page and the copy
+  // lifts + fades as the hero leaves the viewport. Hooks run unconditionally;
+  // the MotionValues are only bound to style when motion is allowed.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "16%"]);
+  const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
+  const copyY = useTransform(scrollYProgress, [0, 1], [0, -72]);
+  const copyOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
   return (
-    <section className="relative min-h-[100svh] flex items-end overflow-hidden isolate">
+    <section
+      ref={sectionRef}
+      className="relative min-h-[100svh] flex items-end overflow-hidden isolate"
+    >
       {/* Imagery stays behind chrome */}
-      <div className="absolute inset-0 z-0">
+      <motion.div
+        className="absolute inset-0 z-0"
+        style={reduce ? undefined : { y: imageY, scale: imageScale }}
+      >
         <ShapeHeroSlideshow slides={slides} motionType="page" />
-      </div>
+      </motion.div>
 
       {/* Nav clearance scrim — keeps menus readable over bright plates */}
       <div
@@ -83,7 +121,10 @@ export default function ShapeHomeHero({
         aria-hidden
       />
 
-      <div className="container mx-auto px-6 relative z-10 pb-20 md:pb-28 pt-44 md:pt-48">
+      <motion.div
+        className="container mx-auto px-6 relative z-10 pb-20 md:pb-28 pt-44 md:pt-48"
+        style={reduce ? undefined : { y: copyY, opacity: copyOpacity }}
+      >
         <motion.div
           className="max-w-4xl shape-hero-copy"
           variants={reduce ? undefined : HERO_COPY.container}
@@ -98,10 +139,33 @@ export default function ShapeHomeHero({
           </motion.p>
 
           <motion.h1
-            variants={reduce ? undefined : HERO_COPY.item}
-            className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter uppercase leading-[0.85] mb-6 drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)]"
+            initial={reduce ? false : "hidden"}
+            animate={reduce ? false : "show"}
+            variants={reduce ? undefined : HEADLINE_CONTAINER}
+            className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter uppercase leading-[0.85] mb-6"
           >
-            {title}
+            <span className="sr-only">{title}</span>
+            {reduce ? (
+              <span className="drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)]">
+                {title}
+              </span>
+            ) : (
+              <span aria-hidden className="block whitespace-nowrap">
+                {title.split("").map((ch, i) => (
+                  <span
+                    key={`${ch}-${i}`}
+                    className="inline-block overflow-hidden align-bottom py-[0.14em] -my-[0.14em]"
+                  >
+                    <motion.span
+                      variants={HEADLINE_LETTER}
+                      className="inline-block drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)]"
+                    >
+                      {ch === " " ? " " : ch}
+                    </motion.span>
+                  </span>
+                ))}
+              </span>
+            )}
           </motion.h1>
 
           <motion.p
@@ -146,7 +210,7 @@ export default function ShapeHomeHero({
             </Link>
           </motion.div>
         </motion.div>
-      </div>
+      </motion.div>
 
       {!reduce ? (
         <motion.a

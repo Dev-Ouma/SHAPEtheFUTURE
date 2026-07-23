@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import RevealHeading from "@/components/shape/RevealHeading";
 
 type Props = {
   eyebrow?: string;
@@ -26,9 +27,18 @@ export default function ShapePageHero({ eyebrow, title, subtitle, children }: Pr
               {eyebrow}
             </p>
           ) : null}
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight uppercase leading-[1.05] mb-6">
-            {title}
-          </h1>
+          {typeof title === "string" ? (
+            <RevealHeading
+              as="h1"
+              className="font-serif text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight uppercase leading-[1.05] mb-6"
+            >
+              {title}
+            </RevealHeading>
+          ) : (
+            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight uppercase leading-[1.05] mb-6">
+              {title}
+            </h1>
+          )}
           {subtitle ? (
             <p className="text-base md:text-lg text-white/80 font-medium leading-relaxed max-w-2xl normal-case tracking-normal">
               {subtitle}

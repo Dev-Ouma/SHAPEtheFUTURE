@@ -178,6 +178,10 @@ export default function ShapeHeroSlideshow({
       setIncoming(null);
     };
 
+    // Drive the reveal on the compositor's own vsync clock (rAF) so the wipe
+    // is frame-accurate and smooth on 120Hz displays. The failsafe below still
+    // guarantees a settle if rAF is ever throttled (e.g. backgrounded embeds).
+    let raf = 0;
     const tick = () => {
       if (runIdRef.current !== runId) return;
       const linear = Math.min(1, (performance.now() - started) / duration);
@@ -188,15 +192,15 @@ export default function ShapeHeroSlideshow({
         settle();
         return;
       }
-      timer = window.setTimeout(tick, 16);
+      raf = requestAnimationFrame(tick);
     };
 
-    timer = window.setTimeout(tick, 16);
+    raf = requestAnimationFrame(tick);
     const failsafe = window.setTimeout(settle, duration + 120);
 
     return () => {
       if (runIdRef.current === runId) runIdRef.current++;
-      window.clearTimeout(timer);
+      cancelAnimationFrame(raf);
       window.clearTimeout(failsafe);
     };
   }, [incoming]);
@@ -219,6 +223,18 @@ export default function ShapeHeroSlideshow({
   const base = list[current];
   const next = incoming !== null ? list[incoming] : null;
 
+  // Slow cinematic drift (Ken Burns). Start pose is deterministic per slide so
+  // that when an incoming plate is promoted to base the transform is continuous
+  // — no scale/pan jump at the wipe handoff. Direction alternates per index.
+  const kbFor = (i: number) => {
+    const dir = i % 2 === 0 ? 1 : -1;
+    return {
+      start: { scale: 1.06, x: `${3 * dir}%`, y: `${-2 * dir}%` },
+      end: { scale: 1.14, x: `${-2 * dir}%`, y: `${1.5 * dir}%` },
+    };
+  };
+  const kbDurationSec = (holdMs + pageMs) / 1000 + 0.4;
+
   return (
     <div
       ref={rootRef}
@@ -227,7 +243,13 @@ export default function ShapeHeroSlideshow({
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="absolute inset-0 pointer-events-none">
+      <motion.div
+        key={`kb-${current}`}
+        className="absolute inset-0 pointer-events-none will-change-transform"
+        initial={kbFor(current).start}
+        animate={kbFor(current).end}
+        transition={{ duration: kbDurationSec, ease: "linear" }}
+      >
         <SafeImage
           src={base.src}
           alt={base.alt}
@@ -236,15 +258,22 @@ export default function ShapeHeroSlideshow({
           priority
           className="object-cover object-center"
         />
-      </div>
+      </motion.div>
 
       {next ? (
         <div
           ref={sheetRef}
           key={`page-${incoming}`}
           className="absolute inset-0 z-[1] pointer-events-none"
+          style={{ willChange: "clip-path" }}
         >
-          <div className="absolute inset-0">
+          {/* Incoming plate holds the target's Ken Burns start pose so the
+              handoff into `base` is seamless. */}
+          <motion.div
+            className="absolute inset-0"
+            initial={kbFor(incoming as number).start}
+            animate={kbFor(incoming as number).start}
+          >
             <SafeImage
               src={next.src}
               alt={next.alt}
@@ -253,7 +282,7 @@ export default function ShapeHeroSlideshow({
               priority
               className="object-cover object-center"
             />
-          </div>
+          </motion.div>
 
           <div
             ref={edgeRef}

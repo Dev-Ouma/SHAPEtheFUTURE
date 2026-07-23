@@ -62,7 +62,7 @@ export const HERO_MOTION: Record<
   page: {
     type: "page",
     intervalMs: 5600,
-    revealMs: 1700,
+    revealMs: 1400,
   },
   slice: {
     type: "slice",

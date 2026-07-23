@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import Image from "next/image";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
@@ -13,8 +14,10 @@ type Props = {
   isMaintenanceActive?: boolean;
 };
 
-const PRIMARY = SHAPE_NAV_LINKS.slice(0, 7);
-const MORE = SHAPE_NAV_LINKS.slice(7);
+// Primary bar keeps the six top-level destinations; everything else (starting
+// with Documents) lives under the "More" dropdown for a cleaner nav.
+const PRIMARY = SHAPE_NAV_LINKS.slice(0, 6);
+const MORE = SHAPE_NAV_LINKS.slice(6);
 
 export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) {
   const t = useTranslations("Shape.nav");
@@ -78,12 +81,8 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
   const isHome = pathname === "/";
   const solid = scrolled || !isHome;
 
-  const linkClass = (href: string) => {
-    const active =
-      href === "/"
-        ? pathname === "/"
-        : pathname === href || pathname.startsWith(`${href}/`);
-    return `text-[10px] xl:text-[11px] font-black uppercase tracking-[0.14em] transition-colors ${
+  const navClass = (active: boolean) =>
+    `text-[10px] xl:text-[11px] font-black uppercase tracking-[0.14em] transition-colors ${
       solid
         ? active
           ? "text-primary"
@@ -92,9 +91,21 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
           ? "text-secondary"
           : "text-white/90 hover:text-white"
     }`;
+
+  const linkClass = (href: string) => {
+    const active =
+      href === "/"
+        ? pathname === "/"
+        : pathname === href || pathname.startsWith(`${href}/`);
+    return navClass(active);
   };
 
   const label = (key: (typeof SHAPE_NAV_LINKS)[number]["titleKey"]) => t(key);
+
+  // Highlight the "More" trigger whenever any of its nested destinations is open.
+  const moreActive = MORE.some(
+    (l) => pathname === l.href || pathname.startsWith(`${l.href}/`),
+  );
 
   return (
     <header
@@ -119,7 +130,29 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
       </div>
 
       <div className="container mx-auto px-4 lg:px-6 flex items-center gap-4 py-3.5">
-        <Link href="/" className="shrink-0 group" aria-label={t("homeAria")}>
+        <Link
+          href="/"
+          className="shrink-0 group flex items-center gap-2.5 md:gap-3"
+          aria-label={t("homeAria")}
+        >
+          <span
+            className={`flex items-center rounded-md px-1.5 py-1 transition-colors ${
+              solid ? "" : "bg-white/95 shadow-sm"
+            }`}
+          >
+            <Image
+              src="/images/OUK-EnhancedLogo.png"
+              alt="Open University of Kenya"
+              width={1080}
+              height={594}
+              priority
+              className="h-9 md:h-10 w-auto"
+            />
+          </span>
+          <span
+            className={`h-8 w-px ${solid ? "bg-slate-300" : "bg-white/30"}`}
+            aria-hidden
+          />
           <div className="flex items-baseline gap-2">
             <span
               className={`font-serif text-2xl md:text-3xl font-black tracking-tight leading-none ${
@@ -147,7 +180,7 @@ export default function ShapeSiteHeader({ isMaintenanceActive = false }: Props) 
             <button
               type="button"
               onClick={() => setMoreOpen((v) => !v)}
-              className={`nav-link px-2 py-2 inline-flex items-center gap-1 ${linkClass("/documents")}`}
+              className={`nav-link px-2 py-2 inline-flex items-center gap-1 ${navClass(moreActive)}`}
               aria-expanded={moreOpen}
               aria-haspopup="menu"
               aria-controls="nav-more-menu"

@@ -10,6 +10,7 @@ import ProjectInfoCard from "@/components/shape/ProjectInfoCard";
 import HomeObjectives from "@/components/shape/HomeObjectives";
 import EuFundingBadge from "@/components/shape/EuFundingBadge";
 import ShapeReveal from "@/components/shape/ShapeReveal";
+import RevealHeading from "@/components/shape/RevealHeading";
 import {
   getShapeDashboard,
   getShapePartners,
@@ -87,9 +88,9 @@ export default async function Home({ params }: { params: { locale: string } }) {
           <ShapeReveal className="lg:col-span-7 space-y-6">
             <div>
               <p className="shape-eyebrow mb-4">The project</p>
-              <h2 className="text-3xl md:text-5xl font-serif font-black text-primary-darker uppercase tracking-tight leading-[0.95] mb-6">
+              <RevealHeading className="text-3xl md:text-5xl font-serif font-black text-primary-darker uppercase tracking-tight leading-[0.95] mb-6">
                 Building smart-city capacity through higher education
-              </h2>
+              </RevealHeading>
             </div>
             {home.overviewImage ? (
               <div className="relative aspect-[16/9] bg-slate-100 overflow-hidden">
@@ -127,9 +128,9 @@ export default async function Home({ params }: { params: { locale: string } }) {
           <ShapeReveal className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
             <div>
               <p className="shape-eyebrow mb-3">Work packages</p>
-              <h2 className="text-3xl md:text-4xl font-serif font-black text-primary-darker uppercase tracking-tight">
+              <RevealHeading className="text-3xl md:text-4xl font-serif font-black text-primary-darker uppercase tracking-tight">
                 Eight workstreams
-              </h2>
+              </RevealHeading>
             </div>
             <Link
               href="/work-packages"
@@ -148,9 +149,9 @@ export default async function Home({ params }: { params: { locale: string } }) {
             <ShapeReveal className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
               <div>
                 <p className="shape-eyebrow mb-3">Latest news</p>
-                <h2 className="text-3xl md:text-4xl font-serif font-black text-primary-darker uppercase tracking-tight">
+                <RevealHeading className="text-3xl md:text-4xl font-serif font-black text-primary-darker uppercase tracking-tight">
                   Project updates
-                </h2>
+                </RevealHeading>
               </div>
               <Link
                 href="/news"
@@ -187,9 +188,9 @@ export default async function Home({ params }: { params: { locale: string } }) {
               <p className="text-[11px] font-black uppercase tracking-[0.4em] text-secondary mb-3">
                 Consortium
               </p>
-              <h2 className="text-3xl md:text-4xl font-serif font-black uppercase tracking-tight">
+              <RevealHeading className="text-3xl md:text-4xl font-serif font-black uppercase tracking-tight">
                 Partner institutions
-              </h2>
+              </RevealHeading>
             </div>
             <Link
               href="/partners"
@@ -206,9 +207,9 @@ export default async function Home({ params }: { params: { locale: string } }) {
         <div className="container mx-auto px-6">
           <ShapeReveal>
             <p className="shape-eyebrow mb-4">Quick links</p>
-            <h2 className="text-3xl font-serif font-black text-primary-darker uppercase tracking-tight mb-10">
+            <RevealHeading className="text-3xl font-serif font-black text-primary-darker uppercase tracking-tight mb-10">
               Explore the portal
-            </h2>
+            </RevealHeading>
           </ShapeReveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
