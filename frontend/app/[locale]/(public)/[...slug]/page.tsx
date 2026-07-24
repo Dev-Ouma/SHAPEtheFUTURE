@@ -1,5 +1,6 @@
 
 import React from "react";
+import { jsonLdScript } from "@/lib/jsonld";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPage, getStaffDirectory } from "@/lib/api";
@@ -251,7 +252,7 @@ export default async function DynamicPage({ params }: { params: { slug: string[]
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdScript({
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             "itemListElement": breadcrumbs.map((bc, index) => ({
@@ -268,7 +269,7 @@ export default async function DynamicPage({ params }: { params: { slug: string[]
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdScript({
             "@context": "https://schema.org",
             "@type": (page.layout_template === 'governing-council' || page.layout_template === 'management-board' || fullSlug.includes('about')) ? "AboutPage" : "WebPage",
             "name": page.title,

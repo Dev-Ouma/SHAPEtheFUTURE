@@ -16,7 +16,12 @@ import type { Response } from 'express';
 import { Public } from '../common/decorators/public.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import {
+  ResetPasswordDto,
+  ForceChangePasswordDto,
+} from './dto/reset-password.dto';
 import { UserPaginationQueryDto } from './dto/pagination-query.dto';
+import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
 import { RequirePermission } from './decorators/permissions.decorator';
@@ -31,6 +36,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('login')
   async login(
     @Body() loginDto: LoginDto,
@@ -60,16 +66,16 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('forgot-password')
   async forgotPassword(@Body() body: { email: string }) {
     return this.authService.forgotPassword(body.email);
   }
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('reset-password')
-  async resetPassword(
-    @Body() body: { token: string; password?: string; newPassword?: string },
-  ) {
+  async resetPassword(@Body() body: ResetPasswordDto) {
     const password = body.password ?? body.newPassword;
     if (!password) {
       throw new UnauthorizedException('Password is required');
@@ -128,7 +134,7 @@ export class AuthController {
   @Post('force-change-password')
   async forceChangePassword(
     @Request() req: any,
-    @Body() body: { password: string },
+    @Body() body: ForceChangePasswordDto,
   ) {
     return this.authService.forceChangePassword(req.user.userId, body.password);
   }

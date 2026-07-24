@@ -1,4 +1,5 @@
 import React from "react";
+import { jsonLdScript } from "@/lib/jsonld";
 import { getProgram } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -135,7 +136,7 @@ export default async function ProgramPage({ params }: { params: { slug: string; 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdScript({
             "@context": "https://schema.org",
             "@type": "Course",
             "name": programme.title,

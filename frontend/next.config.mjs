@@ -13,6 +13,29 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Baseline security headers (defense-in-depth). nginx also sets these in
+  // production; keeping them here protects direct-to-Next deployments/previews.
+  // CSP is intentionally left to nginx (report-only there) to avoid breaking
+  // inline styles/scripts until the enforcing-CSP checklist passes.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "geolocation=(), microphone=(), camera=()",
+          },
+          // NOTE: Strict-Transport-Security (HSTS) is intentionally NOT set here.
+          // The ops team gates it (and enforcing CSP) behind their HTTPS-stability
+          // checklist — see nginx.ssl.example.conf. Enable there once confirmed.
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

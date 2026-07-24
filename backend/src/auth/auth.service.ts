@@ -412,7 +412,20 @@ export class AuthService {
     };
   }
 
+  /**
+   * Server-side enforcement of the password policy — belt-and-suspenders with
+   * the DTO validation, and protects any internal callers of these methods.
+   */
+  private assertStrongPassword(pw: string): void {
+    if (!pw || pw.length < 12 || !/(?=.*[A-Za-z])(?=.*\d)/.test(pw)) {
+      throw new BadRequestException(
+        'Password must be at least 12 characters and include both letters and numbers.',
+      );
+    }
+  }
+
   async resetPassword(token: string, newPassword: string) {
+    this.assertStrongPassword(newPassword);
     const user = await this.userRepository.findOne({
       where: { reset_token: token },
       select: [
@@ -460,6 +473,7 @@ export class AuthService {
   }
 
   async forceChangePassword(userId: string, newPassword: string) {
+    this.assertStrongPassword(newPassword);
     const user = await this.userRepository.findOne({
       where: { id: userId },
       select: [

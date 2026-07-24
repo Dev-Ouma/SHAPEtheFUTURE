@@ -1,12 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import * as util from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const execAsync = util.promisify(exec);
+// execFile does NOT spawn a shell, so arguments (including a connection string
+// containing special characters) cannot be interpreted as shell metacharacters.
+const execFileAsync = util.promisify(execFile);
 
 @Injectable()
 export class BackupService {
@@ -37,12 +39,12 @@ export class BackupService {
       const filename = `backup-${dateStr}.sql`;
       const filepath = path.join(backupsDir, filename);
 
-      // We use pg_dump to dump the database to a file.
-      // Note: pg_dump must be installed on the server where this runs.
-      const command = `pg_dump "${dbUrl}" > "${filepath}" && gzip "${filepath}"`;
-
+      // pg_dump must be installed on the server. Arguments are passed as an
+      // array (no shell) — `-f` writes the dump directly (no `>` redirect) and
+      // gzip is run as a separate shell-free process.
       this.logger.log(`Executing backup command...`);
-      await execAsync(command);
+      await execFileAsync('pg_dump', [dbUrl, '-f', filepath]);
+      await execFileAsync('gzip', ['-f', filepath]);
 
       this.logger.log(`Database backup completed successfully: ${filepath}.gz`);
 

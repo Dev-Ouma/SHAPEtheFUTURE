@@ -1,4 +1,5 @@
 import React from "react";
+import { jsonLdScript } from "@/lib/jsonld";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
@@ -531,7 +532,7 @@ export default async function StaffProfilePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdScript({
             "@context": "https://schema.org",
             "@type": "Person",
             name: profile.full_name,
