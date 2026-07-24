@@ -291,22 +291,41 @@ function asList<T = any>(data: unknown): T[] {
   return [];
 }
 
+/**
+ * Serving demo seed content when the backend is empty/unreachable keeps the UI
+ * usable offline, but in production it can silently mask a real outage — showing
+ * stale demo numbers as if they were live. Set `SHAPE_STRICT_DATA=1` in prod to
+ * return empty results instead, so an outage surfaces as an honest empty state.
+ * Either way a warning is logged so fallback usage is observable in logs.
+ */
+const STRICT_DATA =
+  process.env.SHAPE_STRICT_DATA === "1" || process.env.SHAPE_STRICT_DATA === "true";
+
+function withFallback<T>(path: string, reason: "error" | "empty", fallback: T, empty: T): T {
+  console.warn(
+    `[shape-api] ${path}: backend ${reason}; serving ${
+      STRICT_DATA ? "empty result (strict mode)" : "seed fallback"
+    }`,
+  );
+  return STRICT_DATA ? empty : fallback;
+}
+
 async function cachedList<T>(path: string, fallback: T[]): Promise<T[]> {
   try {
     const data = await getApiCached(path, { revalidate: 120 });
     const list = asList<T>(data);
-    return list.length ? list : fallback;
+    return list.length ? list : withFallback(path, "empty", fallback, []);
   } catch {
-    return fallback;
+    return withFallback(path, "error", fallback, []);
   }
 }
 
 async function cachedOne<T>(path: string, fallback: T | null): Promise<T | null> {
   try {
     const data = await getApiCached(path, { revalidate: 120 });
-    return (data as T) || fallback;
+    return (data as T) || withFallback(path, "empty", fallback, null);
   } catch {
-    return fallback;
+    return withFallback(path, "error", fallback, null);
   }
 }
 
@@ -992,7 +1011,7 @@ export async function getShapeDashboard(): Promise<ShapeDashboard> {
       };
     }
   } catch {
-    /* fallback */
+    console.warn("[shape-api] /shape/dashboard: backend error; serving seed fallback metrics");
   }
   return SHAPE_DASHBOARD_FALLBACK;
 }

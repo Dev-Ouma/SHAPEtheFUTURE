@@ -274,12 +274,13 @@ export default function ShapeHeroSlideshow({
             initial={kbFor(incoming as number).start}
             animate={kbFor(incoming as number).start}
           >
+            {/* Incoming slide is warmed via the preload effect, so it does not
+                need `priority` (which would compete with the LCP base image). */}
             <SafeImage
               src={next.src}
               alt={next.alt}
               fill
               sizes="100vw"
-              priority
               className="object-cover object-center"
             />
           </motion.div>

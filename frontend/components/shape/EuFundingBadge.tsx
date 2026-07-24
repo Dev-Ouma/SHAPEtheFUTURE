@@ -22,8 +22,11 @@ export default function EuFundingBadge({ className = "", variant = "light" }: Pr
         <rect width="64" height="44" fill="#003399" />
         {Array.from({ length: 12 }).map((_, i) => {
           const angle = ((i * 30 - 90) * Math.PI) / 180;
-          const cx = 32 + Math.cos(angle) * 12;
-          const cy = 22 + Math.sin(angle) * 12;
+          // Round to a fixed precision so the SSR and client strings are byte
+          // identical — raw float results differ in the last digit across
+          // Node/V8 and trigger a hydration mismatch.
+          const cx = (32 + Math.cos(angle) * 12).toFixed(3);
+          const cy = (22 + Math.sin(angle) * 12).toFixed(3);
           return (
             <polygon
               key={i}

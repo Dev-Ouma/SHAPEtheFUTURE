@@ -681,7 +681,11 @@ export async function uploadFile(file: File) {
 export function resolveImageUrl(path?: string) {
   if (!path || path === "/uploads" || path === "/uploads/") return "";
   if (path.startsWith('http')) return path;
-  if (path.startsWith('/uploads')) return `${API_URL}${path}`;
+  // Return a stable, same-origin relative path. `/uploads/*` is proxied to the
+  // backend by a Next.js rewrite, so this resolves identically during SSR and on
+  // the client — avoiding the hydration mismatch that arises from the
+  // window-dependent `API_URL` (backend origin on the server, `/api` in the browser).
+  if (path.startsWith('/uploads')) return path;
   if (path.startsWith('/images')) return path; // Next.js public folder
   return path;
 }
